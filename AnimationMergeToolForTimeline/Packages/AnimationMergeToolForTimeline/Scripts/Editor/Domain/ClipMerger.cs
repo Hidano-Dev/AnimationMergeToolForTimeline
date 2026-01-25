@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AnimationMergeTool.Editor.Domain.Models;
+using UnityEditor;
 using UnityEngine;
 
 namespace AnimationMergeTool.Editor.Domain
@@ -60,12 +61,86 @@ namespace AnimationMergeTool.Editor.Domain
                 frameRate = _frameRate
             };
 
-            // TODO: 3.2.2〜3.2.4で実装予定
-            // - AnimationCurve取得機能
+            // TODO: 3.2.3〜3.2.4で実装予定
             // - 時間オフセット適用機能
             // - カーブ統合機能
 
             return resultClip;
+        }
+
+        /// <summary>
+        /// AnimationClipから全てのAnimationCurveとEditorCurveBinding情報を取得する
+        /// </summary>
+        /// <param name="clip">取得元のAnimationClip</param>
+        /// <returns>EditorCurveBindingとAnimationCurveのペアのリスト</returns>
+        public List<CurveBindingPair> GetAnimationCurves(AnimationClip clip)
+        {
+            var result = new List<CurveBindingPair>();
+
+            if (clip == null)
+            {
+                return result;
+            }
+
+            // 通常のカーブ（Transform, Animator等のfloatプロパティ）を取得
+            var curveBindings = AnimationUtility.GetCurveBindings(clip);
+            foreach (var binding in curveBindings)
+            {
+                var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                if (curve != null)
+                {
+                    result.Add(new CurveBindingPair(binding, curve));
+                }
+            }
+
+            // オブジェクト参照カーブ（Sprite等）は除外
+            // ObjectReferenceKeyframeはAnimationCurveとは異なる形式のため、
+            // 本ツールでは対象外とする
+
+            return result;
+        }
+
+        /// <summary>
+        /// AnimationClipから指定したEditorCurveBindingに対応するカーブを取得する
+        /// </summary>
+        /// <param name="clip">取得元のAnimationClip</param>
+        /// <param name="binding">取得対象のEditorCurveBinding</param>
+        /// <returns>AnimationCurve（存在しない場合はnull）</returns>
+        public AnimationCurve GetAnimationCurve(AnimationClip clip, EditorCurveBinding binding)
+        {
+            if (clip == null)
+            {
+                return null;
+            }
+
+            return AnimationUtility.GetEditorCurve(clip, binding);
+        }
+    }
+
+    /// <summary>
+    /// EditorCurveBindingとAnimationCurveのペアを保持するクラス
+    /// </summary>
+    public class CurveBindingPair
+    {
+        /// <summary>
+        /// カーブのバインディング情報
+        /// </summary>
+        public EditorCurveBinding Binding { get; }
+
+        /// <summary>
+        /// アニメーションカーブ
+        /// </summary>
+        public AnimationCurve Curve { get; }
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="binding">EditorCurveBinding</param>
+        /// <param name="curve">AnimationCurve</param>
+        public CurveBindingPair(EditorCurveBinding binding, AnimationCurve curve)
+        {
+            Binding = binding;
+            Curve = curve;
         }
     }
 }
