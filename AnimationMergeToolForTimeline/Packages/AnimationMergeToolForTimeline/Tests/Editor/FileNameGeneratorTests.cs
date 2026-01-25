@@ -1,8 +1,28 @@
+using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using AnimationMergeTool.Editor.Infrastructure;
 
 namespace AnimationMergeTool.Editor.Tests
 {
+    /// <summary>
+    /// テスト用のファイル存在確認モック
+    /// </summary>
+    public class MockFileExistenceChecker : IFileExistenceChecker
+    {
+        private readonly HashSet<string> _existingFiles = new HashSet<string>();
+
+        public void AddExistingFile(string path)
+        {
+            _existingFiles.Add(path);
+        }
+
+        public bool Exists(string path)
+        {
+            return _existingFiles.Contains(path);
+        }
+    }
+
     /// <summary>
     /// FileNameGeneratorクラスの単体テスト
     /// </summary>
@@ -156,6 +176,145 @@ namespace AnimationMergeTool.Editor.Tests
 
             // Assert
             Assert.IsTrue(result.Contains("_Merged"));
+        }
+
+        #endregion
+
+        #region GenerateUniqueFilePath テスト
+
+        [Test]
+        public void GenerateUniqueFilePath_ファイルが存在しない場合基本ファイル名を返す()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged.anim", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_ファイルが存在する場合連番1を付与する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged.anim");
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged(1).anim", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_連番1も存在する場合連番2を付与する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged.anim");
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged(1).anim");
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged(2).anim", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_連番に途中の欠番がある場合最初の空きを使用する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged.anim");
+            // (1)は存在しない
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged(2).anim");
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged(1).anim", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_ディレクトリ末尾にスラッシュがあっても正しく処理する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets/", "MyTimeline", "MyAnimator");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged.anim", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_ディレクトリ末尾にバックスラッシュがあっても正しく処理する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets\\", "MyTimeline", "MyAnimator");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged.anim", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_FileExistenceCheckerがnullの場合例外を投げる()
+        {
+            // Arrange
+            var generator = new FileNameGenerator(); // デフォルトコンストラクタ
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator");
+            });
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_連番はスペースなしで付与される()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged.anim");
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator");
+
+            // Assert
+            // "(1)"の前にスペースがないことを確認
+            Assert.IsFalse(result.Contains(" (1)"));
+            Assert.IsTrue(result.Contains("_Merged(1).anim"));
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_サブディレクトリでも正しく動作する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/Animations/MyTimeline_MyAnimator_Merged.anim");
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets/Animations", "MyTimeline", "MyAnimator");
+
+            // Assert
+            Assert.AreEqual("Assets/Animations/MyTimeline_MyAnimator_Merged(1).anim", result);
         }
 
         #endregion
