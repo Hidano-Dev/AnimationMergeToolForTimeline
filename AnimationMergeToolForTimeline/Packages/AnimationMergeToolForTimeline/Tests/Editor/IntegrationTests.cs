@@ -578,6 +578,76 @@ namespace AnimationMergeTool.Editor.Tests
             }
         }
 
+        /// <summary>
+        /// ERR-001対応: バインドなしトラックをスキップして処理継続するテスト
+        /// 要件定義書 ERR-001: バインドされていないトラック（Animator未設定）が存在する場合、
+        /// エラーログを出力し、該当トラックをスキップして処理を継続
+        /// </summary>
+        [Test]
+        public void ERR001_バインドなしトラックがある場合スキップして処理を継続する()
+        {
+            // Arrange: バインドされたトラックとバインドされていないトラックが混在
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+
+            var animatorGo = new GameObject("TestAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "ERR001TestTimeline";
+
+            // トラック1: Animatorにバインドされる有効なトラック
+            var boundTrack = timeline.CreateTrack<AnimationTrack>(null, "BoundTrack");
+            var animClip1 = new AnimationClip();
+            var curve1 = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip1.SetCurve("", typeof(Transform), "localPosition.x", curve1);
+            var timelineClip1 = boundTrack.CreateClip<AnimationPlayableAsset>();
+            timelineClip1.start = 0;
+            timelineClip1.duration = 1;
+            (timelineClip1.asset as AnimationPlayableAsset).clip = animClip1;
+
+            // トラック2: Animatorにバインドされない無効なトラック
+            var unboundTrack = timeline.CreateTrack<AnimationTrack>(null, "UnboundTrack");
+            var animClip2 = new AnimationClip();
+            var curve2 = AnimationCurve.Linear(0, 0, 1, 2);
+            animClip2.SetCurve("", typeof(Transform), "localPosition.y", curve2);
+            var timelineClip2 = unboundTrack.CreateClip<AnimationPlayableAsset>();
+            timelineClip2.start = 0;
+            timelineClip2.duration = 1;
+            (timelineClip2.asset as AnimationPlayableAsset).clip = animClip2;
+
+            director.playableAsset = timeline;
+            // boundTrackのみにAnimatorをバインド、unboundTrackにはバインドしない
+            director.SetGenericBinding(boundTrack, animator);
+            // unboundTrackはバインドしない
+
+            try
+            {
+                // Act
+                var service = new AnimationMergeService();
+                var results = service.MergeFromPlayableDirector(director);
+
+                // Assert: バインドされたトラックのみ処理され、結果は1つ（バインドなしトラックはスキップ）
+                Assert.IsNotNull(results, "結果がnullであってはならない");
+                Assert.AreEqual(1, results.Count, "バインドされたAnimatorごとに結果が1つ生成されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "処理は成功すべき（バインドなしトラックはスキップして継続）");
+
+                // 結果がバインドされたAnimatorに対するものであることを確認
+                Assert.AreEqual(animator, results[0].BoundAnimator, "バインドされたAnimatorの結果であるべき");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip1);
+                Object.DestroyImmediate(animClip2);
+            }
+        }
+
         [Test]
         public void 統合テスト_空のTimelineAssetのエラー処理()
         {
