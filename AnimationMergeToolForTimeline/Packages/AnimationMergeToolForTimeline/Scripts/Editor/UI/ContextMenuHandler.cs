@@ -165,6 +165,28 @@ namespace AnimationMergeTool.Editor.UI
         }
 
         /// <summary>
+        /// Projectビューのコンテキストメニューからマージ処理を実行する
+        /// FR-002: ProjectビューでTimelineAssetを右クリックした際のコンテキストメニューから実行可能
+        /// </summary>
+        [MenuItem(AssetsMenuPath, false, MenuPriority)]
+        private static void ExecuteFromProjectMenu()
+        {
+            var timelineAssets = GetSelectedTimelineAssets();
+            ExecuteForTimelineAssets(timelineAssets);
+        }
+
+        /// <summary>
+        /// Projectビューのコンテキストメニューの有効状態を判定する
+        /// TimelineAssetが選択されている場合のみ有効
+        /// </summary>
+        /// <returns>TimelineAssetが選択されている場合はtrue</returns>
+        [MenuItem(AssetsMenuPath, true)]
+        private static bool ValidateExecuteFromProjectMenu()
+        {
+            return CanExecuteFromProject();
+        }
+
+        /// <summary>
         /// 選択されたTimelineAssetに対してマージ処理を実行する
         /// </summary>
         /// <param name="timelineAssets">処理対象のTimelineAsset配列</param>
