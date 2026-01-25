@@ -494,5 +494,184 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region GetTrackIndex テスト
+
+        [Test]
+        public void GetTrackIndex_TimelineAssetがnullの場合マイナス1を返す()
+        {
+            // Arrange
+            var track = _timelineAsset.CreateTrack<AnimationTrack>(null, "Test Track");
+            var analyzer = new TrackAnalyzer(null);
+
+            // Act
+            var result = analyzer.GetTrackIndex(track);
+
+            // Assert
+            Assert.AreEqual(-1, result);
+        }
+
+        [Test]
+        public void GetTrackIndex_trackがnullの場合マイナス1を返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetTrackIndex(null);
+
+            // Assert
+            Assert.AreEqual(-1, result);
+        }
+
+        [Test]
+        public void GetTrackIndex_トラックが存在する場合正しいインデックスを返す()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act & Assert
+            Assert.AreEqual(0, analyzer.GetTrackIndex(track1));
+            Assert.AreEqual(1, analyzer.GetTrackIndex(track2));
+            Assert.AreEqual(2, analyzer.GetTrackIndex(track3));
+        }
+
+        [Test]
+        public void GetTrackIndex_トラックが存在しない場合マイナス1を返す()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var otherTimeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var otherTrack = otherTimeline.CreateTrack<AnimationTrack>(null, "Other Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetTrackIndex(otherTrack);
+
+            // Assert
+            Assert.AreEqual(-1, result);
+
+            // クリーンアップ
+            Object.DestroyImmediate(otherTimeline);
+        }
+
+        #endregion
+
+        #region GetOutputTracksInOrder テスト
+
+        [Test]
+        public void GetOutputTracksInOrder_TimelineAssetがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(null);
+
+            // Act
+            var result = analyzer.GetOutputTracksInOrder();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetOutputTracksInOrder_トラックがない場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetOutputTracksInOrder();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetOutputTracksInOrder_トラックが作成順に返される()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetOutputTracksInOrder();
+
+            // Assert
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(track1, result[0]);
+            Assert.AreEqual(track2, result[1]);
+            Assert.AreEqual(track3, result[2]);
+        }
+
+        #endregion
+
+        #region GetAnimationTracksWithIndex テスト
+
+        [Test]
+        public void GetAnimationTracksWithIndex_TimelineAssetがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(null);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithIndex();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithIndex_AnimationTrackのみがインデックス付きで返される()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation 1");
+            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation 2");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithIndex();
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+            // track1 はインデックス0
+            Assert.AreEqual(0, result[0].index);
+            Assert.AreEqual(track1, result[0].trackInfo.Track);
+            // track2 はインデックス2（GroupTrackがインデックス1）
+            Assert.AreEqual(2, result[1].index);
+            Assert.AreEqual(track2, result[1].trackInfo.Track);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithIndex_インデックスはTimeline上の全トラック位置を反映する()
+        {
+            // Arrange
+            var groupTrack1 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 1");
+            var animTrack1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation 1");
+            var groupTrack2 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 2");
+            var animTrack2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation 2");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithIndex();
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+            // animTrack1 はインデックス1（GroupTrack1がインデックス0）
+            Assert.AreEqual(1, result[0].index);
+            Assert.AreEqual(animTrack1, result[0].trackInfo.Track);
+            // animTrack2 はインデックス3（GroupTrack2がインデックス2）
+            Assert.AreEqual(3, result[1].index);
+            Assert.AreEqual(animTrack2, result[1].trackInfo.Track);
+        }
+
+        #endregion
     }
 }

@@ -118,5 +118,64 @@ namespace AnimationMergeTool.Editor.Domain
 
             return unboundTracks;
         }
+
+        /// <summary>
+        /// Timeline上でのトラックのインデックス（位置）を取得する
+        /// GetOutputTracks()が返す順序がTimeline上の表示順序（上から下）に対応する
+        /// </summary>
+        /// <param name="track">インデックスを取得するトラック</param>
+        /// <returns>トラックのインデックス（0始まり）。見つからない場合は-1</returns>
+        public int GetTrackIndex(TrackAsset track)
+        {
+            if (_timelineAsset == null || track == null)
+            {
+                return -1;
+            }
+
+            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
+            return outputTracks.IndexOf(track);
+        }
+
+        /// <summary>
+        /// TimelineAssetから全ての出力トラックをインデックス順（Timeline上の表示順序）で取得する
+        /// </summary>
+        /// <returns>出力トラックのリスト（インデックス順）</returns>
+        public List<TrackAsset> GetOutputTracksInOrder()
+        {
+            if (_timelineAsset == null)
+            {
+                return new List<TrackAsset>();
+            }
+
+            return _timelineAsset.GetOutputTracks().ToList();
+        }
+
+        /// <summary>
+        /// AnimationTrackをインデックス付きで取得する
+        /// インデックスはTimeline上の表示順序（上から下、0始まり）
+        /// </summary>
+        /// <returns>インデックスとTrackInfoのペアのリスト</returns>
+        public List<(int index, TrackInfo trackInfo)> GetAnimationTracksWithIndex()
+        {
+            var result = new List<(int index, TrackInfo trackInfo)>();
+
+            if (_timelineAsset == null)
+            {
+                return result;
+            }
+
+            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
+
+            for (int i = 0; i < outputTracks.Count; i++)
+            {
+                if (outputTracks[i] is AnimationTrack animationTrack)
+                {
+                    var trackInfo = new TrackInfo(animationTrack);
+                    result.Add((i, trackInfo));
+                }
+            }
+
+            return result;
+        }
     }
 }
