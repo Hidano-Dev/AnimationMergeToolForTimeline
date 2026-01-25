@@ -1124,6 +1124,503 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region E2Eテスト（タスク10.3.3）
+
+        /// <summary>
+        /// E2Eテスト: 実際のTimelineAssetを使用した完全なワークフロー
+        /// PlayableDirector設定からアセット生成・保存までの全フローを検証
+        /// </summary>
+        [Test]
+        public void E2E_PlayableDirectorから完全なワークフローでAnimationClipが生成保存される()
+        {
+            // Arrange: 実際のシナリオに近い構成を作成
+            var directorGo = new GameObject("E2E_TestDirector");
+            var director = directorGo.AddComponent<PlayableDirector>();
+
+            var characterGo = new GameObject("E2E_Character");
+            var animator = characterGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "E2E_TestTimeline";
+
+            // 複数のAnimationTrackを持つTimelineを構築
+            var idleTrack = timeline.CreateTrack<AnimationTrack>(null, "IdleLayer");
+            var idleClip = new AnimationClip { name = "E2E_IdleAnimation" };
+            var idleCurve = AnimationCurve.Linear(0, 0, 2, 0); // 静止状態
+            idleClip.SetCurve("", typeof(Transform), "localPosition.y", idleCurve);
+            var idleTimelineClip = idleTrack.CreateClip<AnimationPlayableAsset>();
+            idleTimelineClip.start = 0;
+            idleTimelineClip.duration = 3;
+            (idleTimelineClip.asset as AnimationPlayableAsset).clip = idleClip;
+
+            var actionTrack = timeline.CreateTrack<AnimationTrack>(null, "ActionLayer");
+            var jumpClip = new AnimationClip { name = "E2E_JumpAnimation" };
+            var jumpCurve = new AnimationCurve(
+                new Keyframe(0, 0),
+                new Keyframe(0.5f, 2),
+                new Keyframe(1, 0)
+            );
+            jumpClip.SetCurve("", typeof(Transform), "localPosition.y", jumpCurve);
+            var jumpTimelineClip = actionTrack.CreateClip<AnimationPlayableAsset>();
+            jumpTimelineClip.start = 1;
+            jumpTimelineClip.duration = 1;
+            (jumpTimelineClip.asset as AnimationPlayableAsset).clip = jumpClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(idleTrack, animator);
+            director.SetGenericBinding(actionTrack, animator);
+
+            string expectedAssetPath = "Assets/E2E_TestTimeline_E2E_Character_Merged.anim";
+
+            try
+            {
+                // Act: コンテキストメニュー経由で実行をシミュレート
+                var success = ContextMenuHandler.ExecuteForPlayableDirectors(new[] { director });
+
+                // Assert
+                Assert.IsTrue(success, "E2E処理が成功すべき");
+
+                // 生成されたアセットがAssets直下に存在することを確認
+                var generatedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(expectedAssetPath);
+                if (generatedClip == null)
+                {
+                    // 連番付きパスを確認
+                    generatedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/E2E_TestTimeline_E2E_Character_Merged(1).anim");
+                }
+
+                Assert.IsNotNull(generatedClip, "AnimationClipアセットが生成されるべき");
+
+                // 生成されたクリップの内容を検証
+                var bindings = AnimationUtility.GetCurveBindings(generatedClip);
+                Assert.GreaterOrEqual(bindings.Length, 1, "少なくとも1つのカーブが含まれるべき");
+
+                // localPosition.yカーブが存在することを確認
+                var hasPositionY = System.Array.Exists(bindings, b => b.propertyName == "localPosition.y");
+                Assert.IsTrue(hasPositionY, "localPosition.yカーブが含まれるべき");
+
+                // クリーンアップ用にパスを記録
+                _createdAssetPaths.Add(expectedAssetPath);
+                _createdAssetPaths.Add("Assets/E2E_TestTimeline_E2E_Character_Merged(1).anim");
+            }
+            finally
+            {
+                Object.DestroyImmediate(directorGo);
+                Object.DestroyImmediate(characterGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(idleClip);
+                Object.DestroyImmediate(jumpClip);
+            }
+        }
+
+        /// <summary>
+        /// E2Eテスト: TimelineAsset選択からの実行フロー
+        /// ProjectビューからTimelineAssetを選択して実行するシナリオを検証
+        /// </summary>
+        [Test]
+        public void E2E_TimelineAsset選択からの実行でAnimationClipが生成保存される()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "E2E_ProjectViewTimeline";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "MainTrack");
+            var animClip = new AnimationClip { name = "E2E_WalkAnimation" };
+
+            // 複数のプロパティにカーブを設定（より現実的なシナリオ）
+            var posXCurve = AnimationCurve.Linear(0, 0, 2, 5);
+            var posYCurve = AnimationCurve.Linear(0, 0, 2, 0);
+            var posZCurve = AnimationCurve.Linear(0, 0, 2, 10);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", posXCurve);
+            animClip.SetCurve("", typeof(Transform), "localPosition.y", posYCurve);
+            animClip.SetCurve("", typeof(Transform), "localPosition.z", posZCurve);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 2;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            string expectedAssetPath = "Assets/E2E_ProjectViewTimeline_Merged.anim";
+
+            try
+            {
+                // Act: TimelineAssetからの実行
+                var success = ContextMenuHandler.ExecuteForTimelineAssets(new[] { timeline });
+
+                // Assert
+                Assert.IsTrue(success, "TimelineAssetからの処理が成功すべき");
+
+                // 生成されたアセットが存在することを確認
+                AssetDatabase.Refresh();
+                var generatedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(expectedAssetPath);
+                if (generatedClip == null)
+                {
+                    generatedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/E2E_ProjectViewTimeline_Merged(1).anim");
+                }
+
+                Assert.IsNotNull(generatedClip, "AnimationClipアセットが生成されるべき");
+
+                // 全てのカーブが含まれていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(generatedClip);
+                Assert.AreEqual(3, bindings.Length, "3つのカーブが含まれるべき");
+
+                // クリーンアップ用にパスを記録
+                _createdAssetPaths.Add(expectedAssetPath);
+                _createdAssetPaths.Add("Assets/E2E_ProjectViewTimeline_Merged(1).anim");
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// E2Eテスト: Selection APIを使用したHierarchyビューからのコンテキストメニュー実行
+        /// FR-001の完全なテスト
+        /// </summary>
+        [Test]
+        public void E2E_HierarchyビューSelection経由でのコンテキストメニュー実行()
+        {
+            // Arrange
+            var directorGo = new GameObject("E2E_HierarchyTest_Director");
+            var director = directorGo.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("E2E_HierarchyTest_Animator");
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "E2E_HierarchyTestTimeline";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+            var animClip = new AnimationClip { name = "E2E_HierarchyClip" };
+            var curve = AnimationCurve.EaseInOut(0, 0, 1, 100);
+            animClip.SetCurve("", typeof(Transform), "localScale.x", curve);
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track, animator);
+
+            // Selection APIを使用してGameObjectを選択状態にする
+            var originalSelection = Selection.objects;
+            Selection.activeGameObject = directorGo;
+
+            try
+            {
+                // Act: Selection.gameObjectsからPlayableDirectorを取得して実行
+                var directors = ContextMenuHandler.GetSelectedPlayableDirectors();
+                Assert.AreEqual(1, directors.Length, "選択されたPlayableDirectorが1つであるべき");
+
+                // メニューの有効状態を確認
+                Assert.IsTrue(ContextMenuHandler.CanExecuteFromHierarchy(), "Hierarchyメニューが有効であるべき");
+
+                // 実行
+                var success = ContextMenuHandler.ExecuteForPlayableDirectors(directors);
+
+                // Assert
+                Assert.IsTrue(success, "Hierarchy経由の処理が成功すべき");
+
+                // クリーンアップ用にパスを記録
+                _createdAssetPaths.Add("Assets/E2E_HierarchyTestTimeline_E2E_HierarchyTest_Animator_Merged.anim");
+                _createdAssetPaths.Add("Assets/E2E_HierarchyTestTimeline_E2E_HierarchyTest_Animator_Merged(1).anim");
+            }
+            finally
+            {
+                Selection.objects = originalSelection;
+                Object.DestroyImmediate(directorGo);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// E2Eテスト: 複雑なTimeline構造（複数トラック、ブレンド、オーバーライド）の処理
+        /// 実際のプロダクション環境に近い複雑なシナリオを検証
+        /// </summary>
+        [Test]
+        public void E2E_複雑なTimeline構造の完全な処理フロー()
+        {
+            // Arrange: 複雑なTimeline構造を作成
+            var directorGo = new GameObject("E2E_ComplexDirector");
+            var director = directorGo.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("E2E_ComplexAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "E2E_ComplexTimeline";
+
+            // ベースレイヤー（長いクリップ）
+            var baseTrack = timeline.CreateTrack<AnimationTrack>(null, "BaseLayer");
+            var baseClip = new AnimationClip { name = "E2E_BaseAnim" };
+            baseClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 5, 50));
+            baseClip.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 5, 0));
+            baseClip.SetCurve("", typeof(Transform), "localPosition.z", AnimationCurve.Linear(0, 0, 5, 50));
+            var baseTimelineClip = baseTrack.CreateClip<AnimationPlayableAsset>();
+            baseTimelineClip.start = 0;
+            baseTimelineClip.duration = 5;
+            (baseTimelineClip.asset as AnimationPlayableAsset).clip = baseClip;
+
+            // オーバーライドレイヤー（部分的に上書き）
+            var overrideTrack = timeline.CreateTrack<AnimationTrack>(null, "OverrideLayer");
+            var overrideClip = new AnimationClip { name = "E2E_OverrideAnim" };
+            overrideClip.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.EaseInOut(0, 0, 2, 10));
+            var overrideTimelineClip = overrideTrack.CreateClip<AnimationPlayableAsset>();
+            overrideTimelineClip.start = 1.5;
+            overrideTimelineClip.duration = 2;
+            (overrideTimelineClip.asset as AnimationPlayableAsset).clip = overrideClip;
+
+            // 追加レイヤー（異なるプロパティ）
+            var additionalTrack = timeline.CreateTrack<AnimationTrack>(null, "AdditionalLayer");
+            var additionalClip = new AnimationClip { name = "E2E_AdditionalAnim" };
+            additionalClip.SetCurve("", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 3, 180));
+            var additionalTimelineClip = additionalTrack.CreateClip<AnimationPlayableAsset>();
+            additionalTimelineClip.start = 0.5;
+            additionalTimelineClip.duration = 3;
+            (additionalTimelineClip.asset as AnimationPlayableAsset).clip = additionalClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(baseTrack, animator);
+            director.SetGenericBinding(overrideTrack, animator);
+            director.SetGenericBinding(additionalTrack, animator);
+
+            try
+            {
+                // Act
+                var service = new AnimationMergeService();
+                var results = service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "1つのAnimator用の結果が返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "複雑なTimeline構造の処理が成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+
+                // 複数のプロパティが含まれていることを確認
+                var propertyNames = new HashSet<string>();
+                foreach (var binding in bindings)
+                {
+                    propertyNames.Add(binding.propertyName);
+                }
+
+                Assert.IsTrue(propertyNames.Contains("localPosition.x"), "localPosition.xが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("localPosition.y"), "localPosition.yが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("localPosition.z"), "localPosition.zが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("localRotation.y"), "localRotation.yが含まれるべき");
+
+                // 生成されたクリップの長さが適切であることを確認
+                Assert.GreaterOrEqual(results[0].GeneratedClip.length, 4.5f, "クリップの長さが十分であるべき");
+
+                // ログが適切に記録されていることを確認
+                Assert.IsTrue(results[0].Logs.Count > 0, "処理ログが記録されるべき");
+                Assert.IsTrue(results[0].Logs.Exists(log => log.Contains("処理開始")), "処理開始ログがあるべき");
+                Assert.IsTrue(results[0].Logs.Exists(log => log.Contains("出力完了")), "出力完了ログがあるべき");
+
+                // クリーンアップ用にパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(directorGo);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(baseClip);
+                Object.DestroyImmediate(overrideClip);
+                Object.DestroyImmediate(additionalClip);
+            }
+        }
+
+        /// <summary>
+        /// E2Eテスト: EaseIn/EaseOutブレンドを含むTimelineの処理
+        /// </summary>
+        [Test]
+        public void E2E_ブレンド設定を含むTimelineの処理()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "E2E_BlendTimeline";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "BlendTrack");
+
+            // 最初のクリップ（EaseOutあり）
+            var clip1 = new AnimationClip { name = "E2E_BlendClip1" };
+            clip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 10));
+            var timelineClip1 = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip1.start = 0;
+            timelineClip1.duration = 1.5;
+            timelineClip1.easeOutDuration = 0.3;
+            (timelineClip1.asset as AnimationPlayableAsset).clip = clip1;
+
+            // 2番目のクリップ（EaseInあり、重複区間でブレンド）
+            var clip2 = new AnimationClip { name = "E2E_BlendClip2" };
+            clip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 20, 1, 30));
+            var timelineClip2 = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip2.start = 1.2; // 重複区間を作成
+            timelineClip2.duration = 1.5;
+            timelineClip2.easeInDuration = 0.3;
+            (timelineClip2.asset as AnimationPlayableAsset).clip = clip2;
+
+            try
+            {
+                // Act
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "ブレンド処理が成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                var generatedClip = results[0].GeneratedClip;
+                var bindings = AnimationUtility.GetCurveBindings(generatedClip);
+                Assert.AreEqual(1, bindings.Length, "1つのカーブが含まれるべき");
+
+                // 生成されたクリップの長さがタイムライン全体をカバーしていることを確認
+                Assert.GreaterOrEqual(generatedClip.length, 2.5f, "クリップの長さがタイムライン全体をカバーすべき");
+
+                // クリーンアップ用にパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(clip1);
+                Object.DestroyImmediate(clip2);
+            }
+        }
+
+        /// <summary>
+        /// E2Eテスト: 複数選択からの順次処理（FR-003準拠）
+        /// </summary>
+        [Test]
+        public void E2E_複数PlayableDirector選択からの順次処理()
+        {
+            // Arrange: 2つの独立したセットアップ
+            var director1Go = new GameObject("E2E_MultiSelect_Director1");
+            var director1 = director1Go.AddComponent<PlayableDirector>();
+            var animator1Go = new GameObject("E2E_MultiSelect_Animator1");
+            var animator1 = animator1Go.AddComponent<Animator>();
+
+            var director2Go = new GameObject("E2E_MultiSelect_Director2");
+            var director2 = director2Go.AddComponent<PlayableDirector>();
+            var animator2Go = new GameObject("E2E_MultiSelect_Animator2");
+            var animator2 = animator2Go.AddComponent<Animator>();
+
+            var timeline1 = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline1.name = "E2E_MultiSelect1";
+            var track1 = timeline1.CreateTrack<AnimationTrack>(null, "Track1");
+            var clip1 = new AnimationClip { name = "E2E_Clip1" };
+            clip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 10));
+            var tc1 = track1.CreateClip<AnimationPlayableAsset>();
+            tc1.start = 0;
+            tc1.duration = 1;
+            (tc1.asset as AnimationPlayableAsset).clip = clip1;
+
+            var timeline2 = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline2.name = "E2E_MultiSelect2";
+            var track2 = timeline2.CreateTrack<AnimationTrack>(null, "Track2");
+            var clip2 = new AnimationClip { name = "E2E_Clip2" };
+            clip2.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 20));
+            var tc2 = track2.CreateClip<AnimationPlayableAsset>();
+            tc2.start = 0;
+            tc2.duration = 1;
+            (tc2.asset as AnimationPlayableAsset).clip = clip2;
+
+            director1.playableAsset = timeline1;
+            director1.SetGenericBinding(track1, animator1);
+            director2.playableAsset = timeline2;
+            director2.SetGenericBinding(track2, animator2);
+
+            try
+            {
+                // Act: 複数のPlayableDirectorを順次処理
+                var success = ContextMenuHandler.ExecuteForPlayableDirectors(new[] { director1, director2 });
+
+                // Assert
+                Assert.IsTrue(success, "複数選択からの処理が成功すべき");
+
+                // 両方のアセットが生成されていることを確認
+                AssetDatabase.Refresh();
+
+                // クリーンアップ用にパスを記録
+                _createdAssetPaths.Add("Assets/E2E_MultiSelect1_E2E_MultiSelect_Animator1_Merged.anim");
+                _createdAssetPaths.Add("Assets/E2E_MultiSelect1_E2E_MultiSelect_Animator1_Merged(1).anim");
+                _createdAssetPaths.Add("Assets/E2E_MultiSelect2_E2E_MultiSelect_Animator2_Merged.anim");
+                _createdAssetPaths.Add("Assets/E2E_MultiSelect2_E2E_MultiSelect_Animator2_Merged(1).anim");
+            }
+            finally
+            {
+                Object.DestroyImmediate(director1Go);
+                Object.DestroyImmediate(director2Go);
+                Object.DestroyImmediate(animator1Go);
+                Object.DestroyImmediate(animator2Go);
+                Object.DestroyImmediate(timeline1);
+                Object.DestroyImmediate(timeline2);
+                Object.DestroyImmediate(clip1);
+                Object.DestroyImmediate(clip2);
+            }
+        }
+
+        /// <summary>
+        /// E2Eテスト: GroupTrackを含む階層構造の処理
+        /// </summary>
+        [Test]
+        public void E2E_GroupTrackを含む階層構造のTimeline処理()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "E2E_GroupedTimeline";
+
+            // GroupTrackを作成
+            var group = timeline.CreateTrack<GroupTrack>(null, "AnimationGroup");
+
+            // グループ内にAnimationTrackを作成
+            var track1 = timeline.CreateTrack<AnimationTrack>(group, "GroupedTrack1");
+            var clip1 = new AnimationClip { name = "E2E_GroupedClip1" };
+            clip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 5));
+            var tc1 = track1.CreateClip<AnimationPlayableAsset>();
+            tc1.start = 0;
+            tc1.duration = 1;
+            (tc1.asset as AnimationPlayableAsset).clip = clip1;
+
+            var track2 = timeline.CreateTrack<AnimationTrack>(group, "GroupedTrack2");
+            var clip2 = new AnimationClip { name = "E2E_GroupedClip2" };
+            clip2.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 10));
+            var tc2 = track2.CreateClip<AnimationPlayableAsset>();
+            tc2.start = 0.5;
+            tc2.duration = 1;
+            (tc2.asset as AnimationPlayableAsset).clip = clip2;
+
+            try
+            {
+                // Act
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "GroupTrackを含むTimeline処理が成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // 両方のトラックからのカーブが含まれていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+                Assert.AreEqual(2, bindings.Length, "2つのカーブが含まれるべき");
+
+                // クリーンアップ用にパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(clip1);
+                Object.DestroyImmediate(clip2);
+            }
+        }
+
+        #endregion
+
         #region ヘルパーメソッド
 
         /// <summary>
