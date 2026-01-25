@@ -1093,5 +1093,273 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region タスク10.2.2 クリップが1つもないトラックの処理（エッジケース）テスト
+
+        [Test]
+        public void MergeFromTimelineAsset_全てのトラックにクリップがない場合エラーログを出力して処理結果を返す()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "AllEmptyTracksTimeline";
+
+            // クリップがないトラックを複数作成
+            var track1 = timeline.CreateTrack<AnimationTrack>(null, "EmptyTrack1");
+            var track2 = timeline.CreateTrack<AnimationTrack>(null, "EmptyTrack2");
+            // クリップを追加しない
+
+            try
+            {
+                // Act
+                var capturedLogs = new List<string>();
+                var originalLogHandler = Debug.unityLogger.logHandler;
+                var testLogHandler = new TestLogHandler(originalLogHandler, capturedLogs);
+                Debug.unityLogger.logHandler = testLogHandler;
+
+                try
+                {
+                    var results = _service.MergeFromTimelineAsset(timeline);
+
+                    // Assert
+                    Assert.IsNotNull(results, "結果がnullであってはならない");
+                    Assert.AreEqual(1, results.Count, "処理結果が1つ返されるべき（トラックはあるが有効なカーブがない）");
+
+                    // 処理結果が失敗していることを確認
+                    var result = results[0];
+                    Assert.IsFalse(result.IsSuccess, "有効なカーブがない場合は処理失敗となるべき");
+
+                    // ログに空トラックの情報が含まれていることを確認
+                    Assert.IsTrue(
+                        result.Logs.Exists(log => log.Contains("EmptyTrack1") && log.Contains("クリップがありません")),
+                        "EmptyTrack1に対するログが出力されるべき");
+                    Assert.IsTrue(
+                        result.Logs.Exists(log => log.Contains("EmptyTrack2") && log.Contains("クリップがありません")),
+                        "EmptyTrack2に対するログが出力されるべき");
+
+                    // エラーログに「有効なカーブデータがありません」が含まれていることを確認
+                    Assert.IsTrue(
+                        result.Logs.Exists(log => log.Contains("有効なカーブデータがありません")),
+                        "有効なカーブデータがないことを示すエラーログが出力されるべき");
+                }
+                finally
+                {
+                    Debug.unityLogger.logHandler = originalLogHandler;
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+            }
+        }
+
+        [Test]
+        public void MergeFromPlayableDirector_全てのトラックにクリップがない場合エラーログを出力して処理結果を返す()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("TestAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "AllEmptyTracksTimeline";
+
+            // クリップがないトラックを複数作成
+            var track1 = timeline.CreateTrack<AnimationTrack>(null, "EmptyTrack1");
+            var track2 = timeline.CreateTrack<AnimationTrack>(null, "EmptyTrack2");
+            // クリップを追加しない
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track1, animator);
+            director.SetGenericBinding(track2, animator);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results, "結果がnullであってはならない");
+                Assert.AreEqual(1, results.Count, "処理結果が1つ返されるべき（トラックはあるが有効なカーブがない）");
+
+                // 処理結果が失敗していることを確認
+                var result = results[0];
+                Assert.IsFalse(result.IsSuccess, "有効なカーブがない場合は処理失敗となるべき");
+                Assert.AreSame(animator, result.TargetAnimator, "ターゲットAnimatorが正しく設定されるべき");
+
+                // ログに空トラックの情報が含まれていることを確認
+                Assert.IsTrue(
+                    result.Logs.Exists(log => log.Contains("EmptyTrack1") && log.Contains("クリップがありません")),
+                    "EmptyTrack1に対するログが出力されるべき");
+                Assert.IsTrue(
+                    result.Logs.Exists(log => log.Contains("EmptyTrack2") && log.Contains("クリップがありません")),
+                    "EmptyTrack2に対するログが出力されるべき");
+
+                // エラーログに「有効なカーブデータがありません」が含まれていることを確認
+                Assert.IsTrue(
+                    result.Logs.Exists(log => log.Contains("有効なカーブデータがありません")),
+                    "有効なカーブデータがないことを示すエラーログが出力されるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+            }
+        }
+
+        [Test]
+        public void MergeFromTimelineAsset_一部のトラックにクリップがない場合クリップありトラックのみ処理される()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "MixedTracksTimeline";
+
+            // クリップがあるトラック
+            var trackWithClip = timeline.CreateTrack<AnimationTrack>(null, "TrackWithClip");
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = trackWithClip.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            // クリップがないトラック
+            var emptyTrack = timeline.CreateTrack<AnimationTrack>(null, "EmptyTrack");
+            // クリップを追加しない
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.IsNotNull(results, "結果がnullであってはならない");
+                Assert.AreEqual(1, results.Count, "処理結果が1つ返されるべき");
+
+                var result = results[0];
+                Assert.IsTrue(result.IsSuccess, "クリップありトラックがある場合は処理成功となるべき");
+                Assert.IsNotNull(result.GeneratedClip, "AnimationClipが生成されるべき");
+
+                // 生成されたクリップに正しいカーブが含まれていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(result.GeneratedClip);
+                Assert.AreEqual(1, bindings.Length, "1つのカーブが含まれるべき");
+                Assert.AreEqual("localPosition.x", bindings[0].propertyName, "localPosition.xカーブが含まれるべき");
+
+                // ログに空トラックの情報が含まれていることを確認
+                Assert.IsTrue(
+                    result.Logs.Exists(log => log.Contains("EmptyTrack") && log.Contains("クリップがありません")),
+                    "EmptyTrackに対するログが出力されるべき");
+
+                // クリップありトラックの処理ログが含まれていることを確認
+                Assert.IsTrue(
+                    result.Logs.Exists(log => log.Contains("TrackWithClip") && log.Contains("処理しました")),
+                    "TrackWithClipの処理ログが出力されるべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in result.Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        [Test]
+        public void MergeFromTimelineAsset_クリップがないトラックが複数ある場合それぞれログが出力される()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "MultipleEmptyTracksTimeline";
+
+            // 複数のクリップがないトラックを作成
+            var track1 = timeline.CreateTrack<AnimationTrack>(null, "EmptyTrackAlpha");
+            var track2 = timeline.CreateTrack<AnimationTrack>(null, "EmptyTrackBeta");
+            var track3 = timeline.CreateTrack<AnimationTrack>(null, "EmptyTrackGamma");
+            // クリップを追加しない
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.IsNotNull(results, "結果がnullであってはならない");
+                Assert.AreEqual(1, results.Count, "処理結果が1つ返されるべき");
+
+                var result = results[0];
+                Assert.IsFalse(result.IsSuccess, "全てのトラックにクリップがない場合は処理失敗となるべき");
+
+                // 各トラックに対するログが出力されていることを確認
+                Assert.IsTrue(
+                    result.Logs.Exists(log => log.Contains("EmptyTrackAlpha") && log.Contains("クリップがありません")),
+                    "EmptyTrackAlphaに対するログが出力されるべき");
+                Assert.IsTrue(
+                    result.Logs.Exists(log => log.Contains("EmptyTrackBeta") && log.Contains("クリップがありません")),
+                    "EmptyTrackBetaに対するログが出力されるべき");
+                Assert.IsTrue(
+                    result.Logs.Exists(log => log.Contains("EmptyTrackGamma") && log.Contains("クリップがありません")),
+                    "EmptyTrackGammaに対するログが出力されるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+            }
+        }
+
+        [Test]
+        public void MergeFromTimelineAsset_AnimationPlayableAssetのclipがnullのクリップは無視される()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "NullClipTimeline";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TrackWithNullClip");
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            // AnimationPlayableAssetのclipをnullのままにする
+            var asset = timelineClip.asset as AnimationPlayableAsset;
+            // asset.clip = null; （デフォルトでnull）
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.IsNotNull(results, "結果がnullであってはならない");
+                Assert.AreEqual(1, results.Count, "処理結果が1つ返されるべき");
+
+                var result = results[0];
+                Assert.IsFalse(result.IsSuccess, "有効なカーブがない場合は処理失敗となるべき");
+
+                // クリップがないというログが出力されることを確認
+                Assert.IsTrue(
+                    result.Logs.Exists(log => log.Contains("TrackWithNullClip") && log.Contains("クリップがありません")),
+                    "clipがnullのTimelineClipはクリップなしとして扱われるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+            }
+        }
+
+        #endregion
     }
 }
