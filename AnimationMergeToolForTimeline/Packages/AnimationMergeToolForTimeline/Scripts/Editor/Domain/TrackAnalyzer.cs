@@ -30,8 +30,24 @@ namespace AnimationMergeTool.Editor.Domain
         /// <returns>TrackInfoのリスト</returns>
         public List<TrackInfo> GetAllAnimationTracks()
         {
-            // 1.3.2で実装予定
-            return new List<TrackInfo>();
+            var result = new List<TrackInfo>();
+
+            if (_timelineAsset == null)
+            {
+                return result;
+            }
+
+            // TimelineAssetから全ての出力トラックを取得し、AnimationTrackのみをフィルタリング
+            foreach (var track in _timelineAsset.GetOutputTracks())
+            {
+                if (track is AnimationTrack animationTrack)
+                {
+                    var trackInfo = new TrackInfo(animationTrack);
+                    result.Add(trackInfo);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
