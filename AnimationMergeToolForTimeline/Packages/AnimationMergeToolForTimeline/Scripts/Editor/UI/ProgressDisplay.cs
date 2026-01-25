@@ -65,7 +65,7 @@ namespace AnimationMergeTool.Editor.UI
         public void Update(string message, float progress)
         {
             CurrentMessage = message ?? string.Empty;
-            CurrentProgress = UnityEngine.Mathf.Clamp01(progress);
+            CurrentProgress = Mathf.Clamp01(progress);
 
             if (IsDisplaying)
             {

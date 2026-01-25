@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using AnimationMergeTool.Editor.Application;
 using UnityEditor;
 using UnityEngine;
@@ -51,20 +53,13 @@ namespace AnimationMergeTool.Editor.UI
             var selectedObjects = Selection.gameObjects;
             if (selectedObjects == null || selectedObjects.Length == 0)
             {
-                return new PlayableDirector[0];
+                return Array.Empty<PlayableDirector>();
             }
 
-            var directors = new System.Collections.Generic.List<PlayableDirector>();
-            foreach (var obj in selectedObjects)
-            {
-                var director = obj.GetComponent<PlayableDirector>();
-                if (director != null)
-                {
-                    directors.Add(director);
-                }
-            }
-
-            return directors.ToArray();
+            return selectedObjects
+                .Select(obj => obj.GetComponent<PlayableDirector>())
+                .Where(director => director != null)
+                .ToArray();
         }
 
         /// <summary>
@@ -76,19 +71,12 @@ namespace AnimationMergeTool.Editor.UI
             var selectedObjects = Selection.objects;
             if (selectedObjects == null || selectedObjects.Length == 0)
             {
-                return new TimelineAsset[0];
+                return Array.Empty<TimelineAsset>();
             }
 
-            var timelineAssets = new System.Collections.Generic.List<TimelineAsset>();
-            foreach (var obj in selectedObjects)
-            {
-                if (obj is TimelineAsset timelineAsset)
-                {
-                    timelineAssets.Add(timelineAsset);
-                }
-            }
-
-            return timelineAssets.ToArray();
+            return selectedObjects
+                .OfType<TimelineAsset>()
+                .ToArray();
         }
 
         /// <summary>

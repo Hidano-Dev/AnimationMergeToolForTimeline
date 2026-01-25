@@ -354,14 +354,4 @@ namespace AnimationMergeTool.Editor.Application
         }
     }
 
-    /// <summary>
-    /// AssetDatabaseを使用したファイル存在チェッカー
-    /// </summary>
-    internal class AssetDatabaseFileExistenceChecker : IFileExistenceChecker
-    {
-        public bool Exists(string path)
-        {
-            return AssetDatabase.LoadAssetAtPath<Object>(path) != null;
-        }
-    }
 }
