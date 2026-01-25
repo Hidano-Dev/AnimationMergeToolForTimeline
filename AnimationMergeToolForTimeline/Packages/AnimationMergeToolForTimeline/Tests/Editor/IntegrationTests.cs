@@ -633,7 +633,7 @@ namespace AnimationMergeTool.Editor.Tests
                 Assert.IsTrue(results[0].IsSuccess, "処理は成功すべき（バインドなしトラックはスキップして継続）");
 
                 // 結果がバインドされたAnimatorに対するものであることを確認
-                Assert.AreEqual(animator, results[0].BoundAnimator, "バインドされたAnimatorの結果であるべき");
+                Assert.AreEqual(animator, results[0].TargetAnimator, "バインドされたAnimatorの結果であるべき");
 
                 // 生成されたファイルパスを記録
                 RecordCreatedAssetPaths(results[0].Logs);

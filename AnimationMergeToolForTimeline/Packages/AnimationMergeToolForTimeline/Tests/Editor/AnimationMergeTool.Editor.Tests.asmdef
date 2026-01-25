@@ -4,7 +4,8 @@
     "references": [
         "AnimationMergeTool.Editor",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Unity.Timeline"
     ],
     "includePlatforms": [
         "Editor"

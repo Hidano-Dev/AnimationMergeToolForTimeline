@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Timeline;
 using UnityEngine.Playables;
@@ -44,6 +45,51 @@ namespace AnimationMergeTool.Editor.Tests
             if (_timelineAsset != null)
             {
                 Object.DestroyImmediate(_timelineAsset);
+            }
+        }
+
+        /// <summary>
+        /// TimelineClipのExtrapolationモードを設定するヘルパーメソッド
+        /// preExtrapolationMode/postExtrapolationModeは読み取り専用のため、SerializedObjectを使用
+        /// </summary>
+        private void SetExtrapolationModes(
+            TimelineClip clip,
+            TimelineClip.ClipExtrapolation? preMode = null,
+            TimelineClip.ClipExtrapolation? postMode = null)
+        {
+            var serializedObject = new SerializedObject(_timelineAsset);
+            var tracksProperty = serializedObject.FindProperty("m_Tracks");
+
+            for (int trackIndex = 0; trackIndex < tracksProperty.arraySize; trackIndex++)
+            {
+                var trackProperty = tracksProperty.GetArrayElementAtIndex(trackIndex);
+                var trackObject = new SerializedObject(trackProperty.objectReferenceValue);
+                var clipsProperty = trackObject.FindProperty("m_Clips");
+
+                for (int clipIndex = 0; clipIndex < clipsProperty.arraySize; clipIndex++)
+                {
+                    var clipProperty = clipsProperty.GetArrayElementAtIndex(clipIndex);
+
+                    var startProperty = clipProperty.FindPropertyRelative("m_Start");
+                    var durationProperty = clipProperty.FindPropertyRelative("m_Duration");
+
+                    if (System.Math.Abs(startProperty.doubleValue - clip.start) < 0.0001 &&
+                        System.Math.Abs(durationProperty.doubleValue - clip.duration) < 0.0001)
+                    {
+                        if (preMode.HasValue)
+                        {
+                            var preProperty = clipProperty.FindPropertyRelative("m_PreExtrapolationMode");
+                            preProperty.intValue = (int)preMode.Value;
+                        }
+                        if (postMode.HasValue)
+                        {
+                            var postProperty = clipProperty.FindPropertyRelative("m_PostExtrapolationMode");
+                            postProperty.intValue = (int)postMode.Value;
+                        }
+                        trackObject.ApplyModifiedPropertiesWithoutUndo();
+                        return;
+                    }
+                }
             }
         }
 
@@ -175,7 +221,7 @@ namespace AnimationMergeTool.Editor.Tests
         public void PreExtrapolation_TimelineClipのpreExtrapolationModeを返す()
         {
             // Arrange
-            _timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(_timelineClip, preMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(_timelineClip, _animationClip);
 
             // Act & Assert
@@ -196,7 +242,7 @@ namespace AnimationMergeTool.Editor.Tests
         public void PostExtrapolation_TimelineClipのpostExtrapolationModeを返す()
         {
             // Arrange
-            _timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(_timelineClip, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(_timelineClip, _animationClip);
 
             // Act & Assert

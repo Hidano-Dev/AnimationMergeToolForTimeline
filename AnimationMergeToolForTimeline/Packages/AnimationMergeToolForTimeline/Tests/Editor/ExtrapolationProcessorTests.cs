@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Timeline;
 using AnimationMergeTool.Editor.Domain;
@@ -36,6 +37,52 @@ namespace AnimationMergeTool.Editor.Tests
             if (_timelineAsset != null)
             {
                 Object.DestroyImmediate(_timelineAsset);
+            }
+        }
+
+        /// <summary>
+        /// TimelineClipのExtrapolationモードを設定するヘルパーメソッド
+        /// preExtrapolationMode/postExtrapolationModeは読み取り専用のため、SerializedObjectを使用
+        /// </summary>
+        private void SetExtrapolationModes(
+            TimelineClip clip,
+            TimelineClip.ClipExtrapolation? preMode = null,
+            TimelineClip.ClipExtrapolation? postMode = null)
+        {
+            var serializedObject = new SerializedObject(_timelineAsset);
+            var tracksProperty = serializedObject.FindProperty("m_Tracks");
+
+            for (int trackIndex = 0; trackIndex < tracksProperty.arraySize; trackIndex++)
+            {
+                var trackProperty = tracksProperty.GetArrayElementAtIndex(trackIndex);
+                var trackObject = new SerializedObject(trackProperty.objectReferenceValue);
+                var clipsProperty = trackObject.FindProperty("m_Clips");
+
+                for (int clipIndex = 0; clipIndex < clipsProperty.arraySize; clipIndex++)
+                {
+                    var clipProperty = clipsProperty.GetArrayElementAtIndex(clipIndex);
+
+                    // クリップのstartとdurationで照合
+                    var startProperty = clipProperty.FindPropertyRelative("m_Start");
+                    var durationProperty = clipProperty.FindPropertyRelative("m_Duration");
+
+                    if (System.Math.Abs(startProperty.doubleValue - clip.start) < 0.0001 &&
+                        System.Math.Abs(durationProperty.doubleValue - clip.duration) < 0.0001)
+                    {
+                        if (preMode.HasValue)
+                        {
+                            var preProperty = clipProperty.FindPropertyRelative("m_PreExtrapolationMode");
+                            preProperty.intValue = (int)preMode.Value;
+                        }
+                        if (postMode.HasValue)
+                        {
+                            var postProperty = clipProperty.FindPropertyRelative("m_PostExtrapolationMode");
+                            postProperty.intValue = (int)postMode.Value;
+                        }
+                        trackObject.ApplyModifiedPropertiesWithoutUndo();
+                        return;
+                    }
+                }
             }
         }
 
@@ -124,7 +171,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0; // クリップは1秒から開始
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            SetExtrapolationModes(timelineClip, preMode: TimelineClip.ClipExtrapolation.None);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 0.5秒はクリップ開始前
@@ -144,7 +191,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0; // クリップは1秒で終了
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.None);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ終了後
@@ -164,7 +211,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            SetExtrapolationModes(timelineClip, preMode: TimelineClip.ClipExtrapolation.None);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ範囲内
@@ -184,7 +231,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.None);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 0.5秒はクリップ範囲内
@@ -204,8 +251,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0; // クリップは1秒〜2秒
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.None;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.None, TimelineClip.ClipExtrapolation.None);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - 開始前
@@ -228,8 +274,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0; // クリップは1秒〜2秒
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.None;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.None, TimelineClip.ClipExtrapolation.None);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - 開始時間（1秒）はクリップ範囲内
@@ -256,7 +301,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 2.0; // クリップは2秒から開始
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, preMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 0.5秒はクリップ開始前
@@ -276,7 +321,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0; // クリップは1秒で終了
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 2.5秒はクリップ終了後
@@ -296,7 +341,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, preMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ範囲内
@@ -316,7 +361,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 0.3秒はクリップ範囲内
@@ -336,8 +381,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 2.0;
             timelineClip.duration = 1.0; // クリップは2秒〜3秒
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.Hold, TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - 開始前
@@ -360,8 +404,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0; // クリップは1秒〜2秒
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.Hold, TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - 開始時間（1秒）はクリップ範囲内
@@ -395,8 +438,7 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0;
             timelineClip.clipIn = 0.5; // ソースクリップの0.5秒からスタート
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.Hold, TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - クリップ開始前（PreExtrapolation Hold）
@@ -422,8 +464,7 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0;
             timelineClip.timeScale = 2.0; // 2倍速
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.Hold, TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - クリップ開始前（PreExtrapolation Hold）
@@ -492,7 +533,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 2.0; // クリップは2秒から開始
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClip, preMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ開始前（0.5秒前）
@@ -513,7 +554,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0; // クリップは1秒で終了
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ終了後
@@ -534,7 +575,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 2.3秒は2周目の0.3秒目
@@ -556,7 +597,7 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0; // Timeline上では1秒
             timelineClip.timeScale = 2.0; // 2倍速で2秒分のアニメーションを再生
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ終了後
@@ -578,7 +619,7 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
             timelineClip.clipIn = 0.5; // ソースクリップの0.5秒からスタート
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ終了後
@@ -600,8 +641,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.Loop, TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.7秒はクリップ範囲内
@@ -621,7 +661,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - ちょうど2秒目（1周完了）
@@ -649,7 +689,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 2.0; // クリップは2秒から開始
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            SetExtrapolationModes(timelineClip, preMode: TimelineClip.ClipExtrapolation.PingPong);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ開始前（0.5秒前）
@@ -670,7 +710,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0; // クリップは1秒で終了
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.PingPong);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ終了後
@@ -691,7 +731,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.PingPong);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - 1.3秒（往路の折り返し後、復路の0.3秒目）
@@ -717,7 +757,7 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0; // Timeline上では1秒
             timelineClip.timeScale = 2.0; // 2倍速で2秒分のアニメーションを再生
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.PingPong);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ終了後
@@ -739,7 +779,7 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
             timelineClip.clipIn = 0.5; // ソースクリップの0.5秒からスタート
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.PingPong);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ終了後
@@ -761,8 +801,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.PingPong, TimelineClip.ClipExtrapolation.PingPong);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.7秒はクリップ範囲内
@@ -782,7 +821,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.PingPong);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - ちょうど2秒目（1往復完了、折り返し点）
@@ -814,13 +853,13 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClipLoop = _animationTrack.CreateClip(_testClip);
             timelineClipLoop.start = 0.0;
             timelineClipLoop.duration = 1.0;
-            timelineClipLoop.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClipLoop, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfoLoop = new ClipInfo(timelineClipLoop, _testClip);
 
             var timelineClipPingPong = _animationTrack.CreateClip(_testClip);
             timelineClipPingPong.start = 0.0;
             timelineClipPingPong.duration = 1.0;
-            timelineClipPingPong.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            SetExtrapolationModes(timelineClipPingPong, postMode: TimelineClip.ClipExtrapolation.PingPong);
             var clipInfoPingPong = new ClipInfo(timelineClipPingPong, _testClip);
 
             // Act & Assert - 1.7秒での比較
@@ -847,7 +886,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 2.0; // クリップは2秒から開始
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, preMode: TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ開始前（0.5秒前）
@@ -868,7 +907,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0; // クリップは1秒で終了
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ終了後（0.5秒後）
@@ -891,8 +930,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.Continue, TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - クリップ開始前
@@ -915,7 +953,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 2.0秒はクリップ終了後（1秒後）
@@ -937,7 +975,7 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0; // Timeline上では1秒
             timelineClip.timeScale = 2.0; // 2倍速で2秒分のアニメーションを再生
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.5秒はクリップ終了後（0.5秒後）
@@ -960,7 +998,7 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0;
             timelineClip.clipIn = 0.5; // ソースクリップの0.5秒からスタート
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, preMode: TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 0.5秒はクリップ開始前（0.5秒前）
@@ -982,8 +1020,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0;
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.Continue, TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act - 1.7秒はクリップ範囲内
@@ -1003,8 +1040,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 1.0;
             timelineClip.duration = 1.0; // クリップは1秒〜2秒
-            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, TimelineClip.ClipExtrapolation.Continue, TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
 
             // Act & Assert - 開始時間（1秒）はクリップ範囲内
@@ -1040,13 +1076,13 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClipHold = _animationTrack.CreateClip(_testClip);
             timelineClipHold.start = 0.0;
             timelineClipHold.duration = 1.0;
-            timelineClipHold.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClipHold, postMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfoHold = new ClipInfo(timelineClipHold, _testClip);
 
             var timelineClipContinue = _animationTrack.CreateClip(_testClip);
             timelineClipContinue.start = 0.0;
             timelineClipContinue.duration = 1.0;
-            timelineClipContinue.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClipContinue, postMode: TimelineClip.ClipExtrapolation.Continue);
             var clipInfoContinue = new ClipInfo(timelineClipContinue, _testClip);
 
             // Act & Assert - 2.0秒での比較
@@ -1686,7 +1722,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.None);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1706,7 +1742,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1735,7 +1771,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1764,7 +1800,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1794,7 +1830,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1851,7 +1887,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1873,7 +1909,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1894,7 +1930,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1915,7 +1951,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Continue);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1936,7 +1972,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.PingPong);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1957,7 +1993,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.None);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 
@@ -1978,7 +2014,7 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = _animationTrack.CreateClip(_testClip);
             timelineClip.start = 0.0;
             timelineClip.duration = 1.0;
-            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            SetExtrapolationModes(timelineClip, postMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfo = new ClipInfo(timelineClip, _testClip);
             var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
 

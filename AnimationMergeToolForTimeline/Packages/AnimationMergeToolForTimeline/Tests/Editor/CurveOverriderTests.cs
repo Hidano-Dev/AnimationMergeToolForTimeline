@@ -614,6 +614,46 @@ namespace AnimationMergeTool.Editor.Tests
         #region ApplyPartialOverrideWithExtrapolation テスト
 
         /// <summary>
+        /// TimelineClipのExtrapolationモードを設定するヘルパーメソッド
+        /// preExtrapolationMode/postExtrapolationModeは読み取り専用のため、SerializedObjectを使用
+        /// </summary>
+        private void SetExtrapolationModesInternal(
+            TimelineAsset timelineAsset,
+            TimelineClip clip,
+            TimelineClip.ClipExtrapolation preMode,
+            TimelineClip.ClipExtrapolation postMode)
+        {
+            var serializedObject = new SerializedObject(timelineAsset);
+            var tracksProperty = serializedObject.FindProperty("m_Tracks");
+
+            for (int trackIndex = 0; trackIndex < tracksProperty.arraySize; trackIndex++)
+            {
+                var trackProperty = tracksProperty.GetArrayElementAtIndex(trackIndex);
+                var trackObject = new SerializedObject(trackProperty.objectReferenceValue);
+                var clipsProperty = trackObject.FindProperty("m_Clips");
+
+                for (int clipIndex = 0; clipIndex < clipsProperty.arraySize; clipIndex++)
+                {
+                    var clipProperty = clipsProperty.GetArrayElementAtIndex(clipIndex);
+
+                    var startProperty = clipProperty.FindPropertyRelative("m_Start");
+                    var durationProperty = clipProperty.FindPropertyRelative("m_Duration");
+
+                    if (System.Math.Abs(startProperty.doubleValue - clip.start) < 0.0001 &&
+                        System.Math.Abs(durationProperty.doubleValue - clip.duration) < 0.0001)
+                    {
+                        var preProperty = clipProperty.FindPropertyRelative("m_PreExtrapolationMode");
+                        preProperty.intValue = (int)preMode;
+                        var postProperty = clipProperty.FindPropertyRelative("m_PostExtrapolationMode");
+                        postProperty.intValue = (int)postMode;
+                        trackObject.ApplyModifiedPropertiesWithoutUndo();
+                        return;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// テスト用のClipInfoを作成するヘルパーメソッド
         /// </summary>
         private ClipInfo CreateTestClipInfo(
@@ -635,8 +675,9 @@ namespace AnimationMergeTool.Editor.Tests
             var timelineClip = track.CreateClip(animClip);
             timelineClip.start = startTime;
             timelineClip.duration = duration;
-            timelineClip.preExtrapolationMode = preExtrapolation;
-            timelineClip.postExtrapolationMode = postExtrapolation;
+
+            // preExtrapolationMode/postExtrapolationModeは読み取り専用のため、SerializedObjectを使用
+            SetExtrapolationModesInternal(timeline, timelineClip, preExtrapolation, postExtrapolation);
 
             return new ClipInfo(timelineClip, animClip);
         }

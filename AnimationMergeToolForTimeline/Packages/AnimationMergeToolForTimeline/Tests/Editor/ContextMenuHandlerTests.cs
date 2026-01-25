@@ -93,7 +93,7 @@ namespace AnimationMergeTool.Editor.Tests
 
             try
             {
-                UnityEditor.Selection.gameObjects = new GameObject[] { go };
+                UnityEditor.Selection.objects = new Object[] { go };
 
                 // Act
                 var directors = ContextMenuHandler.GetSelectedPlayableDirectors();
@@ -120,7 +120,7 @@ namespace AnimationMergeTool.Editor.Tests
 
             try
             {
-                UnityEditor.Selection.gameObjects = new GameObject[] { go1, go2 };
+                UnityEditor.Selection.objects = new Object[] { go1, go2 };
 
                 // Act
                 var directors = ContextMenuHandler.GetSelectedPlayableDirectors();
@@ -223,7 +223,7 @@ namespace AnimationMergeTool.Editor.Tests
 
             try
             {
-                UnityEditor.Selection.gameObjects = new GameObject[] { go1, go2 };
+                UnityEditor.Selection.objects = new Object[] { go1, go2 };
 
                 // Act
                 var directors = ContextMenuHandler.GetSelectedPlayableDirectors();
