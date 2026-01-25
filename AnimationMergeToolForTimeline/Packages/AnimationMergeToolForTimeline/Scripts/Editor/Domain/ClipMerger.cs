@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using AnimationMergeTool.Editor.Domain.Models;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 namespace AnimationMergeTool.Editor.Domain
 {
@@ -42,6 +43,39 @@ namespace AnimationMergeTool.Editor.Domain
         public float GetFrameRate()
         {
             return _frameRate;
+        }
+
+        /// <summary>
+        /// TimelineAssetからフレームレートを取得して設定する
+        /// </summary>
+        /// <param name="timelineAsset">フレームレート取得元のTimelineAsset</param>
+        public void SetFrameRateFromTimeline(TimelineAsset timelineAsset)
+        {
+            if (timelineAsset == null)
+            {
+                return;
+            }
+
+            var frameRate = (float)timelineAsset.editorSettings.frameRate;
+            if (frameRate > 0)
+            {
+                _frameRate = frameRate;
+            }
+        }
+
+        /// <summary>
+        /// TimelineAssetからフレームレートを取得する
+        /// </summary>
+        /// <param name="timelineAsset">フレームレート取得元のTimelineAsset</param>
+        /// <returns>フレームレート（fps）。timelineAssetがnullの場合は0を返す</returns>
+        public static float GetFrameRateFromTimeline(TimelineAsset timelineAsset)
+        {
+            if (timelineAsset == null)
+            {
+                return 0f;
+            }
+
+            return (float)timelineAsset.editorSettings.frameRate;
         }
 
         /// <summary>

@@ -849,5 +849,94 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region フレームレート設定機能テスト
+
+        [Test]
+        public void GetFrameRateFromTimeline_nullを渡すと0を返す()
+        {
+            // Act
+            var result = ClipMerger.GetFrameRateFromTimeline(null);
+
+            // Assert
+            Assert.AreEqual(0f, result, 0.0001f);
+        }
+
+        [Test]
+        public void GetFrameRateFromTimeline_TimelineAssetからフレームレートを取得できる()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+
+            // Act
+            var result = ClipMerger.GetFrameRateFromTimeline(_timelineAsset);
+
+            // Assert
+            // TimelineAssetのデフォルトフレームレートは60fps
+            Assert.IsTrue(result > 0f);
+
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void SetFrameRateFromTimeline_nullを渡しても例外が発生しない()
+        {
+            // Arrange
+            _clipMerger.SetFrameRate(30f);
+
+            // Act & Assert (例外が発生しないことを確認)
+            Assert.DoesNotThrow(() => _clipMerger.SetFrameRateFromTimeline(null));
+            // フレームレートは変更されない
+            Assert.AreEqual(30f, _clipMerger.GetFrameRate(), 0.0001f);
+        }
+
+        [Test]
+        public void SetFrameRateFromTimeline_TimelineAssetからフレームレートが設定される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            _clipMerger.SetFrameRate(30f); // 初期値を設定
+
+            // Act
+            _clipMerger.SetFrameRateFromTimeline(_timelineAsset);
+
+            // Assert
+            // TimelineAssetのデフォルトフレームレートに変更される
+            var expectedFrameRate = (float)_timelineAsset.editorSettings.frameRate;
+            Assert.AreEqual(expectedFrameRate, _clipMerger.GetFrameRate(), 0.0001f);
+
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_TimelineAssetのフレームレートが適用されたAnimationClipを生成できる()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            _clipMerger.SetFrameRateFromTimeline(_timelineAsset);
+
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var expectedFrameRate = (float)_timelineAsset.editorSettings.frameRate;
+            Assert.AreEqual(expectedFrameRate, result.frameRate, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        #endregion
     }
 }
