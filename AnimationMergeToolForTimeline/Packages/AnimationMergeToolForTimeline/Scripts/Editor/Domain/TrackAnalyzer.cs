@@ -370,5 +370,67 @@ namespace AnimationMergeTool.Editor.Domain
 
             return depth;
         }
+
+        /// <summary>
+        /// 階層構造を含めてAnimationTrackに優先順位を割り当てて取得する
+        /// GetOutputTracks()の順序に基づき、下にあるトラック（インデックスが大きい）ほど高い優先順位を持つ
+        /// GroupTrack内のトラックも含めて正しい順序で優先順位を計算する
+        /// </summary>
+        /// <returns>優先順位が設定されたTrackInfoのリスト（優先順位の低い順）</returns>
+        public List<TrackInfo> GetAnimationTracksWithPriorityIncludingHierarchy()
+        {
+            var result = new List<TrackInfo>();
+
+            if (_timelineAsset == null)
+            {
+                return result;
+            }
+
+            // GetOutputTracks()はGroupTrack内のトラックも含めてフラット化された順序で返す
+            // この順序がTimeline上の視覚的な表示順序（上から下）に対応する
+            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
+
+            for (int i = 0; i < outputTracks.Count; i++)
+            {
+                if (outputTracks[i] is AnimationTrack animationTrack)
+                {
+                    var trackInfo = new TrackInfo(animationTrack, i);
+                    result.Add(trackInfo);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 階層構造を含めてトラックリストに優先順位を割り当てる
+        /// GetOutputTracks()の順序に基づいて優先順位を設定する
+        /// 下にあるトラック（インデックスが大きい）ほど高い優先順位を持つ
+        /// </summary>
+        /// <param name="tracks">優先順位を割り当てるトラックリスト</param>
+        public void AssignPrioritiesIncludingHierarchy(List<TrackInfo> tracks)
+        {
+            if (tracks == null || _timelineAsset == null)
+            {
+                return;
+            }
+
+            // GetOutputTracks()はGroupTrack内のトラックも含めてフラット化された順序で返す
+            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
+
+            foreach (var trackInfo in tracks)
+            {
+                if (trackInfo?.Track == null)
+                {
+                    continue;
+                }
+
+                var index = outputTracks.IndexOf(trackInfo.Track);
+                if (index >= 0)
+                {
+                    trackInfo.Priority = index;
+                }
+            }
+        }
     }
 }

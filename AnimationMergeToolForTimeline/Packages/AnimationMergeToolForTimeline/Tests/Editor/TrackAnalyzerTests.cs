@@ -1185,5 +1185,223 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region GetAnimationTracksWithPriorityIncludingHierarchy テスト
+
+        [Test]
+        public void GetAnimationTracksWithPriorityIncludingHierarchy_TimelineAssetがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(null);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriorityIncludingHierarchy();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithPriorityIncludingHierarchy_トラックがない場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriorityIncludingHierarchy();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithPriorityIncludingHierarchy_GroupTrack内のトラックも含めて正しい優先順位を返す()
+        {
+            // Arrange
+            // Timeline上の構造:
+            // - Track1 (ルート)
+            // - Group1
+            //   - Track2 (Group1内)
+            //   - Track3 (Group1内)
+            // - Track4 (ルート)
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var group1 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(group1, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(group1, "Track 3");
+            var track4 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 4");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriorityIncludingHierarchy();
+
+            // Assert
+            Assert.AreEqual(4, result.Count);
+            // GetOutputTracks()の順序に従って優先順位が設定される
+            // Track1 が最初（優先順位最低）、Track4 が最後（優先順位最高）
+            Assert.AreEqual(track1, result[0].Track);
+            Assert.AreEqual(track2, result[1].Track);
+            Assert.AreEqual(track3, result[2].Track);
+            Assert.AreEqual(track4, result[3].Track);
+            // 優先順位は下にあるほど高い
+            Assert.IsTrue(result[0].Priority < result[1].Priority);
+            Assert.IsTrue(result[1].Priority < result[2].Priority);
+            Assert.IsTrue(result[2].Priority < result[3].Priority);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithPriorityIncludingHierarchy_ネストされたGroupTrackも正しく処理する()
+        {
+            // Arrange
+            // Timeline上の構造:
+            // - Group1
+            //   - Track1
+            //   - Group2 (ネスト)
+            //     - Track2
+            // - Track3 (ルート)
+            var group1 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 1");
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(group1, "Track 1");
+            var group2 = _timelineAsset.CreateTrack<GroupTrack>(group1, "Group 2");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(group2, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriorityIncludingHierarchy();
+
+            // Assert
+            Assert.AreEqual(3, result.Count);
+            // 階層構造に関係なく、GetOutputTracks()の順序で優先順位が設定される
+            Assert.AreEqual(track1, result[0].Track);
+            Assert.AreEqual(track2, result[1].Track);
+            Assert.AreEqual(track3, result[2].Track);
+            Assert.IsTrue(result[0].Priority < result[1].Priority);
+            Assert.IsTrue(result[1].Priority < result[2].Priority);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithPriorityIncludingHierarchy_複数のGroupTrackがある場合も正しく処理する()
+        {
+            // Arrange
+            // Timeline上の構造:
+            // - Group1
+            //   - Track1
+            // - Group2
+            //   - Track2
+            // - Track3 (ルート)
+            var group1 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 1");
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(group1, "Track 1");
+            var group2 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 2");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(group2, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriorityIncludingHierarchy();
+
+            // Assert
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(track1, result[0].Track);
+            Assert.AreEqual(track2, result[1].Track);
+            Assert.AreEqual(track3, result[2].Track);
+        }
+
+        #endregion
+
+        #region AssignPrioritiesIncludingHierarchy テスト
+
+        [Test]
+        public void AssignPrioritiesIncludingHierarchy_tracksがnullの場合例外を投げない()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => analyzer.AssignPrioritiesIncludingHierarchy(null));
+        }
+
+        [Test]
+        public void AssignPrioritiesIncludingHierarchy_TimelineAssetがnullの場合何もしない()
+        {
+            // Arrange
+            var track = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track");
+            var trackInfo = new TrackInfo(track);
+            var tracks = new List<TrackInfo> { trackInfo };
+            var analyzer = new TrackAnalyzer(null);
+
+            // Act
+            analyzer.AssignPrioritiesIncludingHierarchy(tracks);
+
+            // Assert
+            Assert.AreEqual(0, trackInfo.Priority); // 変更されていない
+        }
+
+        [Test]
+        public void AssignPrioritiesIncludingHierarchy_GroupTrack内のトラックに正しい優先順位を割り当てる()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var group1 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(group1, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+
+            var trackInfo1 = new TrackInfo(track1);
+            var trackInfo2 = new TrackInfo(track2);
+            var trackInfo3 = new TrackInfo(track3);
+            var tracks = new List<TrackInfo> { trackInfo1, trackInfo2, trackInfo3 };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            analyzer.AssignPrioritiesIncludingHierarchy(tracks);
+
+            // Assert
+            // GetOutputTracks()の順序に基づいて優先順位が設定される
+            Assert.IsTrue(trackInfo1.Priority < trackInfo2.Priority);
+            Assert.IsTrue(trackInfo2.Priority < trackInfo3.Priority);
+        }
+
+        [Test]
+        public void AssignPrioritiesIncludingHierarchy_リスト内の順序に関係なく正しい優先順位が割り当てられる()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var group1 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(group1, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+
+            // リストの順序を逆にする
+            var trackInfo1 = new TrackInfo(track1);
+            var trackInfo2 = new TrackInfo(track2);
+            var trackInfo3 = new TrackInfo(track3);
+            var tracks = new List<TrackInfo> { trackInfo3, trackInfo1, trackInfo2 };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            analyzer.AssignPrioritiesIncludingHierarchy(tracks);
+
+            // Assert
+            // リスト順序に関係なく、Timeline上の位置に基づいて優先順位が設定される
+            Assert.IsTrue(trackInfo1.Priority < trackInfo2.Priority);
+            Assert.IsTrue(trackInfo2.Priority < trackInfo3.Priority);
+        }
+
+        [Test]
+        public void AssignPrioritiesIncludingHierarchy_nullのTrackInfoはスキップされる()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var trackInfo1 = new TrackInfo(track1);
+            var tracks = new List<TrackInfo> { trackInfo1, null };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => analyzer.AssignPrioritiesIncludingHierarchy(tracks));
+        }
+
+        #endregion
     }
 }
