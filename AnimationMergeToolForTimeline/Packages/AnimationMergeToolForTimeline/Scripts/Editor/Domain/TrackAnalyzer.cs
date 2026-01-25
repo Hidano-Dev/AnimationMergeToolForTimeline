@@ -183,36 +183,15 @@ namespace AnimationMergeTool.Editor.Domain
         /// Timeline上で下にあるトラック（インデックスが大きい）ほど高い優先順位を持つ
         /// </summary>
         /// <returns>優先順位が設定されたTrackInfoのリスト（優先順位の低い順）</returns>
+        /// <remarks>
+        /// GetOutputTracks()はGroupTrack内のトラックも含めてフラット化された順序で返すため、
+        /// 階層構造を含めた優先順位計算にも対応しています。
+        /// </remarks>
         public List<TrackInfo> GetAnimationTracksWithPriority()
         {
-            var result = new List<TrackInfo>();
-
-            if (_timelineAsset == null)
-            {
-                return result;
-            }
-
-            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
-            var animationTracks = new List<(int index, AnimationTrack track)>();
-
-            // AnimationTrackのみを抽出しインデックスを記録
-            for (int i = 0; i < outputTracks.Count; i++)
-            {
-                if (outputTracks[i] is AnimationTrack animationTrack)
-                {
-                    animationTracks.Add((i, animationTrack));
-                }
-            }
-
-            // 優先順位を割り当て（インデックスが大きいほど高優先 = 優先順位の数値が大きい）
-            for (int i = 0; i < animationTracks.Count; i++)
-            {
-                var (index, track) = animationTracks[i];
-                var trackInfo = new TrackInfo(track, index);
-                result.Add(trackInfo);
-            }
-
-            return result;
+            // GetAnimationTracksWithPriorityIncludingHierarchy と同一の実装
+            // GetOutputTracks() が階層構造を含めてフラット化した順序で返すため
+            return GetAnimationTracksWithPriorityIncludingHierarchy();
         }
 
         /// <summary>
@@ -221,28 +200,15 @@ namespace AnimationMergeTool.Editor.Domain
         /// 下にあるトラック（インデックスが大きい）ほど高い優先順位を持つ
         /// </summary>
         /// <param name="tracks">優先順位を割り当てるトラックリスト</param>
+        /// <remarks>
+        /// GetOutputTracks()はGroupTrack内のトラックも含めてフラット化された順序で返すため、
+        /// 階層構造を含めた優先順位計算にも対応しています。
+        /// </remarks>
         public void AssignPriorities(List<TrackInfo> tracks)
         {
-            if (tracks == null || _timelineAsset == null)
-            {
-                return;
-            }
-
-            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
-
-            foreach (var trackInfo in tracks)
-            {
-                if (trackInfo?.Track == null)
-                {
-                    continue;
-                }
-
-                var index = outputTracks.IndexOf(trackInfo.Track);
-                if (index >= 0)
-                {
-                    trackInfo.Priority = index;
-                }
-            }
+            // AssignPrioritiesIncludingHierarchy と同一の実装
+            // GetOutputTracks() が階層構造を含めてフラット化した順序で返すため
+            AssignPrioritiesIncludingHierarchy(tracks);
         }
 
         /// <summary>
