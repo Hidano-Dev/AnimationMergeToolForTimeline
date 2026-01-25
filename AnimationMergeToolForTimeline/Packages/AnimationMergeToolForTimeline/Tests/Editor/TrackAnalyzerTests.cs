@@ -332,5 +332,166 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region DetectUnboundTracks テスト
+
+        [Test]
+        public void DetectUnboundTracks_tracksがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.DetectUnboundTracks(null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void DetectUnboundTracks_空のリストの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+            var tracks = new System.Collections.Generic.List<TrackInfo>();
+
+            // Act
+            var result = analyzer.DetectUnboundTracks(tracks);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void DetectUnboundTracks_BoundAnimatorがnullのトラックを検出する()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+
+            var tracks = new System.Collections.Generic.List<TrackInfo>
+            {
+                new TrackInfo(track1), // BoundAnimator = null
+                new TrackInfo(track2)  // BoundAnimator = null
+            };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.DetectUnboundTracks(tracks);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+        }
+
+        [Test]
+        public void DetectUnboundTracks_BoundAnimatorが設定されているトラックは含まない()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+
+            // ダミーのAnimatorを作成
+            var gameObject = new GameObject("Test Animator");
+            var animator = gameObject.AddComponent<Animator>();
+
+            var tracks = new System.Collections.Generic.List<TrackInfo>
+            {
+                new TrackInfo(track1, 0, animator), // BoundAnimator = animator
+                new TrackInfo(track2)               // BoundAnimator = null
+            };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.DetectUnboundTracks(tracks);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(track2, result[0].Track);
+
+            // クリーンアップ
+            Object.DestroyImmediate(gameObject);
+        }
+
+        [Test]
+        public void DetectUnboundTracks_全てバインドされている場合空のリストを返す()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+
+            // ダミーのAnimatorを作成
+            var gameObject = new GameObject("Test Animator");
+            var animator = gameObject.AddComponent<Animator>();
+
+            var tracks = new System.Collections.Generic.List<TrackInfo>
+            {
+                new TrackInfo(track1, 0, animator),
+                new TrackInfo(track2, 0, animator)
+            };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.DetectUnboundTracks(tracks);
+
+            // Assert
+            Assert.AreEqual(0, result.Count);
+
+            // クリーンアップ
+            Object.DestroyImmediate(gameObject);
+        }
+
+        [Test]
+        public void DetectUnboundTracks_nullのTrackInfoは除外される()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+
+            var tracks = new System.Collections.Generic.List<TrackInfo>
+            {
+                new TrackInfo(track1), // BoundAnimator = null
+                null
+            };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.DetectUnboundTracks(tracks);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(track1, result[0].Track);
+        }
+
+        [Test]
+        public void DetectUnboundTracks_エラーログが出力される()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Unbound Track");
+
+            var tracks = new System.Collections.Generic.List<TrackInfo>
+            {
+                new TrackInfo(track1)
+            };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            // Debug.LogErrorの呼び出しを確認（ログを観察するテスト）
+            // Unity Test Frameworkでは LogAssert.Expect でログを検証できる
+            UnityEngine.TestTools.LogAssert.Expect(LogType.Error,
+                "[AnimationMergeTool] トラック \"Unbound Track\" にAnimatorがバインドされていません。");
+
+            var result = analyzer.DetectUnboundTracks(tracks);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+        }
+
+        #endregion
     }
 }

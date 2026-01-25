@@ -109,8 +109,32 @@ namespace AnimationMergeTool.Editor.Domain
         /// <returns>バインドされていないトラックのリスト</returns>
         public List<TrackInfo> DetectUnboundTracks(List<TrackInfo> tracks)
         {
-            // 1.3.5で実装予定
-            return new List<TrackInfo>();
+            var unboundTracks = new List<TrackInfo>();
+
+            if (tracks == null)
+            {
+                return unboundTracks;
+            }
+
+            foreach (var trackInfo in tracks)
+            {
+                if (trackInfo == null)
+                {
+                    continue;
+                }
+
+                // BoundAnimatorがnullの場合、バインドされていないトラックとして検出
+                if (trackInfo.BoundAnimator == null)
+                {
+                    unboundTracks.Add(trackInfo);
+
+                    // エラーログを出力
+                    var trackName = trackInfo.Track != null ? trackInfo.Track.name : "Unknown";
+                    Debug.LogError($"[AnimationMergeTool] トラック \"{trackName}\" にAnimatorがバインドされていません。");
+                }
+            }
+
+            return unboundTracks;
         }
     }
 }
