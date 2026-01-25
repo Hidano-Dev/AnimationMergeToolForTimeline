@@ -1,3 +1,4 @@
+using System;
 using AnimationMergeTool.Editor.Domain.Models;
 using UnityEngine;
 using UnityEngine.Timeline;
@@ -358,8 +359,8 @@ namespace AnimationMergeTool.Editor.Domain
             double nextClipEaseInEnd = nextClip.StartTime + nextClip.EaseInDuration;
 
             // 重なり区間を計算
-            double overlapStart = System.Math.Max(previousClipEaseOutStart, nextClip.StartTime);
-            double overlapEnd = System.Math.Min(previousClip.EndTime, nextClipEaseInEnd);
+            double overlapStart = Math.Max(previousClipEaseOutStart, nextClip.StartTime);
+            double overlapEnd = Math.Min(previousClip.EndTime, nextClipEaseInEnd);
 
             // クリップが時間的に重なっていない、またはブレンド区間が存在しない場合
             if (overlapStart >= overlapEnd)
