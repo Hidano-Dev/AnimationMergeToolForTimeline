@@ -1,7 +1,10 @@
 using NUnit.Framework;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.Timeline;
+using UnityEngine.Playables;
 using AnimationMergeTool.Editor.Domain;
+using AnimationMergeTool.Editor.Domain.Models;
 
 namespace AnimationMergeTool.Editor.Tests
 {
@@ -234,6 +237,324 @@ namespace AnimationMergeTool.Editor.Tests
             Assert.AreEqual("localPosition.x", pair.Binding.propertyName);
             Assert.AreEqual(typeof(Transform), pair.Binding.type);
             Assert.IsNotNull(pair.Curve);
+        }
+
+        #endregion
+
+        #region ApplyTimeOffset テスト
+
+        private TimelineAsset _timelineAsset;
+        private AnimationTrack _animationTrack;
+
+        private void SetUpTimelineForTimeOffsetTests()
+        {
+            _timelineAsset = ScriptableObject.CreateInstance<TimelineAsset>();
+            _animationTrack = _timelineAsset.CreateTrack<AnimationTrack>(null, "Test Track");
+        }
+
+        private void TearDownTimelineForTimeOffsetTests()
+        {
+            if (_timelineAsset != null)
+            {
+                Object.DestroyImmediate(_timelineAsset);
+            }
+        }
+
+        [Test]
+        public void ApplyTimeOffset_nullカーブを渡すとnullを返す()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(null, clipInfo);
+
+            // Assert
+            Assert.IsNull(result);
+
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_nullClipInfoを渡すとnullを返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, null);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void ApplyTimeOffset_空のカーブを渡すと空のカーブを返す()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var curve = new AnimationCurve();
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.keys.Length);
+
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_開始時間オフセットが正しく適用される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(1f, 1f);
+
+            // 開始時間を2秒に設定
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 2.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(2f, result.keys[0].time, 0.0001f); // 0 + 2 = 2
+            Assert.AreEqual(3f, result.keys[1].time, 0.0001f); // 1 + 2 = 3
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_ClipInが正しく適用される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(0.5f, 0.5f);
+            curve.AddKey(1f, 1f);
+            curve.AddKey(1.5f, 1.5f);
+            curve.AddKey(2f, 2f);
+
+            // ClipInを0.5秒に設定（最初の0.5秒をトリミング）
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 2, 2));
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.clipIn = 0.5;
+            timelineClip.duration = 1.5;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // ClipIn=0.5以降のキー（0.5, 1.0, 1.5, 2.0）のうち、duration=1.5以内のもの
+            // 0.5 -> (0.5-0.5)/1 = 0, duration内なのでOK
+            // 1.0 -> (1.0-0.5)/1 = 0.5, duration内なのでOK
+            // 1.5 -> (1.5-0.5)/1 = 1.0, duration内なのでOK
+            // 2.0 -> (2.0-0.5)/1 = 1.5, duration内なのでOK
+            Assert.AreEqual(4, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time, 0.0001f);   // (0.5 - 0.5) = 0
+            Assert.AreEqual(0.5f, result.keys[1].time, 0.0001f); // (1.0 - 0.5) = 0.5
+            Assert.AreEqual(1f, result.keys[2].time, 0.0001f);   // (1.5 - 0.5) = 1.0
+            Assert.AreEqual(1.5f, result.keys[3].time, 0.0001f); // (2.0 - 0.5) = 1.5
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_TimeScaleが正しく適用される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(1f, 1f);
+            curve.AddKey(2f, 2f);
+
+            // TimeScaleを2に設定（2倍速再生）
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 2, 2));
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.timeScale = 2.0;
+            timelineClip.duration = 1.0; // 2倍速なので元の2秒のアニメが1秒で再生される
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // TimeScale=2なので、元のtime / 2 がTimeline上の時間になる
+            // 0 -> 0/2 = 0, duration内なのでOK
+            // 1 -> 1/2 = 0.5, duration内なのでOK
+            // 2 -> 2/2 = 1.0, duration内なのでOK
+            Assert.AreEqual(3, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time, 0.0001f);
+            Assert.AreEqual(0.5f, result.keys[1].time, 0.0001f);
+            Assert.AreEqual(1f, result.keys[2].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_ClipInとTimeScaleと開始時間が複合的に適用される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(1f, 1f);
+            curve.AddKey(2f, 2f);
+            curve.AddKey(3f, 3f);
+            curve.AddKey(4f, 4f);
+
+            // 開始時間=5, ClipIn=1, TimeScale=2
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 4, 4));
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 5.0;
+            timelineClip.clipIn = 1.0;
+            timelineClip.timeScale = 2.0;
+            timelineClip.duration = 1.5; // 2倍速で1.5秒 = 元の3秒分
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // ClipIn=1以降のキー（1, 2, 3, 4）
+            // 1 -> (1-1)/2 = 0, 0 <= 1.5なのでOK -> 5 + 0 = 5
+            // 2 -> (2-1)/2 = 0.5, 0.5 <= 1.5なのでOK -> 5 + 0.5 = 5.5
+            // 3 -> (3-1)/2 = 1.0, 1.0 <= 1.5なのでOK -> 5 + 1.0 = 6.0
+            // 4 -> (4-1)/2 = 1.5, 1.5 <= 1.5なのでOK -> 5 + 1.5 = 6.5
+            Assert.AreEqual(4, result.keys.Length);
+            Assert.AreEqual(5f, result.keys[0].time, 0.0001f);
+            Assert.AreEqual(5.5f, result.keys[1].time, 0.0001f);
+            Assert.AreEqual(6f, result.keys[2].time, 0.0001f);
+            Assert.AreEqual(6.5f, result.keys[3].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_キーフレームの値は変更されない()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 10f);
+            curve.AddKey(1f, 20f);
+            curve.AddKey(2f, 30f);
+
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 2, 2));
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 3.0;
+            timelineClip.duration = 2.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.keys.Length);
+            Assert.AreEqual(10f, result.keys[0].value, 0.0001f);
+            Assert.AreEqual(20f, result.keys[1].value, 0.0001f);
+            Assert.AreEqual(30f, result.keys[2].value, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_タンジェントがTimeScaleに応じて調整される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var curve = new AnimationCurve();
+            var key = new Keyframe(0f, 0f)
+            {
+                inTangent = 1f,
+                outTangent = 2f
+            };
+            curve.AddKey(key);
+
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.timeScale = 2.0;
+            timelineClip.duration = 0.5;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.keys.Length);
+            // TimeScale=2なので、タンジェントは2倍になる
+            Assert.AreEqual(2f, result.keys[0].inTangent, 0.0001f);
+            Assert.AreEqual(4f, result.keys[0].outTangent, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_Durationを超えるキーは除外される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(1f, 1f);
+            curve.AddKey(2f, 2f);
+            curve.AddKey(3f, 3f);
+
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 3, 3));
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.5; // 1.5秒までのキーのみ
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // 0, 1のみ（2, 3はduration=1.5を超えるので除外）
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time, 0.0001f);
+            Assert.AreEqual(1f, result.keys[1].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
         }
 
         #endregion

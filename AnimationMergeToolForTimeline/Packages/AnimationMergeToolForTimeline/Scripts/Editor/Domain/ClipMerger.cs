@@ -69,6 +69,83 @@ namespace AnimationMergeTool.Editor.Domain
         }
 
         /// <summary>
+        /// カーブに時間オフセットを適用する
+        /// ClipInfoの情報（開始時間、ClipIn、TimeScale）に基づいてキーフレームの時間を調整する
+        /// </summary>
+        /// <param name="curve">元のAnimationCurve</param>
+        /// <param name="clipInfo">ClipInfo（開始時間、ClipIn、TimeScale情報を含む）</param>
+        /// <returns>時間オフセットが適用された新しいAnimationCurve</returns>
+        public AnimationCurve ApplyTimeOffset(AnimationCurve curve, ClipInfo clipInfo)
+        {
+            if (curve == null || clipInfo == null)
+            {
+                return null;
+            }
+
+            var originalKeys = curve.keys;
+            if (originalKeys.Length == 0)
+            {
+                return new AnimationCurve();
+            }
+
+            var newCurve = new AnimationCurve();
+
+            // ClipInfoから時間パラメータを取得
+            var startTime = (float)clipInfo.StartTime;
+            var clipIn = (float)clipInfo.ClipIn;
+            var timeScale = (float)clipInfo.TimeScale;
+            var duration = (float)clipInfo.Duration;
+
+            // TimeScaleが0以下の場合は無効なので1として扱う
+            if (timeScale <= 0)
+            {
+                timeScale = 1f;
+            }
+
+            foreach (var key in originalKeys)
+            {
+                // 1. ClipInを適用（元のカーブのClipIn以降の部分のみ使用）
+                var sourceTime = key.time;
+
+                // ClipInより前のキーはスキップ
+                if (sourceTime < clipIn)
+                {
+                    continue;
+                }
+
+                // 2. TimeScaleを適用して実際の再生時間を計算
+                // ClipIn分をオフセットしてから、TimeScaleで割る
+                var localTime = (sourceTime - clipIn) / timeScale;
+
+                // 3. クリップのDurationを超えるキーはスキップ
+                if (localTime > duration)
+                {
+                    continue;
+                }
+
+                // 4. Timeline上の開始時間を加算
+                var outputTime = startTime + localTime;
+
+                // 新しいキーフレームを作成
+                var newKey = new Keyframe(outputTime, key.value)
+                {
+                    inTangent = key.inTangent * timeScale,
+                    outTangent = key.outTangent * timeScale,
+                    inWeight = key.inWeight,
+                    outWeight = key.outWeight,
+                    weightedMode = key.weightedMode
+                };
+
+                newCurve.AddKey(newKey);
+            }
+
+            // カーブの補間モードを維持するため、元のカーブの設定を可能な限りコピー
+            // （AddKeyで追加したキーのtangentModeは個別に設定する必要がある）
+
+            return newCurve;
+        }
+
+        /// <summary>
         /// AnimationClipから全てのAnimationCurveとEditorCurveBinding情報を取得する
         /// </summary>
         /// <param name="clip">取得元のAnimationClip</param>
