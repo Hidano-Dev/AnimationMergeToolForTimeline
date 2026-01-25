@@ -404,6 +404,184 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region ApplyFullOverride テスト
+
+        [Test]
+        public void ApplyFullOverride_高優先順位カーブで完全にカバーする場合_高優先順位カーブを返す()
+        {
+            // Arrange
+            // 低優先順位: 0秒から2秒まで
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(2f, 2f);
+
+            // 高優先順位: 0秒から3秒まで（低優先順位を完全にカバー）
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 10f);
+            higherCurve.AddKey(3f, 30f);
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(lowerCurve, higherCurve, 0f, 3f);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(10f, result.keys[0].value);
+            Assert.AreEqual(3f, result.keys[1].time);
+            Assert.AreEqual(30f, result.keys[1].value);
+        }
+
+        [Test]
+        public void ApplyFullOverride_高優先順位カーブがnullの場合_低優先順位カーブを返す()
+        {
+            // Arrange
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(1f, 1f);
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(lowerCurve, null, 0f, 1f);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].value);
+            Assert.AreEqual(1f, result.keys[1].value);
+        }
+
+        [Test]
+        public void ApplyFullOverride_低優先順位カーブがnullの場合_高優先順位カーブを返す()
+        {
+            // Arrange
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 10f);
+            higherCurve.AddKey(1f, 20f);
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(null, higherCurve, 0f, 1f);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(10f, result.keys[0].value);
+            Assert.AreEqual(20f, result.keys[1].value);
+        }
+
+        [Test]
+        public void ApplyFullOverride_両方のカーブがnullの場合_空のカーブを返す()
+        {
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(null, null, 0f, 1f);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.keys.Length);
+        }
+
+        [Test]
+        public void ApplyFullOverride_部分的重なりの場合_ApplyPartialOverrideが呼ばれる()
+        {
+            // Arrange
+            // 低優先順位: 0秒から3秒まで
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(3f, 3f);
+
+            // 高優先順位: 1秒から2秒まで（部分的にのみカバー）
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(1f, 10f);
+            higherCurve.AddKey(2f, 20f);
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(lowerCurve, higherCurve, 1f, 2f);
+
+            // Assert
+            // 部分的重なりの場合、低優先順位の範囲外キー + 高優先順位のキーが含まれる
+            Assert.AreEqual(4, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);  // 低優先順位から
+            Assert.AreEqual(0f, result.keys[0].value);
+            Assert.AreEqual(1f, result.keys[1].time);  // 高優先順位から
+            Assert.AreEqual(10f, result.keys[1].value);
+            Assert.AreEqual(2f, result.keys[2].time);  // 高優先順位から
+            Assert.AreEqual(20f, result.keys[2].value);
+            Assert.AreEqual(3f, result.keys[3].time);  // 低優先順位から
+            Assert.AreEqual(3f, result.keys[3].value);
+        }
+
+        [Test]
+        public void ApplyFullOverride_低優先順位カーブが空の場合_高優先順位カーブを返す()
+        {
+            // Arrange
+            var lowerCurve = new AnimationCurve();  // キーなし
+
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 10f);
+            higherCurve.AddKey(1f, 20f);
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(lowerCurve, higherCurve, 0f, 1f);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(10f, result.keys[0].value);
+            Assert.AreEqual(20f, result.keys[1].value);
+        }
+
+        [Test]
+        public void ApplyFullOverride_高優先順位が前半のみカバーする場合_部分的Overrideが適用される()
+        {
+            // Arrange
+            // 低優先順位: 0秒から4秒まで
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(4f, 4f);
+
+            // 高優先順位: 0秒から2秒まで（前半のみカバー）
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 100f);
+            higherCurve.AddKey(2f, 200f);
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(lowerCurve, higherCurve, 0f, 2f);
+
+            // Assert
+            // 高優先順位区間（0-2秒）外の4秒のキー + 高優先順位のキー
+            Assert.AreEqual(3, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(100f, result.keys[0].value);  // 高優先順位
+            Assert.AreEqual(2f, result.keys[1].time);
+            Assert.AreEqual(200f, result.keys[1].value);  // 高優先順位
+            Assert.AreEqual(4f, result.keys[2].time);
+            Assert.AreEqual(4f, result.keys[2].value);    // 低優先順位から残る
+        }
+
+        [Test]
+        public void ApplyFullOverride_元のカーブを変更しない()
+        {
+            // Arrange
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(1f, 1f);
+
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 10f);
+            higherCurve.AddKey(1f, 20f);
+
+            var originalLowerKeyCount = lowerCurve.keys.Length;
+            var originalHigherKeyCount = higherCurve.keys.Length;
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(lowerCurve, higherCurve, 0f, 1f);
+
+            // Assert
+            // 元のカーブは変更されていないことを確認
+            Assert.AreEqual(originalLowerKeyCount, lowerCurve.keys.Length);
+            Assert.AreEqual(originalHigherKeyCount, higherCurve.keys.Length);
+            // 結果は別のインスタンス
+            Assert.AreNotSame(lowerCurve, result);
+            Assert.AreNotSame(higherCurve, result);
+        }
+
+        #endregion
+
         #region CurveBindingPair テスト
 
         [Test]
