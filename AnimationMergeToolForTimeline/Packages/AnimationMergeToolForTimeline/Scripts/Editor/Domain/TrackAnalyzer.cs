@@ -84,8 +84,22 @@ namespace AnimationMergeTool.Editor.Domain
         /// <returns>Muteされていないトラックのリスト</returns>
         public List<TrackInfo> FilterNonMutedTracks(List<TrackInfo> tracks)
         {
-            // 1.3.4で実装予定
-            return new List<TrackInfo>();
+            var result = new List<TrackInfo>();
+
+            if (tracks == null)
+            {
+                return result;
+            }
+
+            foreach (var trackInfo in tracks)
+            {
+                if (trackInfo != null && !trackInfo.IsMuted)
+                {
+                    result.Add(trackInfo);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

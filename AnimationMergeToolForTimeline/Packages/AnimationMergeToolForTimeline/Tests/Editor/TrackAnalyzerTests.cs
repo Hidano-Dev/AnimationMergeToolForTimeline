@@ -204,5 +204,133 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region FilterNonMutedTracks テスト
+
+        [Test]
+        public void FilterNonMutedTracks_tracksがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.FilterNonMutedTracks(null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void FilterNonMutedTracks_空のリストの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+            var tracks = new System.Collections.Generic.List<TrackInfo>();
+
+            // Act
+            var result = analyzer.FilterNonMutedTracks(tracks);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void FilterNonMutedTracks_Muteされていないトラックのみを返す()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+            track2.muted = true; // Mute状態に設定
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+
+            var tracks = new System.Collections.Generic.List<TrackInfo>
+            {
+                new TrackInfo(track1),
+                new TrackInfo(track2),
+                new TrackInfo(track3)
+            };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.FilterNonMutedTracks(tracks);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+            Assert.AreEqual(track1, result[0].Track);
+            Assert.AreEqual(track3, result[1].Track);
+        }
+
+        [Test]
+        public void FilterNonMutedTracks_全てMuteされている場合空のリストを返す()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            track1.muted = true;
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+            track2.muted = true;
+
+            var tracks = new System.Collections.Generic.List<TrackInfo>
+            {
+                new TrackInfo(track1),
+                new TrackInfo(track2)
+            };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.FilterNonMutedTracks(tracks);
+
+            // Assert
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void FilterNonMutedTracks_全てMuteされていない場合全てのトラックを返す()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+
+            var tracks = new System.Collections.Generic.List<TrackInfo>
+            {
+                new TrackInfo(track1),
+                new TrackInfo(track2)
+            };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.FilterNonMutedTracks(tracks);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+        }
+
+        [Test]
+        public void FilterNonMutedTracks_nullのTrackInfoは除外される()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+
+            var tracks = new System.Collections.Generic.List<TrackInfo>
+            {
+                new TrackInfo(track1),
+                null,
+                new TrackInfo(track1)
+            };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.FilterNonMutedTracks(tracks);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+        }
+
+        #endregion
     }
 }
