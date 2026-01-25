@@ -20,7 +20,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
     /// </summary>
     public class FileNameGenerator
     {
-        private readonly IFileExistenceChecker _fileExistenceChecker;
+        private IFileExistenceChecker _fileExistenceChecker;
 
         /// <summary>
         /// デフォルトコンストラクタ（ファイル存在確認なし）
@@ -35,6 +35,15 @@ namespace AnimationMergeTool.Editor.Infrastructure
         /// </summary>
         /// <param name="fileExistenceChecker">ファイル存在確認を行うオブジェクト</param>
         public FileNameGenerator(IFileExistenceChecker fileExistenceChecker)
+        {
+            _fileExistenceChecker = fileExistenceChecker;
+        }
+
+        /// <summary>
+        /// ファイル存在確認オブジェクトを設定する
+        /// </summary>
+        /// <param name="fileExistenceChecker">ファイル存在確認を行うオブジェクト</param>
+        public void SetFileExistenceChecker(IFileExistenceChecker fileExistenceChecker)
         {
             _fileExistenceChecker = fileExistenceChecker;
         }
