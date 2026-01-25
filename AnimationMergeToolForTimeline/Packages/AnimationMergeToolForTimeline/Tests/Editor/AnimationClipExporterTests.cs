@@ -311,6 +311,187 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region SaveAsAsset テスト
+
+        [Test]
+        public void SaveAsAsset_有効なAnimationClipをAssets直下に保存できる()
+        {
+            // Arrange
+            var curveBindingPairs = CreateTestCurveBindingPairs();
+            var clip = _exporter.CreateAnimationClip(curveBindingPairs, 60f);
+            var timelineAssetName = "TestTimeline_" + System.Guid.NewGuid().ToString("N").Substring(0, 8);
+            var animatorName = "TestAnimator";
+
+            // Act
+            var savedPath = _exporter.SaveAsAsset(clip, timelineAssetName, animatorName, "Assets");
+
+            // Assert
+            try
+            {
+                Assert.IsNotNull(savedPath);
+                Assert.IsTrue(savedPath.StartsWith("Assets/"));
+                Assert.IsTrue(savedPath.EndsWith(".anim"));
+
+                // アセットが実際に存在するか確認
+                var loadedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(savedPath);
+                Assert.IsNotNull(loadedClip);
+            }
+            finally
+            {
+                // クリーンアップ
+                if (!string.IsNullOrEmpty(savedPath) && AssetDatabase.LoadAssetAtPath<AnimationClip>(savedPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(savedPath);
+                }
+            }
+        }
+
+        [Test]
+        public void SaveAsAsset_clipがnullの場合nullを返す()
+        {
+            // Act
+            var savedPath = _exporter.SaveAsAsset(null, "TestTimeline", "TestAnimator", "Assets");
+
+            // Assert
+            Assert.IsNull(savedPath);
+        }
+
+        [Test]
+        public void SaveAsAsset_存在しないディレクトリの場合nullを返す()
+        {
+            // Arrange
+            var curveBindingPairs = CreateTestCurveBindingPairs();
+            var clip = _exporter.CreateAnimationClip(curveBindingPairs, 60f);
+
+            // Act
+            var savedPath = _exporter.SaveAsAsset(clip, "TestTimeline", "TestAnimator", "Assets/NonExistentFolder12345");
+
+            // Assert
+            Assert.IsNull(savedPath);
+        }
+
+        [Test]
+        public void SaveAsAsset_ディレクトリが空文字の場合Assetsに保存される()
+        {
+            // Arrange
+            var curveBindingPairs = CreateTestCurveBindingPairs();
+            var clip = _exporter.CreateAnimationClip(curveBindingPairs, 60f);
+            var timelineAssetName = "TestTimeline_" + System.Guid.NewGuid().ToString("N").Substring(0, 8);
+            var animatorName = "TestAnimator";
+
+            // Act
+            var savedPath = _exporter.SaveAsAsset(clip, timelineAssetName, animatorName, "");
+
+            // Assert
+            try
+            {
+                Assert.IsNotNull(savedPath);
+                Assert.IsTrue(savedPath.StartsWith("Assets/"));
+            }
+            finally
+            {
+                // クリーンアップ
+                if (!string.IsNullOrEmpty(savedPath) && AssetDatabase.LoadAssetAtPath<AnimationClip>(savedPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(savedPath);
+                }
+            }
+        }
+
+        [Test]
+        public void SaveAsAsset_ファイル名が正しい形式で生成される()
+        {
+            // Arrange
+            var curveBindingPairs = CreateTestCurveBindingPairs();
+            var clip = _exporter.CreateAnimationClip(curveBindingPairs, 60f);
+            var timelineAssetName = "MyTimeline";
+            var animatorName = "MyAnimator";
+
+            // Act
+            var savedPath = _exporter.SaveAsAsset(clip, timelineAssetName, animatorName, "Assets");
+
+            // Assert
+            try
+            {
+                Assert.IsNotNull(savedPath);
+                Assert.IsTrue(savedPath.Contains("MyTimeline_MyAnimator_Merged"));
+            }
+            finally
+            {
+                // クリーンアップ
+                if (!string.IsNullOrEmpty(savedPath) && AssetDatabase.LoadAssetAtPath<AnimationClip>(savedPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(savedPath);
+                }
+            }
+        }
+
+        #endregion
+
+        #region ExportToAsset テスト
+
+        [Test]
+        public void ExportToAsset_MergeResultとカーブからアセットを生成して保存できる()
+        {
+            // Arrange
+            var mergeResult = new MergeResult(null);
+            var curveBindingPairs = CreateTestCurveBindingPairs();
+            var timelineAssetName = "TestTimeline_" + System.Guid.NewGuid().ToString("N").Substring(0, 8);
+            var animatorName = "TestAnimator";
+
+            // Act
+            var savedPath = _exporter.ExportToAsset(mergeResult, curveBindingPairs, timelineAssetName, animatorName, 60f, "Assets");
+
+            // Assert
+            try
+            {
+                Assert.IsNotNull(savedPath);
+                Assert.IsTrue(mergeResult.IsSuccess);
+                Assert.IsTrue(mergeResult.Logs.Exists(log => log.Contains("アセットを保存しました")));
+            }
+            finally
+            {
+                // クリーンアップ
+                if (!string.IsNullOrEmpty(savedPath) && AssetDatabase.LoadAssetAtPath<AnimationClip>(savedPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(savedPath);
+                }
+            }
+        }
+
+        [Test]
+        public void ExportToAsset_カーブが空の場合nullを返す()
+        {
+            // Arrange
+            var mergeResult = new MergeResult(null);
+            var curveBindingPairs = new List<CurveBindingPair>();
+
+            // Act
+            var savedPath = _exporter.ExportToAsset(mergeResult, curveBindingPairs, "TestTimeline", "TestAnimator", 60f, "Assets");
+
+            // Assert
+            Assert.IsNull(savedPath);
+            Assert.IsFalse(mergeResult.IsSuccess);
+        }
+
+        [Test]
+        public void ExportToAsset_存在しないディレクトリの場合エラーログを追加する()
+        {
+            // Arrange
+            var mergeResult = new MergeResult(null);
+            var curveBindingPairs = CreateTestCurveBindingPairs();
+
+            // Act
+            var savedPath = _exporter.ExportToAsset(mergeResult, curveBindingPairs, "TestTimeline", "TestAnimator", 60f, "Assets/NonExistentFolder12345");
+
+            // Assert
+            Assert.IsNull(savedPath);
+            Assert.IsFalse(mergeResult.IsSuccess);
+            Assert.IsTrue(mergeResult.Logs.Exists(log => log.Contains("[Error]")));
+        }
+
+        #endregion
+
         #region ヘルパーメソッド
 
         /// <summary>

@@ -138,5 +138,98 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
             return clip;
         }
+
+        /// <summary>
+        /// AnimationClipをアセットとして保存する
+        /// </summary>
+        /// <param name="clip">保存するAnimationClip</param>
+        /// <param name="timelineAssetName">TimelineAssetの名前（ファイル名生成用）</param>
+        /// <param name="animatorName">Animatorの名前（ファイル名生成用）</param>
+        /// <param name="directory">保存先ディレクトリ（デフォルト: "Assets"）</param>
+        /// <returns>保存されたアセットのパス、失敗時はnull</returns>
+        public string SaveAsAsset(
+            AnimationClip clip,
+            string timelineAssetName,
+            string animatorName,
+            string directory = "Assets")
+        {
+            if (clip == null)
+            {
+                Debug.LogError("保存するAnimationClipがnullです。");
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(directory))
+            {
+                directory = "Assets";
+            }
+
+            // ディレクトリが存在しない場合はエラー
+            if (!AssetDatabase.IsValidFolder(directory))
+            {
+                Debug.LogError($"保存先ディレクトリが存在しません: {directory}");
+                return null;
+            }
+
+            // ファイルパスを生成
+            string filePath;
+            try
+            {
+                filePath = _fileNameGenerator.GenerateUniqueFilePath(directory, timelineAssetName, animatorName);
+            }
+            catch (System.InvalidOperationException)
+            {
+                // IFileExistenceCheckerが設定されていない場合は基本ファイル名を使用
+                var baseName = _fileNameGenerator.GenerateBaseName(timelineAssetName, animatorName);
+                filePath = $"{directory.TrimEnd('/', '\\')}/{baseName}";
+            }
+
+            // アセットとして保存
+            AssetDatabase.CreateAsset(clip, filePath);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log($"AnimationClipを保存しました: {filePath}");
+
+            return filePath;
+        }
+
+        /// <summary>
+        /// MergeResultからAnimationClipを生成してアセットとして保存する
+        /// </summary>
+        /// <param name="mergeResult">マージ結果</param>
+        /// <param name="curveBindingPairs">カーブバインディングペアのリスト</param>
+        /// <param name="timelineAssetName">TimelineAssetの名前（ファイル名生成用）</param>
+        /// <param name="animatorName">Animatorの名前（ファイル名生成用）</param>
+        /// <param name="frameRate">フレームレート（デフォルト: 60fps）</param>
+        /// <param name="directory">保存先ディレクトリ（デフォルト: "Assets"）</param>
+        /// <returns>保存されたアセットのパス、失敗時はnull</returns>
+        public string ExportToAsset(
+            MergeResult mergeResult,
+            List<CurveBindingPair> curveBindingPairs,
+            string timelineAssetName,
+            string animatorName,
+            float frameRate = DefaultFrameRate,
+            string directory = "Assets")
+        {
+            // AnimationClipを生成
+            var clip = CreateAnimationClip(mergeResult, curveBindingPairs, frameRate);
+            if (clip == null)
+            {
+                return null;
+            }
+
+            // アセットとして保存
+            var savedPath = SaveAsAsset(clip, timelineAssetName, animatorName, directory);
+            if (savedPath != null)
+            {
+                mergeResult.AddLog($"アセットを保存しました: {savedPath}");
+            }
+            else
+            {
+                mergeResult.AddErrorLog("アセットの保存に失敗しました。");
+            }
+
+            return savedPath;
+        }
     }
 }
