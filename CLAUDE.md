@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ドキュメント
+
+プロジェクトの詳細な仕様やテスト要件は以下のドキュメントを参照してください：
+
+- `AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline/Docs/要件定義書.md` - 正式な要件定義書
+- `AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline/Docs/QAシート.md` - 要件確認シート（参考資料）
+
+**重要**: 開発を開始する前に、必ず要件定義書を確認してください。
+
 ## プロジェクト概要
 
 Unity 6 (6000.0.64f1) で構築された、タイムラインシステム向けのアニメーション結合ツール。
