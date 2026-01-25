@@ -1,0 +1,19 @@
+{
+  "name": "com.hidano.animation-merge-tool",
+  "version": "0.1.0-preview.1",
+  "displayName": "Animation Merge Tool for Timeline",
+  "description": "Timeline上の複数のAnimationTrackを単一のAnimationClipに結合するエディタ拡張ツール",
+  "unity": "6000.0",
+  "dependencies": {
+    "com.unity.timeline": "1.8.10"
+  },
+  "keywords": [
+    "timeline",
+    "animation",
+    "merge",
+    "editor"
+  ],
+  "author": {
+    "name": "Hidano"
+  }
+}
