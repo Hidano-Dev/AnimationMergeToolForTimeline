@@ -130,5 +130,95 @@ namespace AnimationMergeTool.Editor.Domain
                 EaseOutDuration = clipInfo.EaseOutDuration
             };
         }
+
+        /// <summary>
+        /// 指定時間におけるブレンドウェイトを計算する
+        /// クリップのローカル時間とブレンド情報から、0〜1のウェイト値を返す
+        /// </summary>
+        /// <param name="clipInfo">クリップ情報</param>
+        /// <param name="globalTime">タイムライン上のグローバル時間</param>
+        /// <returns>ブレンドウェイト（0.0〜1.0）</returns>
+        public float CalculateBlendWeight(ClipInfo clipInfo, double globalTime)
+        {
+            if (clipInfo == null)
+            {
+                return 0f;
+            }
+
+            // クリップの範囲外の場合
+            if (globalTime < clipInfo.StartTime || globalTime > clipInfo.EndTime)
+            {
+                return 0f;
+            }
+
+            var blendInfo = GetBlendInfo(clipInfo);
+            float weight = 1f;
+
+            // EaseIn処理（クリップ開始からEaseInDuration期間）
+            if (blendInfo.HasEaseIn)
+            {
+                double easeInEndTime = clipInfo.StartTime + blendInfo.EaseInDuration;
+                if (globalTime < easeInEndTime)
+                {
+                    // EaseIn区間内：カーブを評価
+                    double normalizedTime = (globalTime - clipInfo.StartTime) / blendInfo.EaseInDuration;
+                    weight *= blendInfo.BlendInCurve.Evaluate((float)normalizedTime);
+                }
+            }
+
+            // EaseOut処理（クリップ終了からEaseOutDuration前）
+            if (blendInfo.HasEaseOut)
+            {
+                double easeOutStartTime = clipInfo.EndTime - blendInfo.EaseOutDuration;
+                if (globalTime > easeOutStartTime)
+                {
+                    // EaseOut区間内：カーブを評価
+                    double normalizedTime = (globalTime - easeOutStartTime) / blendInfo.EaseOutDuration;
+                    weight *= blendInfo.BlendOutCurve.Evaluate((float)normalizedTime);
+                }
+            }
+
+            return Mathf.Clamp01(weight);
+        }
+
+        /// <summary>
+        /// BlendInfoとクリップ時間情報から直接ブレンドウェイトを計算する
+        /// </summary>
+        /// <param name="blendInfo">ブレンド情報</param>
+        /// <param name="localTime">クリップ内のローカル時間</param>
+        /// <param name="clipDuration">クリップの長さ</param>
+        /// <returns>ブレンドウェイト（0.0〜1.0）</returns>
+        public float CalculateBlendWeight(BlendInfo blendInfo, double localTime, double clipDuration)
+        {
+            if (clipDuration <= 0)
+            {
+                return 0f;
+            }
+
+            // クリップの範囲外の場合
+            if (localTime < 0 || localTime > clipDuration)
+            {
+                return 0f;
+            }
+
+            float weight = 1f;
+
+            // EaseIn処理
+            if (blendInfo.HasEaseIn && localTime < blendInfo.EaseInDuration)
+            {
+                double normalizedTime = localTime / blendInfo.EaseInDuration;
+                weight *= blendInfo.BlendInCurve.Evaluate((float)normalizedTime);
+            }
+
+            // EaseOut処理
+            double easeOutStartTime = clipDuration - blendInfo.EaseOutDuration;
+            if (blendInfo.HasEaseOut && localTime > easeOutStartTime)
+            {
+                double normalizedTime = (localTime - easeOutStartTime) / blendInfo.EaseOutDuration;
+                weight *= blendInfo.BlendOutCurve.Evaluate((float)normalizedTime);
+            }
+
+            return Mathf.Clamp01(weight);
+        }
     }
 }
