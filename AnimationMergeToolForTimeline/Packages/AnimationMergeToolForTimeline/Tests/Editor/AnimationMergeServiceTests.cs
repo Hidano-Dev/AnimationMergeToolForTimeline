@@ -768,5 +768,191 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region タスク10.1.2 ERR-002 対象トラック0件のエラー処理 テスト
+
+        [Test]
+        public void MergeFromPlayableDirector_対象トラック0件の場合エラーログを出力して処理終了する()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+
+            // AnimationTrackを作成するがAnimatorをバインドしない
+            var track = timeline.CreateTrack<AnimationTrack>(null, "UnboundTrack");
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            director.playableAsset = timeline;
+            // Animatorをバインドしない → 有効なトラックが0件になる
+
+            try
+            {
+                // Act
+                // ログをキャプチャするためにログハンドラを設定
+                var capturedLogs = new List<string>();
+                var originalLogHandler = Debug.unityLogger.logHandler;
+                var testLogHandler = new TestLogHandler(originalLogHandler, capturedLogs);
+                Debug.unityLogger.logHandler = testLogHandler;
+
+                try
+                {
+                    var results = _service.MergeFromPlayableDirector(director);
+
+                    // Assert
+                    Assert.IsNotNull(results);
+                    Assert.AreEqual(0, results.Count, "対象トラックが0件の場合、空のリストを返すべき");
+
+                    // エラーログが出力されたことを確認
+                    Assert.IsTrue(
+                        capturedLogs.Exists(log =>
+                            log.Contains("[AnimationMergeTool]") &&
+                            (log.Contains("バインドされたAnimatorが見つかりません") || log.Contains("バインドされていません"))),
+                        "対象トラック0件のエラーログが出力されるべき");
+                }
+                finally
+                {
+                    Debug.unityLogger.logHandler = originalLogHandler;
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        [Test]
+        public void MergeFromTimelineAsset_有効なトラック0件の場合エラーログを出力して処理終了する()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+
+            // 全てのトラックをMuteにして有効なトラックを0件にする
+            var track = timeline.CreateTrack<AnimationTrack>(null, "MutedTrack");
+            track.muted = true;
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act
+                // ログをキャプチャするためにログハンドラを設定
+                var capturedLogs = new List<string>();
+                var originalLogHandler = Debug.unityLogger.logHandler;
+                var testLogHandler = new TestLogHandler(originalLogHandler, capturedLogs);
+                Debug.unityLogger.logHandler = testLogHandler;
+
+                try
+                {
+                    var results = _service.MergeFromTimelineAsset(timeline);
+
+                    // Assert
+                    Assert.IsNotNull(results);
+                    Assert.AreEqual(0, results.Count, "有効なトラックが0件の場合、空のリストを返すべき");
+
+                    // エラーログが出力されたことを確認
+                    Assert.IsTrue(
+                        capturedLogs.Exists(log =>
+                            log.Contains("[AnimationMergeTool]") &&
+                            log.Contains("有効なAnimationTrackが見つかりません")),
+                        "有効なトラック0件のエラーログが出力されるべき");
+                }
+                finally
+                {
+                    Debug.unityLogger.logHandler = originalLogHandler;
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        [Test]
+        public void MergeFromTimelineAsset_AnimationTrackがない場合エラーログを出力して処理終了する()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            // AnimationTrackを追加しない（空のTimeline）
+
+            try
+            {
+                // Act
+                // ログをキャプチャするためにログハンドラを設定
+                var capturedLogs = new List<string>();
+                var originalLogHandler = Debug.unityLogger.logHandler;
+                var testLogHandler = new TestLogHandler(originalLogHandler, capturedLogs);
+                Debug.unityLogger.logHandler = testLogHandler;
+
+                try
+                {
+                    var results = _service.MergeFromTimelineAsset(timeline);
+
+                    // Assert
+                    Assert.IsNotNull(results);
+                    Assert.AreEqual(0, results.Count, "AnimationTrackがない場合、空のリストを返すべき");
+
+                    // エラーログが出力されたことを確認
+                    Assert.IsTrue(
+                        capturedLogs.Exists(log =>
+                            log.Contains("[AnimationMergeTool]") &&
+                            log.Contains("有効なAnimationTrackが見つかりません")),
+                        "AnimationTrack0件のエラーログが出力されるべき");
+                }
+                finally
+                {
+                    Debug.unityLogger.logHandler = originalLogHandler;
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+            }
+        }
+
+        /// <summary>
+        /// テスト用のログハンドラ
+        /// ログメッセージをキャプチャするために使用
+        /// </summary>
+        private class TestLogHandler : ILogHandler
+        {
+            private readonly ILogHandler _originalHandler;
+            private readonly List<string> _capturedLogs;
+
+            public TestLogHandler(ILogHandler originalHandler, List<string> capturedLogs)
+            {
+                _originalHandler = originalHandler;
+                _capturedLogs = capturedLogs;
+            }
+
+            public void LogFormat(LogType logType, Object context, string format, params object[] args)
+            {
+                var message = string.Format(format, args);
+                _capturedLogs.Add(message);
+                _originalHandler.LogFormat(logType, context, format, args);
+            }
+
+            public void LogException(System.Exception exception, Object context)
+            {
+                _capturedLogs.Add(exception.Message);
+                _originalHandler.LogException(exception, context);
+            }
+        }
+
+        #endregion
     }
 }
