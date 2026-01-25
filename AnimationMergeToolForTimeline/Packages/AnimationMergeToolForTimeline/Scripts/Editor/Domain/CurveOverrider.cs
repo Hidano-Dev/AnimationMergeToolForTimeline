@@ -304,8 +304,6 @@ namespace AnimationMergeTool.Editor.Domain
             // 低優先順位クリップの範囲内で、高優先順位より前の区間
             if (higherStartTime > lowerStartTime)
             {
-                var preExtrapStart = Mathf.Max(lowerStartTime, higherStartTime - GetExtrapolationRange(higherPriorityClipInfo.PreExtrapolation));
-
                 // PreExtrapolationがNone以外の場合のみ処理
                 if (higherPriorityClipInfo.PreExtrapolation != TimelineClip.ClipExtrapolation.None)
                 {
@@ -354,16 +352,6 @@ namespace AnimationMergeTool.Editor.Domain
             }
 
             return resultCurve;
-        }
-
-        /// <summary>
-        /// Extrapolationモードに基づいて処理する範囲を取得する
-        /// </summary>
-        private float GetExtrapolationRange(TimelineClip.ClipExtrapolation mode)
-        {
-            // 実際の範囲は低優先順位クリップの範囲で制限されるため、
-            // ここでは大きな値を返して全範囲を処理対象とする
-            return mode == TimelineClip.ClipExtrapolation.None ? 0f : float.MaxValue;
         }
 
         /// <summary>
