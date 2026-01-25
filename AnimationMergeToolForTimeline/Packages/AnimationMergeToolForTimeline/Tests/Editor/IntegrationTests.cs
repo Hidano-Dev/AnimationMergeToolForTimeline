@@ -718,6 +718,203 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region パフォーマンステスト
+
+        /// <summary>
+        /// タスク10.2.3: 非常に長いタイムラインの処理パフォーマンス確認
+        /// 長時間（100秒以上）のタイムラインでも正常に処理できることを検証
+        /// </summary>
+        [Test]
+        public void パフォーマンス_非常に長いタイムラインの処理()
+        {
+            // Arrange: 100秒を超える長いタイムラインを作成
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "LongTimelineTest";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "LongTrack");
+
+            // 100秒以上のアニメーションクリップを作成
+            var animClip = new AnimationClip();
+            var longDuration = 120.0f; // 120秒（2分）のアニメーション
+
+            // 複数のカーブを追加して負荷を増やす
+            var curveX = AnimationCurve.Linear(0, 0, longDuration, 100);
+            var curveY = AnimationCurve.Linear(0, 0, longDuration, 200);
+            var curveZ = AnimationCurve.Linear(0, 0, longDuration, 300);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curveX);
+            animClip.SetCurve("", typeof(Transform), "localPosition.y", curveY);
+            animClip.SetCurve("", typeof(Transform), "localPosition.z", curveZ);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = longDuration;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act: 処理時間を計測
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+                stopwatch.Stop();
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "処理は成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // 生成されたクリップの長さを検証
+                var generatedClip = results[0].GeneratedClip;
+                Assert.GreaterOrEqual(generatedClip.length, longDuration - 0.1f, "生成されたクリップの長さが正しいべき");
+
+                // カーブが正しく処理されていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(generatedClip);
+                Assert.AreEqual(3, bindings.Length, "3つのカーブが含まれるべき");
+
+                // パフォーマンス: 120秒のタイムラインは10秒以内に処理されるべき
+                Assert.Less(stopwatch.ElapsedMilliseconds, 10000,
+                    $"120秒のタイムラインは10秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
+
+                Debug.Log($"長いタイムライン（{longDuration}秒）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// タスク10.2.3: 非常に長いタイムライン + 複数クリップの処理
+        /// 長いタイムライン上に複数のクリップが配置された場合のパフォーマンス確認
+        /// </summary>
+        [Test]
+        public void パフォーマンス_長いタイムラインに複数クリップ()
+        {
+            // Arrange: 長いタイムラインに多数のクリップを配置
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "LongTimelineMultiClipTest";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "MultiClipTrack");
+
+            var createdClips = new List<AnimationClip>();
+            var clipCount = 20;
+            var clipDuration = 5.0;  // 各クリップ5秒
+            var totalDuration = clipCount * clipDuration; // 合計100秒
+
+            for (int i = 0; i < clipCount; i++)
+            {
+                var animClip = new AnimationClip();
+                animClip.name = $"Clip_{i}";
+                var curve = AnimationCurve.Linear(0, i * 10, (float)clipDuration, (i + 1) * 10);
+                animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+                createdClips.Add(animClip);
+
+                var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+                timelineClip.start = i * clipDuration;
+                timelineClip.duration = clipDuration;
+                (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+            }
+
+            try
+            {
+                // Act
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+                stopwatch.Stop();
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "処理は成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // 生成されたクリップの長さを検証
+                var generatedClip = results[0].GeneratedClip;
+                Assert.GreaterOrEqual(generatedClip.length, totalDuration - 0.1, "タイムライン全体の長さが反映されるべき");
+
+                // パフォーマンス: 100秒のタイムラインは10秒以内に処理されるべき
+                Assert.Less(stopwatch.ElapsedMilliseconds, 10000,
+                    $"100秒・{clipCount}クリップのタイムラインは10秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
+
+                Debug.Log($"長いタイムライン（{totalDuration}秒・{clipCount}クリップ）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                foreach (var clip in createdClips)
+                {
+                    Object.DestroyImmediate(clip);
+                }
+            }
+        }
+
+        /// <summary>
+        /// タスク10.2.3: 極端に長いタイムラインの処理
+        /// 600秒（10分）のタイムラインでも処理できることを検証
+        /// </summary>
+        [Test]
+        public void パフォーマンス_極端に長いタイムラインの処理()
+        {
+            // Arrange: 600秒（10分）のタイムラインを作成
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "VeryLongTimelineTest";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "VeryLongTrack");
+
+            var animClip = new AnimationClip();
+            var veryLongDuration = 600.0f; // 600秒（10分）
+
+            // シンプルなカーブを追加
+            var curve = AnimationCurve.Linear(0, 0, veryLongDuration, 1000);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = veryLongDuration;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+                stopwatch.Stop();
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "処理は成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // 生成されたクリップの長さを検証
+                var generatedClip = results[0].GeneratedClip;
+                Assert.GreaterOrEqual(generatedClip.length, veryLongDuration - 0.1f, "生成されたクリップの長さが正しいべき");
+
+                // パフォーマンス: 600秒のタイムラインは30秒以内に処理されるべき
+                Assert.Less(stopwatch.ElapsedMilliseconds, 30000,
+                    $"600秒のタイムラインは30秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
+
+                Debug.Log($"極端に長いタイムライン（{veryLongDuration}秒）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        #endregion
+
         #region ヘルパーメソッド
 
         /// <summary>
