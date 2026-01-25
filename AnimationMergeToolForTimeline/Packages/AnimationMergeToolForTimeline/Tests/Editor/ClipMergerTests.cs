@@ -938,5 +938,233 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region ルートモーションカーブ統合テスト
+
+        [Test]
+        public void GetAnimationCurves_RootTカーブを取得できる()
+        {
+            // Arrange
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            AnimationUtility.SetEditorCurve(_testClip, binding, curve);
+
+            // Act
+            var result = _clipMerger.GetAnimationCurves(_testClip);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("RootT.x", result[0].Binding.propertyName);
+            Assert.AreEqual(typeof(Animator), result[0].Binding.type);
+        }
+
+        [Test]
+        public void GetAnimationCurves_RootQカーブを取得できる()
+        {
+            // Arrange
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.w");
+            var curve = AnimationCurve.Linear(0, 1, 1, 1);
+            AnimationUtility.SetEditorCurve(_testClip, binding, curve);
+
+            // Act
+            var result = _clipMerger.GetAnimationCurves(_testClip);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("RootQ.w", result[0].Binding.propertyName);
+            Assert.AreEqual(typeof(Animator), result[0].Binding.type);
+        }
+
+        [Test]
+        public void GetAnimationCurves_ルートモーションカーブと通常カーブを同時に取得できる()
+        {
+            // Arrange
+            var bindingRootT = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
+            var bindingRootQ = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.x");
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            AnimationUtility.SetEditorCurve(_testClip, bindingRootT, curve);
+            AnimationUtility.SetEditorCurve(_testClip, bindingRootQ, curve);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            // Act
+            var result = _clipMerger.GetAnimationCurves(_testClip);
+
+            // Assert
+            Assert.AreEqual(3, result.Count);
+        }
+
+        [Test]
+        public void Merge_ルートモーションカーブを統合できる()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            var bindingTx = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
+            var bindingTy = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.y");
+            var bindingTz = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.z");
+            AnimationUtility.SetEditorCurve(animClip, bindingTx, AnimationCurve.Linear(0, 0, 1, 1));
+            AnimationUtility.SetEditorCurve(animClip, bindingTy, AnimationCurve.Linear(0, 0, 1, 0.5f));
+            AnimationUtility.SetEditorCurve(animClip, bindingTz, AnimationCurve.Linear(0, 0, 1, 2));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(3, resultCurves.Count);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_ルートモーション回転カーブを統合できる()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            var bindingQx = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.x");
+            var bindingQy = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.y");
+            var bindingQz = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.z");
+            var bindingQw = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.w");
+            AnimationUtility.SetEditorCurve(animClip, bindingQx, AnimationCurve.Linear(0, 0, 1, 0));
+            AnimationUtility.SetEditorCurve(animClip, bindingQy, AnimationCurve.Linear(0, 0, 1, 0.707f));
+            AnimationUtility.SetEditorCurve(animClip, bindingQz, AnimationCurve.Linear(0, 0, 1, 0));
+            AnimationUtility.SetEditorCurve(animClip, bindingQw, AnimationCurve.Linear(0, 1, 1, 0.707f));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(4, resultCurves.Count);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_複数クリップのルートモーションカーブを時間軸上で統合できる()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip1 = new AnimationClip();
+            var binding1 = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
+            AnimationUtility.SetEditorCurve(animClip1, binding1, AnimationCurve.Linear(0, 0, 1, 1));
+
+            var animClip2 = new AnimationClip();
+            var binding2 = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
+            AnimationUtility.SetEditorCurve(animClip2, binding2, AnimationCurve.Linear(0, 1, 1, 2));
+
+            var timelineClip1 = _animationTrack.CreateClip(animClip1);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, animClip1);
+
+            var timelineClip2 = _animationTrack.CreateClip(animClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, animClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(1, resultCurves.Count);
+            // 2つのクリップから各2キー = 4キー
+            Assert.AreEqual(4, resultCurves[0].Curve.keys.Length);
+            // 時間が正しくオフセットされている
+            Assert.AreEqual(0f, resultCurves[0].Curve.keys[0].time, 0.0001f);
+            Assert.AreEqual(1f, resultCurves[0].Curve.keys[1].time, 0.0001f);
+            Assert.AreEqual(2f, resultCurves[0].Curve.keys[2].time, 0.0001f);
+            Assert.AreEqual(3f, resultCurves[0].Curve.keys[3].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip1);
+            Object.DestroyImmediate(animClip2);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_ルートモーションカーブと通常カーブを同時に統合できる()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            var bindingRootT = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
+            AnimationUtility.SetEditorCurve(animClip, bindingRootT, AnimationCurve.Linear(0, 0, 1, 1));
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 2));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(2, resultCurves.Count);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_ルートモーションカーブに時間オフセットが正しく適用される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(1f, 1f);
+
+            var animClip = new AnimationClip();
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, AnimationCurve.Linear(0, 0, 1, 1));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 3.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(3f, result.keys[0].time, 0.0001f);
+            Assert.AreEqual(4f, result.keys[1].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        #endregion
     }
 }
