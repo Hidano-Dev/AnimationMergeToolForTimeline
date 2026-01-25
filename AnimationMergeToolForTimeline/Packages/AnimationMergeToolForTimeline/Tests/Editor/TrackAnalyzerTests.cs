@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Timeline;
@@ -226,7 +227,7 @@ namespace AnimationMergeTool.Editor.Tests
         {
             // Arrange
             var analyzer = new TrackAnalyzer(_timelineAsset);
-            var tracks = new System.Collections.Generic.List<TrackInfo>();
+            var tracks = new List<TrackInfo>();
 
             // Act
             var result = analyzer.FilterNonMutedTracks(tracks);
@@ -245,7 +246,7 @@ namespace AnimationMergeTool.Editor.Tests
             track2.muted = true; // Mute状態に設定
             var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
 
-            var tracks = new System.Collections.Generic.List<TrackInfo>
+            var tracks = new List<TrackInfo>
             {
                 new TrackInfo(track1),
                 new TrackInfo(track2),
@@ -272,7 +273,7 @@ namespace AnimationMergeTool.Editor.Tests
             var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
             track2.muted = true;
 
-            var tracks = new System.Collections.Generic.List<TrackInfo>
+            var tracks = new List<TrackInfo>
             {
                 new TrackInfo(track1),
                 new TrackInfo(track2)
@@ -294,7 +295,7 @@ namespace AnimationMergeTool.Editor.Tests
             var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
             var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
 
-            var tracks = new System.Collections.Generic.List<TrackInfo>
+            var tracks = new List<TrackInfo>
             {
                 new TrackInfo(track1),
                 new TrackInfo(track2)
@@ -315,7 +316,7 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
 
-            var tracks = new System.Collections.Generic.List<TrackInfo>
+            var tracks = new List<TrackInfo>
             {
                 new TrackInfo(track1),
                 null,
@@ -354,7 +355,7 @@ namespace AnimationMergeTool.Editor.Tests
         {
             // Arrange
             var analyzer = new TrackAnalyzer(_timelineAsset);
-            var tracks = new System.Collections.Generic.List<TrackInfo>();
+            var tracks = new List<TrackInfo>();
 
             // Act
             var result = analyzer.DetectUnboundTracks(tracks);
@@ -371,7 +372,7 @@ namespace AnimationMergeTool.Editor.Tests
             var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
             var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
 
-            var tracks = new System.Collections.Generic.List<TrackInfo>
+            var tracks = new List<TrackInfo>
             {
                 new TrackInfo(track1), // BoundAnimator = null
                 new TrackInfo(track2)  // BoundAnimator = null
@@ -397,7 +398,7 @@ namespace AnimationMergeTool.Editor.Tests
             var gameObject = new GameObject("Test Animator");
             var animator = gameObject.AddComponent<Animator>();
 
-            var tracks = new System.Collections.Generic.List<TrackInfo>
+            var tracks = new List<TrackInfo>
             {
                 new TrackInfo(track1, 0, animator), // BoundAnimator = animator
                 new TrackInfo(track2)               // BoundAnimator = null
@@ -427,7 +428,7 @@ namespace AnimationMergeTool.Editor.Tests
             var gameObject = new GameObject("Test Animator");
             var animator = gameObject.AddComponent<Animator>();
 
-            var tracks = new System.Collections.Generic.List<TrackInfo>
+            var tracks = new List<TrackInfo>
             {
                 new TrackInfo(track1, 0, animator),
                 new TrackInfo(track2, 0, animator)
@@ -451,7 +452,7 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
 
-            var tracks = new System.Collections.Generic.List<TrackInfo>
+            var tracks = new List<TrackInfo>
             {
                 new TrackInfo(track1), // BoundAnimator = null
                 null
@@ -473,7 +474,7 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Unbound Track");
 
-            var tracks = new System.Collections.Generic.List<TrackInfo>
+            var tracks = new List<TrackInfo>
             {
                 new TrackInfo(track1)
             };

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using AnimationMergeTool.Editor.Domain.Models;
 using UnityEngine;
 using UnityEngine.Timeline;
@@ -84,22 +85,12 @@ namespace AnimationMergeTool.Editor.Domain
         /// <returns>Muteされていないトラックのリスト</returns>
         public List<TrackInfo> FilterNonMutedTracks(List<TrackInfo> tracks)
         {
-            var result = new List<TrackInfo>();
-
             if (tracks == null)
             {
-                return result;
+                return new List<TrackInfo>();
             }
 
-            foreach (var trackInfo in tracks)
-            {
-                if (trackInfo != null && !trackInfo.IsMuted)
-                {
-                    result.Add(trackInfo);
-                }
-            }
-
-            return result;
+            return tracks.Where(t => t != null && !t.IsMuted).ToList();
         }
 
         /// <summary>
@@ -109,29 +100,20 @@ namespace AnimationMergeTool.Editor.Domain
         /// <returns>バインドされていないトラックのリスト</returns>
         public List<TrackInfo> DetectUnboundTracks(List<TrackInfo> tracks)
         {
-            var unboundTracks = new List<TrackInfo>();
-
             if (tracks == null)
             {
-                return unboundTracks;
+                return new List<TrackInfo>();
             }
 
-            foreach (var trackInfo in tracks)
+            var unboundTracks = tracks
+                .Where(t => t != null && t.BoundAnimator == null)
+                .ToList();
+
+            // バインドされていないトラックに対してエラーログを出力
+            foreach (var trackInfo in unboundTracks)
             {
-                if (trackInfo == null)
-                {
-                    continue;
-                }
-
-                // BoundAnimatorがnullの場合、バインドされていないトラックとして検出
-                if (trackInfo.BoundAnimator == null)
-                {
-                    unboundTracks.Add(trackInfo);
-
-                    // エラーログを出力
-                    var trackName = trackInfo.Track != null ? trackInfo.Track.name : "Unknown";
-                    Debug.LogError($"[AnimationMergeTool] トラック \"{trackName}\" にAnimatorがバインドされていません。");
-                }
+                var trackName = trackInfo.Track != null ? trackInfo.Track.name : "Unknown";
+                Debug.LogError($"[AnimationMergeTool] トラック \"{trackName}\" にAnimatorがバインドされていません。");
             }
 
             return unboundTracks;
