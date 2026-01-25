@@ -863,5 +863,336 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region MergeMultipleTracks テスト
+
+        [Test]
+        public void MergeMultipleTracks_空のリストの場合_空のカーブを返す()
+        {
+            // Arrange
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>();
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.keys.Length);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_nullの場合_空のカーブを返す()
+        {
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.keys.Length);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_単一カーブの場合_そのカーブのコピーを返す()
+        {
+            // Arrange
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(1f, 10f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(curve, 0f, 1f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(0f, result.keys[0].value);
+            Assert.AreEqual(1f, result.keys[1].time);
+            Assert.AreEqual(10f, result.keys[1].value);
+            // 元のカーブとは別のインスタンス
+            Assert.AreNotSame(curve, result);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_2つのトラックで重なりがない場合_両方のキーが含まれる()
+        {
+            // Arrange
+            // 低優先順位（上の段）: 0-1秒
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(1f, 10f);
+
+            // 高優先順位（下の段）: 2-3秒
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(2f, 100f);
+            higherCurve.AddKey(3f, 200f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(lowerCurve, 0f, 1f),
+                new CurveWithTimeRange(higherCurve, 2f, 3f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            Assert.AreEqual(4, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(0f, result.keys[0].value);
+            Assert.AreEqual(1f, result.keys[1].time);
+            Assert.AreEqual(10f, result.keys[1].value);
+            Assert.AreEqual(2f, result.keys[2].time);
+            Assert.AreEqual(100f, result.keys[2].value);
+            Assert.AreEqual(3f, result.keys[3].time);
+            Assert.AreEqual(200f, result.keys[3].value);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_2つのトラックで完全重なりの場合_高優先順位のカーブで上書きされる()
+        {
+            // Arrange
+            // 低優先順位（上の段）: 0-2秒
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(1f, 5f);
+            lowerCurve.AddKey(2f, 10f);
+
+            // 高優先順位（下の段）: 0-2秒（完全重なり）
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 100f);
+            higherCurve.AddKey(1f, 150f);
+            higherCurve.AddKey(2f, 200f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(lowerCurve, 0f, 2f),
+                new CurveWithTimeRange(higherCurve, 0f, 2f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            // 完全重なりの場合、高優先順位のキーのみ
+            Assert.AreEqual(3, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(100f, result.keys[0].value);
+            Assert.AreEqual(1f, result.keys[1].time);
+            Assert.AreEqual(150f, result.keys[1].value);
+            Assert.AreEqual(2f, result.keys[2].time);
+            Assert.AreEqual(200f, result.keys[2].value);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_2つのトラックで部分重なりの場合_重なり区間は高優先順位で上書きされる()
+        {
+            // Arrange
+            // 低優先順位（上の段）: 0-3秒
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(3f, 30f);
+
+            // 高優先順位（下の段）: 1-2秒（部分的重なり）
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(1f, 100f);
+            higherCurve.AddKey(2f, 200f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(lowerCurve, 0f, 3f),
+                new CurveWithTimeRange(higherCurve, 1f, 2f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            // 0秒: 低優先順位の値
+            // 1-2秒: 高優先順位の値
+            // 3秒: 低優先順位の値
+            Assert.AreEqual(4, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(0f, result.keys[0].value);     // 低優先順位
+            Assert.AreEqual(1f, result.keys[1].time);
+            Assert.AreEqual(100f, result.keys[1].value);   // 高優先順位
+            Assert.AreEqual(2f, result.keys[2].time);
+            Assert.AreEqual(200f, result.keys[2].value);   // 高優先順位
+            Assert.AreEqual(3f, result.keys[3].time);
+            Assert.AreEqual(30f, result.keys[3].value);    // 低優先順位
+        }
+
+        [Test]
+        public void MergeMultipleTracks_3つのトラックを優先順位順に統合できる()
+        {
+            // Arrange
+            // 最低優先順位（最上段）: 0-4秒
+            var lowestCurve = new AnimationCurve();
+            lowestCurve.AddKey(0f, 0f);
+            lowestCurve.AddKey(4f, 40f);
+
+            // 中間優先順位（中段）: 1-3秒
+            var middleCurve = new AnimationCurve();
+            middleCurve.AddKey(1f, 100f);
+            middleCurve.AddKey(3f, 300f);
+
+            // 最高優先順位（最下段）: 1.5-2.5秒
+            var highestCurve = new AnimationCurve();
+            highestCurve.AddKey(1.5f, 1000f);
+            highestCurve.AddKey(2.5f, 2500f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(lowestCurve, 0f, 4f),
+                new CurveWithTimeRange(middleCurve, 1f, 3f),
+                new CurveWithTimeRange(highestCurve, 1.5f, 2.5f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            // 期待されるキー:
+            // 0秒: 最低優先順位の値
+            // 1秒: 中間優先順位の値
+            // 1.5秒: 最高優先順位の値
+            // 2.5秒: 最高優先順位の値
+            // 3秒: 中間優先順位の値
+            // 4秒: 最低優先順位の値
+            Assert.AreEqual(6, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(0f, result.keys[0].value);
+            Assert.AreEqual(1f, result.keys[1].time);
+            Assert.AreEqual(100f, result.keys[1].value);
+            Assert.AreEqual(1.5f, result.keys[2].time);
+            Assert.AreEqual(1000f, result.keys[2].value);
+            Assert.AreEqual(2.5f, result.keys[3].time);
+            Assert.AreEqual(2500f, result.keys[3].value);
+            Assert.AreEqual(3f, result.keys[4].time);
+            Assert.AreEqual(300f, result.keys[4].value);
+            Assert.AreEqual(4f, result.keys[5].time);
+            Assert.AreEqual(40f, result.keys[5].value);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_途中のカーブがnullの場合_スキップして処理する()
+        {
+            // Arrange
+            // 低優先順位: 0-1秒
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(1f, 10f);
+
+            // 高優先順位: 2-3秒
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(2f, 100f);
+            higherCurve.AddKey(3f, 200f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(lowerCurve, 0f, 1f),
+                new CurveWithTimeRange(null, 1f, 2f),  // nullのカーブ
+                new CurveWithTimeRange(higherCurve, 2f, 3f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            // nullカーブはスキップされ、有効なカーブのキーが含まれる
+            Assert.AreEqual(4, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(0f, result.keys[0].value);
+            Assert.AreEqual(1f, result.keys[1].time);
+            Assert.AreEqual(10f, result.keys[1].value);
+            Assert.AreEqual(2f, result.keys[2].time);
+            Assert.AreEqual(100f, result.keys[2].value);
+            Assert.AreEqual(3f, result.keys[3].time);
+            Assert.AreEqual(200f, result.keys[3].value);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_最初のカーブがnullの場合_空のカーブから開始して処理する()
+        {
+            // Arrange
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 100f);
+            higherCurve.AddKey(1f, 200f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(null, 0f, 1f),  // 最初がnull
+                new CurveWithTimeRange(higherCurve, 0f, 1f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            // 最初がnullでも、後続のカーブが適用される
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(100f, result.keys[0].value);
+            Assert.AreEqual(1f, result.keys[1].time);
+            Assert.AreEqual(200f, result.keys[1].value);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_元のカーブを変更しない()
+        {
+            // Arrange
+            var curve1 = new AnimationCurve();
+            curve1.AddKey(0f, 0f);
+            curve1.AddKey(1f, 10f);
+
+            var curve2 = new AnimationCurve();
+            curve2.AddKey(0.5f, 50f);
+            curve2.AddKey(1.5f, 150f);
+
+            var originalCurve1KeyCount = curve1.keys.Length;
+            var originalCurve2KeyCount = curve2.keys.Length;
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(curve1, 0f, 1f),
+                new CurveWithTimeRange(curve2, 0.5f, 1.5f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            Assert.AreEqual(originalCurve1KeyCount, curve1.keys.Length);
+            Assert.AreEqual(originalCurve2KeyCount, curve2.keys.Length);
+            Assert.AreNotSame(curve1, result);
+            Assert.AreNotSame(curve2, result);
+        }
+
+        #endregion
+
+        #region CurveWithTimeRange テスト
+
+        [Test]
+        public void CurveWithTimeRange_コンストラクタで値が正しく設定される()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            var startTime = 1.5f;
+            var endTime = 3.5f;
+
+            // Act
+            var curveWithTimeRange = new CurveWithTimeRange(curve, startTime, endTime);
+
+            // Assert
+            Assert.AreEqual(curve, curveWithTimeRange.Curve);
+            Assert.AreEqual(startTime, curveWithTimeRange.StartTime);
+            Assert.AreEqual(endTime, curveWithTimeRange.EndTime);
+        }
+
+        #endregion
     }
 }
