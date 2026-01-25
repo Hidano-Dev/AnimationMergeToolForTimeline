@@ -370,33 +370,6 @@ namespace AnimationMergeTool.Editor.Domain
     }
 
     /// <summary>
-    /// EditorCurveBindingとAnimationCurveのペアを保持する構造体
-    /// </summary>
-    public struct CurveBindingPair
-    {
-        /// <summary>
-        /// カーブのバインディング情報
-        /// </summary>
-        public EditorCurveBinding Binding;
-
-        /// <summary>
-        /// アニメーションカーブ
-        /// </summary>
-        public AnimationCurve Curve;
-
-        /// <summary>
-        /// コンストラクタ
-        /// </summary>
-        /// <param name="binding">バインディング情報</param>
-        /// <param name="curve">アニメーションカーブ</param>
-        public CurveBindingPair(EditorCurveBinding binding, AnimationCurve curve)
-        {
-            Binding = binding;
-            Curve = curve;
-        }
-    }
-
-    /// <summary>
     /// カーブと時間範囲を保持する構造体
     /// </summary>
     public struct CurveWithTimeRange
