@@ -798,5 +798,521 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region DetectConsecutiveBlend テスト
+
+        [Test]
+        public void DetectConsecutiveBlend_両方nullの場合無効なブレンド情報を返す()
+        {
+            // Act
+            var result = _blendProcessor.DetectConsecutiveBlend(null, null);
+
+            // Assert
+            Assert.IsFalse(result.IsValid);
+        }
+
+        [Test]
+        public void DetectConsecutiveBlend_前のクリップがnullの場合無効なブレンド情報を返す()
+        {
+            // Arrange
+            var nextClip = new ClipInfo(_timelineClip, _animationClip);
+
+            // Act
+            var result = _blendProcessor.DetectConsecutiveBlend(null, nextClip);
+
+            // Assert
+            Assert.IsFalse(result.IsValid);
+        }
+
+        [Test]
+        public void DetectConsecutiveBlend_次のクリップがnullの場合無効なブレンド情報を返す()
+        {
+            // Arrange
+            var previousClip = new ClipInfo(_timelineClip, _animationClip);
+
+            // Act
+            var result = _blendProcessor.DetectConsecutiveBlend(previousClip, null);
+
+            // Assert
+            Assert.IsFalse(result.IsValid);
+        }
+
+        [Test]
+        public void DetectConsecutiveBlend_クリップが重なっていない場合無効なブレンド情報を返す()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 1.0;
+            timelineClip1.easeOutDuration = 0.2;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 2.0;  // Gap あり
+            timelineClip2.duration = 1.0;
+            timelineClip2.easeInDuration = 0.2;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+
+            // Act
+            var result = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Assert
+            Assert.IsFalse(result.IsValid);
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        [Test]
+        public void DetectConsecutiveBlend_クリップが重なっている場合有効なブレンド情報を返す()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;  // 0.5秒の重なり
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+
+            // Act
+            var result = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Assert
+            Assert.IsTrue(result.IsValid);
+            Assert.AreEqual(1.5, result.BlendStartTime, 0.0001);  // 次のクリップの開始時間
+            Assert.AreEqual(2.0, result.BlendEndTime, 0.0001);    // 次のクリップのEaseIn終了 or 前のクリップの終了の早い方
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        [Test]
+        public void DetectConsecutiveBlend_ブレンドカーブ情報を正しく取得する()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+
+            // Act
+            var result = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Assert
+            Assert.IsNotNull(result.PreviousClipEaseOutCurve);
+            Assert.IsNotNull(result.NextClipEaseInCurve);
+            Assert.AreEqual(previousClip, result.PreviousClip);
+            Assert.AreEqual(nextClip, result.NextClip);
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        #endregion
+
+        #region CalculateConsecutiveBlendWeights テスト
+
+        [Test]
+        public void CalculateConsecutiveBlendWeights_無効なブレンド情報の場合両方0を返す()
+        {
+            // Arrange
+            var blendInfo = new BlendProcessor.ConsecutiveBlendInfo();
+
+            // Act
+            _blendProcessor.CalculateConsecutiveBlendWeights(blendInfo, 1.0, out float prevWeight, out float nextWeight);
+
+            // Assert
+            Assert.AreEqual(0f, prevWeight);
+            Assert.AreEqual(0f, nextWeight);
+        }
+
+        [Test]
+        public void CalculateConsecutiveBlendWeights_ブレンド区間外の場合両方0を返す()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Act - ブレンド区間より前
+            _blendProcessor.CalculateConsecutiveBlendWeights(blendInfo, 0.5, out float prevWeight1, out float nextWeight1);
+
+            // Act - ブレンド区間より後
+            _blendProcessor.CalculateConsecutiveBlendWeights(blendInfo, 3.0, out float prevWeight2, out float nextWeight2);
+
+            // Assert
+            Assert.AreEqual(0f, prevWeight1);
+            Assert.AreEqual(0f, nextWeight1);
+            Assert.AreEqual(0f, prevWeight2);
+            Assert.AreEqual(0f, nextWeight2);
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        [Test]
+        public void CalculateConsecutiveBlendWeights_ブレンド区間内でウェイトの合計が1になる()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Act - ブレンド区間の中央
+            _blendProcessor.CalculateConsecutiveBlendWeights(blendInfo, 1.75, out float prevWeight, out float nextWeight);
+
+            // Assert
+            Assert.AreEqual(1f, prevWeight + nextWeight, 0.0001f);
+            Assert.That(prevWeight, Is.GreaterThan(0f));
+            Assert.That(nextWeight, Is.GreaterThan(0f));
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        [Test]
+        public void CalculateConsecutiveBlendWeights_ブレンド開始時は前クリップのウェイトが高い()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Act - ブレンド開始直後
+            _blendProcessor.CalculateConsecutiveBlendWeights(blendInfo, 1.55, out float prevWeight, out float nextWeight);
+
+            // Assert
+            Assert.That(prevWeight, Is.GreaterThan(nextWeight));
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        [Test]
+        public void CalculateConsecutiveBlendWeights_ブレンド終了時は次クリップのウェイトが高い()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Act - ブレンド終了直前
+            _blendProcessor.CalculateConsecutiveBlendWeights(blendInfo, 1.95, out float prevWeight, out float nextWeight);
+
+            // Assert
+            Assert.That(nextWeight, Is.GreaterThan(prevWeight));
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        #endregion
+
+        #region BlendConsecutiveClipValues テスト
+
+        [Test]
+        public void BlendConsecutiveClipValues_ブレンド区間内で正しく補間する()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Act
+            var result = _blendProcessor.BlendConsecutiveClipValues(blendInfo, 1.75, 10f, 20f);
+
+            // Assert - 補間値は10〜20の間にある
+            Assert.That(result, Is.GreaterThan(10f));
+            Assert.That(result, Is.LessThan(20f));
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        [Test]
+        public void BlendConsecutiveClipValues_ブレンド区間前では前クリップの値を返す()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Act - ブレンド区間より前
+            var result = _blendProcessor.BlendConsecutiveClipValues(blendInfo, 0.5, 10f, 20f);
+
+            // Assert
+            Assert.AreEqual(10f, result);
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        [Test]
+        public void BlendConsecutiveClipValues_ブレンド区間後では次クリップの値を返す()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            // Act - ブレンド区間より後
+            var result = _blendProcessor.BlendConsecutiveClipValues(blendInfo, 3.0, 10f, 20f);
+
+            // Assert
+            Assert.AreEqual(20f, result);
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        #endregion
+
+        #region BlendConsecutiveClipVector3Values テスト
+
+        [Test]
+        public void BlendConsecutiveClipVector3Values_ブレンド区間内で正しく補間する()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            var prevValue = new Vector3(0, 0, 0);
+            var nextValue = new Vector3(10, 20, 30);
+
+            // Act
+            var result = _blendProcessor.BlendConsecutiveClipVector3Values(blendInfo, 1.75, prevValue, nextValue);
+
+            // Assert - 補間値は両値の間にある
+            Assert.That(result.x, Is.GreaterThan(0f));
+            Assert.That(result.x, Is.LessThan(10f));
+            Assert.That(result.y, Is.GreaterThan(0f));
+            Assert.That(result.y, Is.LessThan(20f));
+            Assert.That(result.z, Is.GreaterThan(0f));
+            Assert.That(result.z, Is.LessThan(30f));
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        #endregion
+
+        #region BlendConsecutiveClipQuaternionValues テスト
+
+        [Test]
+        public void BlendConsecutiveClipQuaternionValues_ブレンド区間内で正しく補間する()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            var prevValue = Quaternion.identity;
+            var nextValue = Quaternion.Euler(0, 90, 0);
+
+            // Act
+            var result = _blendProcessor.BlendConsecutiveClipQuaternionValues(blendInfo, 1.75, prevValue, nextValue);
+
+            // Assert - 補間値は両値の間にある（0〜90度）
+            var eulerResult = result.eulerAngles;
+            Assert.That(eulerResult.y, Is.GreaterThan(0f).Or.EqualTo(0f).Within(0.1f));
+            Assert.That(eulerResult.y, Is.LessThan(90f));
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        [Test]
+        public void BlendConsecutiveClipQuaternionValues_ブレンド区間前では前クリップの値を返す()
+        {
+            // Arrange
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+
+            var timelineClip1 = _animationTrack.CreateClip(clip1);
+            timelineClip1.start = 0;
+            timelineClip1.duration = 2.0;
+            timelineClip1.easeOutDuration = 0.5;
+
+            var timelineClip2 = _animationTrack.CreateClip(clip2);
+            timelineClip2.start = 1.5;
+            timelineClip2.duration = 2.0;
+            timelineClip2.easeInDuration = 0.5;
+
+            var previousClip = new ClipInfo(timelineClip1, clip1);
+            var nextClip = new ClipInfo(timelineClip2, clip2);
+            var blendInfo = _blendProcessor.DetectConsecutiveBlend(previousClip, nextClip);
+
+            var prevValue = Quaternion.identity;
+            var nextValue = Quaternion.Euler(0, 90, 0);
+
+            // Act
+            var result = _blendProcessor.BlendConsecutiveClipQuaternionValues(blendInfo, 0.5, prevValue, nextValue);
+
+            // Assert
+            Assert.AreEqual(prevValue.x, result.x, 0.0001f);
+            Assert.AreEqual(prevValue.y, result.y, 0.0001f);
+            Assert.AreEqual(prevValue.z, result.z, 0.0001f);
+            Assert.AreEqual(prevValue.w, result.w, 0.0001f);
+
+            // Cleanup
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+        }
+
+        #endregion
     }
 }

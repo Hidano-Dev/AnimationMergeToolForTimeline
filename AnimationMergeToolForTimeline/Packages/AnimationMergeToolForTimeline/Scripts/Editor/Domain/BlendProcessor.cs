@@ -292,5 +292,248 @@ namespace AnimationMergeTool.Editor.Domain
             weight = Mathf.Clamp01(weight);
             return Quaternion.Slerp(value1, value2, weight);
         }
+
+        /// <summary>
+        /// 連続クリップのブレンド区間情報を保持する構造体
+        /// </summary>
+        public struct ConsecutiveBlendInfo
+        {
+            /// <summary>
+            /// ブレンド区間の開始時間（グローバル時間）
+            /// </summary>
+            public double BlendStartTime;
+
+            /// <summary>
+            /// ブレンド区間の終了時間（グローバル時間）
+            /// </summary>
+            public double BlendEndTime;
+
+            /// <summary>
+            /// ブレンド区間の長さ
+            /// </summary>
+            public double BlendDuration => BlendEndTime - BlendStartTime;
+
+            /// <summary>
+            /// 有効なブレンド区間かどうか
+            /// </summary>
+            public bool IsValid => BlendDuration > 0;
+
+            /// <summary>
+            /// 前のクリップのEaseOutカーブ
+            /// </summary>
+            public AnimationCurve PreviousClipEaseOutCurve;
+
+            /// <summary>
+            /// 次のクリップのEaseInカーブ
+            /// </summary>
+            public AnimationCurve NextClipEaseInCurve;
+
+            /// <summary>
+            /// 前のクリップの情報
+            /// </summary>
+            public ClipInfo PreviousClip;
+
+            /// <summary>
+            /// 次のクリップの情報
+            /// </summary>
+            public ClipInfo NextClip;
+        }
+
+        /// <summary>
+        /// 2つの連続するクリップ間のブレンド区間を検出する
+        /// </summary>
+        /// <param name="previousClip">前のクリップ（時間的に先に終了するクリップ）</param>
+        /// <param name="nextClip">次のクリップ（時間的に後に開始するクリップ）</param>
+        /// <returns>ブレンド区間情報。クリップが重なっていない場合はIsValid=falseを返す</returns>
+        public ConsecutiveBlendInfo DetectConsecutiveBlend(ClipInfo previousClip, ClipInfo nextClip)
+        {
+            if (previousClip == null || nextClip == null)
+            {
+                return new ConsecutiveBlendInfo { BlendStartTime = 0, BlendEndTime = 0 };
+            }
+
+            // ブレンド区間の検出：次のクリップの開始がEaseIn区間を持ち、
+            // かつ前のクリップの終了がEaseOut区間を持ち、両者が重なっている場合
+            double previousClipEaseOutStart = previousClip.EndTime - previousClip.EaseOutDuration;
+            double nextClipEaseInEnd = nextClip.StartTime + nextClip.EaseInDuration;
+
+            // 重なり区間を計算
+            double overlapStart = System.Math.Max(previousClipEaseOutStart, nextClip.StartTime);
+            double overlapEnd = System.Math.Min(previousClip.EndTime, nextClipEaseInEnd);
+
+            // クリップが時間的に重なっていない、またはブレンド区間が存在しない場合
+            if (overlapStart >= overlapEnd)
+            {
+                return new ConsecutiveBlendInfo { BlendStartTime = 0, BlendEndTime = 0 };
+            }
+
+            var previousBlendInfo = GetBlendInfo(previousClip);
+            var nextBlendInfo = GetBlendInfo(nextClip);
+
+            return new ConsecutiveBlendInfo
+            {
+                BlendStartTime = overlapStart,
+                BlendEndTime = overlapEnd,
+                PreviousClipEaseOutCurve = previousBlendInfo.BlendOutCurve,
+                NextClipEaseInCurve = nextBlendInfo.BlendInCurve,
+                PreviousClip = previousClip,
+                NextClip = nextClip
+            };
+        }
+
+        /// <summary>
+        /// 連続クリップのブレンド区間における合成ウェイトを計算する
+        /// 前のクリップのEaseOutと次のクリップのEaseInを合成し、正規化されたウェイトを返す
+        /// </summary>
+        /// <param name="blendInfo">ブレンド区間情報</param>
+        /// <param name="globalTime">タイムライン上のグローバル時間</param>
+        /// <param name="previousClipWeight">前のクリップのウェイト（out）</param>
+        /// <param name="nextClipWeight">次のクリップのウェイト（out）</param>
+        public void CalculateConsecutiveBlendWeights(
+            ConsecutiveBlendInfo blendInfo,
+            double globalTime,
+            out float previousClipWeight,
+            out float nextClipWeight)
+        {
+            previousClipWeight = 0f;
+            nextClipWeight = 0f;
+
+            if (!blendInfo.IsValid)
+            {
+                return;
+            }
+
+            // ブレンド区間外の場合
+            if (globalTime < blendInfo.BlendStartTime || globalTime > blendInfo.BlendEndTime)
+            {
+                return;
+            }
+
+            // 前のクリップのEaseOutウェイトを計算
+            float previousWeight = 1f;
+            if (blendInfo.PreviousClip != null && blendInfo.PreviousClip.EaseOutDuration > 0)
+            {
+                double easeOutStartTime = blendInfo.PreviousClip.EndTime - blendInfo.PreviousClip.EaseOutDuration;
+                if (globalTime >= easeOutStartTime && globalTime <= blendInfo.PreviousClip.EndTime)
+                {
+                    double normalizedTime = (globalTime - easeOutStartTime) / blendInfo.PreviousClip.EaseOutDuration;
+                    if (blendInfo.PreviousClipEaseOutCurve != null)
+                    {
+                        previousWeight = blendInfo.PreviousClipEaseOutCurve.Evaluate((float)normalizedTime);
+                    }
+                }
+            }
+
+            // 次のクリップのEaseInウェイトを計算
+            float nextWeight = 1f;
+            if (blendInfo.NextClip != null && blendInfo.NextClip.EaseInDuration > 0)
+            {
+                double easeInEndTime = blendInfo.NextClip.StartTime + blendInfo.NextClip.EaseInDuration;
+                if (globalTime >= blendInfo.NextClip.StartTime && globalTime <= easeInEndTime)
+                {
+                    double normalizedTime = (globalTime - blendInfo.NextClip.StartTime) / blendInfo.NextClip.EaseInDuration;
+                    if (blendInfo.NextClipEaseInCurve != null)
+                    {
+                        nextWeight = blendInfo.NextClipEaseInCurve.Evaluate((float)normalizedTime);
+                    }
+                }
+            }
+
+            // ウェイトの正規化：両クリップのウェイトの合計が1になるように調整
+            float totalWeight = previousWeight + nextWeight;
+            if (totalWeight > 0)
+            {
+                previousClipWeight = previousWeight / totalWeight;
+                nextClipWeight = nextWeight / totalWeight;
+            }
+        }
+
+        /// <summary>
+        /// 連続クリップのブレンド区間における値を合成する
+        /// </summary>
+        /// <param name="blendInfo">ブレンド区間情報</param>
+        /// <param name="globalTime">タイムライン上のグローバル時間</param>
+        /// <param name="previousClipValue">前のクリップの値</param>
+        /// <param name="nextClipValue">次のクリップの値</param>
+        /// <returns>合成された値</returns>
+        public float BlendConsecutiveClipValues(
+            ConsecutiveBlendInfo blendInfo,
+            double globalTime,
+            float previousClipValue,
+            float nextClipValue)
+        {
+            CalculateConsecutiveBlendWeights(blendInfo, globalTime, out float previousWeight, out float nextWeight);
+
+            // ブレンド区間外の場合、どちらかの値をそのまま返す
+            if (previousWeight == 0f && nextWeight == 0f)
+            {
+                // 時間に応じてどちらを返すか決定
+                if (globalTime < blendInfo.BlendStartTime)
+                {
+                    return previousClipValue;
+                }
+                return nextClipValue;
+            }
+
+            return previousClipValue * previousWeight + nextClipValue * nextWeight;
+        }
+
+        /// <summary>
+        /// 連続クリップのブレンド区間におけるVector3値を合成する
+        /// </summary>
+        /// <param name="blendInfo">ブレンド区間情報</param>
+        /// <param name="globalTime">タイムライン上のグローバル時間</param>
+        /// <param name="previousClipValue">前のクリップの値</param>
+        /// <param name="nextClipValue">次のクリップの値</param>
+        /// <returns>合成されたVector3値</returns>
+        public Vector3 BlendConsecutiveClipVector3Values(
+            ConsecutiveBlendInfo blendInfo,
+            double globalTime,
+            Vector3 previousClipValue,
+            Vector3 nextClipValue)
+        {
+            CalculateConsecutiveBlendWeights(blendInfo, globalTime, out float previousWeight, out float nextWeight);
+
+            if (previousWeight == 0f && nextWeight == 0f)
+            {
+                if (globalTime < blendInfo.BlendStartTime)
+                {
+                    return previousClipValue;
+                }
+                return nextClipValue;
+            }
+
+            return previousClipValue * previousWeight + nextClipValue * nextWeight;
+        }
+
+        /// <summary>
+        /// 連続クリップのブレンド区間におけるQuaternion値を合成する
+        /// </summary>
+        /// <param name="blendInfo">ブレンド区間情報</param>
+        /// <param name="globalTime">タイムライン上のグローバル時間</param>
+        /// <param name="previousClipValue">前のクリップの値</param>
+        /// <param name="nextClipValue">次のクリップの値</param>
+        /// <returns>合成されたQuaternion値</returns>
+        public Quaternion BlendConsecutiveClipQuaternionValues(
+            ConsecutiveBlendInfo blendInfo,
+            double globalTime,
+            Quaternion previousClipValue,
+            Quaternion nextClipValue)
+        {
+            CalculateConsecutiveBlendWeights(blendInfo, globalTime, out float previousWeight, out float nextWeight);
+
+            if (previousWeight == 0f && nextWeight == 0f)
+            {
+                if (globalTime < blendInfo.BlendStartTime)
+                {
+                    return previousClipValue;
+                }
+                return nextClipValue;
+            }
+
+            // Quaternionの場合はSlerpで補間
+            // nextWeightを使用（正規化されているためpreviousWeight + nextWeight = 1）
+            return Quaternion.Slerp(previousClipValue, nextClipValue, nextWeight);
+        }
     }
 }
