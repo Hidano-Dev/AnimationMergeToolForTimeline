@@ -836,6 +836,232 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region Continue Extrapolation テスト（4.1.6）
+
+        [Test]
+        public void TryGetExtrapolatedValue_PreExtrapolationがContinueの場合_クリップ開始前は接線延長した値を返す()
+        {
+            // Arrange: 0→0, 1→10 の線形カーブ（傾き=10）
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 2.0; // クリップは2秒から開始
+            timelineClip.duration = 1.0;
+            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 1.5秒はクリップ開始前（0.5秒前）
+            // Continue: firstKeyValue + inTangent * timeDelta = 0 + 10 * (-0.5) = -5
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(-5f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_PostExtrapolationがContinueの場合_クリップ終了後は接線延長した値を返す()
+        {
+            // Arrange: 0→0, 1→10 の線形カーブ（傾き=10）
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0; // クリップは1秒で終了
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 1.5秒はクリップ終了後（0.5秒後）
+            // Continue: lastKeyValue + outTangent * timeDelta = 10 + 10 * 0.5 = 15
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(15f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_Continueで傾きが0のカーブの場合_値が維持される()
+        {
+            // Arrange: 傾きが0のカーブ（水平）
+            var curve = new AnimationCurve();
+            curve.AddKey(new Keyframe(0, 5, 0, 0)); // inTangent=0, outTangent=0
+            curve.AddKey(new Keyframe(1, 5, 0, 0)); // inTangent=0, outTangent=0
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 1.0;
+            timelineClip.duration = 1.0;
+            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act & Assert - クリップ開始前
+            var resultBefore = _processor.TryGetExtrapolatedValue(curve, clipInfo, 0.5f, out var valueBefore);
+            Assert.IsTrue(resultBefore);
+            Assert.AreEqual(5f, valueBefore, 0.0001f); // 傾き0なので値は変わらない
+
+            // Act & Assert - クリップ終了後
+            var resultAfter = _processor.TryGetExtrapolatedValue(curve, clipInfo, 3.0f, out var valueAfter);
+            Assert.IsTrue(resultAfter);
+            Assert.AreEqual(5f, valueAfter, 0.0001f); // 傾き0なので値は変わらない
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_Continueで負の傾きのカーブの場合_正しく延長される()
+        {
+            // Arrange: 負の傾きのカーブ
+            var curve = AnimationCurve.Linear(0, 10, 1, 0); // 傾き=-10
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 2.0秒はクリップ終了後（1秒後）
+            // Continue: lastKeyValue + outTangent * timeDelta = 0 + (-10) * 1.0 = -10
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 2.0f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(-10f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_ContinueとTimeScaleの組み合わせ()
+        {
+            // Arrange: TimeScale=2で2倍速再生
+            var curve = AnimationCurve.Linear(0, 0, 2, 20); // 傾き=10
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0; // Timeline上では1秒
+            timelineClip.timeScale = 2.0; // 2倍速で2秒分のアニメーションを再生
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 1.5秒はクリップ終了後（0.5秒後）
+            // lastKeyTime = 0 + 1.0 * 2.0 = 2.0, lastKeyValue = curve.Evaluate(2.0) = 20
+            // Continue: lastKeyValue + outTangent * timeDelta = 20 + 10 * 0.5 = 25
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(25f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_ContinueとClipInの組み合わせ()
+        {
+            // Arrange: ClipIn=0.5でトリミング
+            var curve = AnimationCurve.Linear(0, 0, 2, 20); // 傾き=10
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 1.0;
+            timelineClip.duration = 1.0;
+            timelineClip.clipIn = 0.5; // ソースクリップの0.5秒からスタート
+            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 0.5秒はクリップ開始前（0.5秒前）
+            // clipIn=0.5なので、firstKeyValue = curve.Evaluate(0.5) = 5
+            // Continue: firstKeyValue + inTangent * timeDelta = 5 + 10 * (-0.5) = 0
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 0.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(0f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_Continueでクリップ範囲内は通常の値を返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 1.0;
+            timelineClip.duration = 1.0;
+            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 1.7秒はクリップ範囲内
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.7f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(7f, value, 0.0001f); // 線形補間された値
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_Continue境界での動作確認()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 1.0;
+            timelineClip.duration = 1.0; // クリップは1秒〜2秒
+            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act & Assert - 開始時間（1秒）はクリップ範囲内
+            var resultAtStart = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.0f, out var valueAtStart);
+            Assert.IsTrue(resultAtStart);
+            Assert.AreEqual(0f, valueAtStart, 0.0001f);
+
+            // Act & Assert - 終了時間（2秒）はクリップ範囲内
+            var resultAtEnd = _processor.TryGetExtrapolatedValue(curve, clipInfo, 2.0f, out var valueAtEnd);
+            Assert.IsTrue(resultAtEnd);
+            Assert.AreEqual(10f, valueAtEnd, 0.0001f);
+
+            // Act & Assert - 開始時間直前
+            var resultBeforeStart = _processor.TryGetExtrapolatedValue(curve, clipInfo, 0.999f, out var valueBeforeStart);
+            Assert.IsTrue(resultBeforeStart);
+            // Continue: 0 + 10 * (-0.001) = -0.01
+            Assert.AreEqual(-0.01f, valueBeforeStart, 0.001f);
+
+            // Act & Assert - 終了時間直後
+            var resultAfterEnd = _processor.TryGetExtrapolatedValue(curve, clipInfo, 2.001f, out var valueAfterEnd);
+            Assert.IsTrue(resultAfterEnd);
+            // Continue: 10 + 10 * 0.001 = 10.01
+            Assert.AreEqual(10.01f, valueAfterEnd, 0.001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_ContinueとHoldの違いを確認()
+        {
+            // Arrange: 同じカーブでContinueとHoldの挙動の違いを確認
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var timelineClipHold = _animationTrack.CreateClip(_testClip);
+            timelineClipHold.start = 0.0;
+            timelineClipHold.duration = 1.0;
+            timelineClipHold.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            var clipInfoHold = new ClipInfo(timelineClipHold, _testClip);
+
+            var timelineClipContinue = _animationTrack.CreateClip(_testClip);
+            timelineClipContinue.start = 0.0;
+            timelineClipContinue.duration = 1.0;
+            timelineClipContinue.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfoContinue = new ClipInfo(timelineClipContinue, _testClip);
+
+            // Act & Assert - 2.0秒での比較
+            // Hold: 最後の値をそのまま維持 → 10
+            // Continue: 接線を延長 → 10 + 10 * 1.0 = 20
+            _processor.TryGetExtrapolatedValue(curve, clipInfoHold, 2.0f, out var valueHold);
+            _processor.TryGetExtrapolatedValue(curve, clipInfoContinue, 2.0f, out var valueContinue);
+
+            Assert.AreEqual(10f, valueHold, 0.0001f);
+            Assert.AreEqual(20f, valueContinue, 0.0001f);
+            Assert.AreNotEqual(valueHold, valueContinue);
+        }
+
+        #endregion
+
         #region フレームレート設定テスト
 
         [Test]
