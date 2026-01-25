@@ -1,10 +1,62 @@
 using System.Collections.Generic;
+using System.Linq;
 using AnimationMergeTool.Editor.Domain.Models;
 using UnityEngine;
 using UnityEngine.Timeline;
 
 namespace AnimationMergeTool.Editor.Domain
 {
+    /// <summary>
+    /// クリップ間のGap情報を保持する構造体
+    /// </summary>
+    public struct GapInfo
+    {
+        /// <summary>
+        /// Gapの開始時間（秒）
+        /// </summary>
+        public double StartTime { get; }
+
+        /// <summary>
+        /// Gapの終了時間（秒）
+        /// </summary>
+        public double EndTime { get; }
+
+        /// <summary>
+        /// Gapの直前のクリップ（null の場合はタイムラインの最初のGap）
+        /// </summary>
+        public ClipInfo PreviousClip { get; }
+
+        /// <summary>
+        /// Gapの直後のクリップ（null の場合はタイムラインの最後のGap）
+        /// </summary>
+        public ClipInfo NextClip { get; }
+
+        /// <summary>
+        /// Gapの長さ（秒）
+        /// </summary>
+        public double Duration => EndTime - StartTime;
+
+        /// <summary>
+        /// 有効なGapかどうか（長さが正の場合）
+        /// </summary>
+        public bool IsValid => Duration > 0;
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="startTime">Gapの開始時間</param>
+        /// <param name="endTime">Gapの終了時間</param>
+        /// <param name="previousClip">直前のクリップ</param>
+        /// <param name="nextClip">直後のクリップ</param>
+        public GapInfo(double startTime, double endTime, ClipInfo previousClip, ClipInfo nextClip)
+        {
+            StartTime = startTime;
+            EndTime = endTime;
+            PreviousClip = previousClip;
+            NextClip = nextClip;
+        }
+    }
+
     /// <summary>
     /// Extrapolation処理を行うクラス
     /// クリップ範囲外の値をExtrapolation設定に基づいて処理する
@@ -303,6 +355,98 @@ namespace AnimationMergeTool.Editor.Domain
         public static bool HasValue(TimelineClip.ClipExtrapolation mode)
         {
             return mode != TimelineClip.ClipExtrapolation.None;
+        }
+
+        /// <summary>
+        /// 同一トラック内のクリップ間のGapを検出する
+        /// </summary>
+        /// <param name="clipInfos">トラック内のクリップ情報リスト（開始時間でソートされている必要はない）</param>
+        /// <returns>検出されたGap情報のリスト（開始時間順）</returns>
+        public List<GapInfo> DetectGaps(List<ClipInfo> clipInfos)
+        {
+            var gaps = new List<GapInfo>();
+
+            if (clipInfos == null || clipInfos.Count == 0)
+            {
+                return gaps;
+            }
+
+            // 有効なクリップのみをフィルタリング
+            var validClips = clipInfos.Where(c => c != null && c.IsValid).ToList();
+            if (validClips.Count == 0)
+            {
+                return gaps;
+            }
+
+            // 開始時間でソート
+            var sortedClips = validClips.OrderBy(c => c.StartTime).ToList();
+
+            // 連続するクリップ間のGapを検出
+            for (var i = 0; i < sortedClips.Count - 1; i++)
+            {
+                var currentClip = sortedClips[i];
+                var nextClip = sortedClips[i + 1];
+
+                var gapStart = currentClip.EndTime;
+                var gapEnd = nextClip.StartTime;
+
+                // Gapが存在する場合（終了時間 < 次の開始時間）
+                if (gapStart < gapEnd)
+                {
+                    gaps.Add(new GapInfo(gapStart, gapEnd, currentClip, nextClip));
+                }
+            }
+
+            return gaps;
+        }
+
+        /// <summary>
+        /// 指定時間がGap内にあるかどうかを判定し、該当するGap情報を返す
+        /// </summary>
+        /// <param name="gaps">Gap情報のリスト</param>
+        /// <param name="time">判定する時間</param>
+        /// <param name="gapInfo">該当するGap情報（見つからない場合はデフォルト値）</param>
+        /// <returns>Gap内にある場合はtrue</returns>
+        public bool TryGetGapAtTime(List<GapInfo> gaps, double time, out GapInfo gapInfo)
+        {
+            gapInfo = default;
+
+            if (gaps == null)
+            {
+                return false;
+            }
+
+            foreach (var gap in gaps)
+            {
+                if (time >= gap.StartTime && time < gap.EndTime)
+                {
+                    gapInfo = gap;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 2つのクリップ間のGap時間を計算する
+        /// </summary>
+        /// <param name="firstClip">先行するクリップ</param>
+        /// <param name="secondClip">後続するクリップ</param>
+        /// <returns>Gap時間（秒）。重なりがある場合は負の値、クリップが無効な場合は0</returns>
+        public double CalculateGapDuration(ClipInfo firstClip, ClipInfo secondClip)
+        {
+            if (firstClip == null || secondClip == null)
+            {
+                return 0;
+            }
+
+            if (!firstClip.IsValid || !secondClip.IsValid)
+            {
+                return 0;
+            }
+
+            return secondClip.StartTime - firstClip.EndTime;
         }
     }
 }

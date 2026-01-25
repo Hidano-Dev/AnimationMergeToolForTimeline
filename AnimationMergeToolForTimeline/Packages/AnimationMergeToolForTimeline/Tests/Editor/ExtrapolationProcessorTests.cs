@@ -1096,5 +1096,518 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region Gap検出テスト（4.2.1）
+
+        [Test]
+        public void DetectGaps_nullを渡すと空のリストを返す()
+        {
+            // Act
+            var gaps = _processor.DetectGaps(null);
+
+            // Assert
+            Assert.IsNotNull(gaps);
+            Assert.AreEqual(0, gaps.Count);
+        }
+
+        [Test]
+        public void DetectGaps_空のリストを渡すと空のリストを返す()
+        {
+            // Act
+            var gaps = _processor.DetectGaps(new System.Collections.Generic.List<ClipInfo>());
+
+            // Assert
+            Assert.IsNotNull(gaps);
+            Assert.AreEqual(0, gaps.Count);
+        }
+
+        [Test]
+        public void DetectGaps_クリップが1つの場合は空のリストを返す()
+        {
+            // Arrange
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(gaps);
+            Assert.AreEqual(0, gaps.Count);
+        }
+
+        [Test]
+        public void DetectGaps_連続した2つのクリップ間にGapがない場合は空のリストを返す()
+        {
+            // Arrange: クリップ1 (0-1秒) とクリップ2 (1-2秒) が隙間なく連続
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 1.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+
+            // Act
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(gaps);
+            Assert.AreEqual(0, gaps.Count);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void DetectGaps_2つのクリップ間にGapがある場合は検出する()
+        {
+            // Arrange: クリップ1 (0-1秒) とクリップ2 (2-3秒) の間に1秒のGap
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+
+            // Act
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Assert
+            Assert.AreEqual(1, gaps.Count);
+            Assert.AreEqual(1.0, gaps[0].StartTime, 0.0001);
+            Assert.AreEqual(2.0, gaps[0].EndTime, 0.0001);
+            Assert.AreEqual(1.0, gaps[0].Duration, 0.0001);
+            Assert.IsTrue(gaps[0].IsValid);
+            Assert.AreSame(clipInfo1, gaps[0].PreviousClip);
+            Assert.AreSame(clipInfo2, gaps[0].NextClip);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void DetectGaps_ソートされていないクリップリストでも正しくGapを検出する()
+        {
+            // Arrange: クリップ2 (2-3秒)、クリップ1 (0-1秒) の順で追加（逆順）
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            // 逆順でリストに追加
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo2, clipInfo1 };
+
+            // Act
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Assert
+            Assert.AreEqual(1, gaps.Count);
+            Assert.AreEqual(1.0, gaps[0].StartTime, 0.0001);
+            Assert.AreEqual(2.0, gaps[0].EndTime, 0.0001);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void DetectGaps_複数のGapを検出する()
+        {
+            // Arrange: クリップ1 (0-1秒)、クリップ2 (2-3秒)、クリップ3 (4-5秒)
+            // Gap1: 1-2秒、Gap2: 3-4秒
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var testClip3 = new AnimationClip();
+            testClip3.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip3 = _animationTrack.CreateClip(testClip3);
+            timelineClip3.start = 4.0;
+            timelineClip3.duration = 1.0;
+            var clipInfo3 = new ClipInfo(timelineClip3, testClip3);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2, clipInfo3 };
+
+            // Act
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Assert
+            Assert.AreEqual(2, gaps.Count);
+
+            // Gap1: 1-2秒
+            Assert.AreEqual(1.0, gaps[0].StartTime, 0.0001);
+            Assert.AreEqual(2.0, gaps[0].EndTime, 0.0001);
+            Assert.AreSame(clipInfo1, gaps[0].PreviousClip);
+            Assert.AreSame(clipInfo2, gaps[0].NextClip);
+
+            // Gap2: 3-4秒
+            Assert.AreEqual(3.0, gaps[1].StartTime, 0.0001);
+            Assert.AreEqual(4.0, gaps[1].EndTime, 0.0001);
+            Assert.AreSame(clipInfo2, gaps[1].PreviousClip);
+            Assert.AreSame(clipInfo3, gaps[1].NextClip);
+
+            Object.DestroyImmediate(testClip2);
+            Object.DestroyImmediate(testClip3);
+        }
+
+        [Test]
+        public void DetectGaps_重なりのあるクリップはGapとして検出しない()
+        {
+            // Arrange: クリップ1 (0-2秒) とクリップ2 (1-3秒) が重なっている
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 2.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 1.0;
+            timelineClip2.duration = 2.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+
+            // Act
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Assert
+            Assert.AreEqual(0, gaps.Count);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void DetectGaps_nullのClipInfoはスキップする()
+        {
+            // Arrange: クリップ1、null、クリップ2
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, null, clipInfo2 };
+
+            // Act
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Assert
+            Assert.AreEqual(1, gaps.Count);
+            Assert.AreEqual(1.0, gaps[0].StartTime, 0.0001);
+            Assert.AreEqual(2.0, gaps[0].EndTime, 0.0001);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void TryGetGapAtTime_nullを渡すとfalseを返す()
+        {
+            // Act
+            var result = _processor.TryGetGapAtTime(null, 1.5, out var gapInfo);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void TryGetGapAtTime_Gap内の時間ではtrueを返しGap情報を取得できる()
+        {
+            // Arrange: クリップ1 (0-1秒) とクリップ2 (2-3秒) の間に1秒のGap
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Act - Gap内の時間（1.5秒）
+            var result = _processor.TryGetGapAtTime(gaps, 1.5, out var gapInfo);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(1.0, gapInfo.StartTime, 0.0001);
+            Assert.AreEqual(2.0, gapInfo.EndTime, 0.0001);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void TryGetGapAtTime_Gap外の時間ではfalseを返す()
+        {
+            // Arrange: クリップ1 (0-1秒) とクリップ2 (2-3秒) の間に1秒のGap
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Act - クリップ内の時間（0.5秒）
+            var result = _processor.TryGetGapAtTime(gaps, 0.5, out var gapInfo);
+
+            // Assert
+            Assert.IsFalse(result);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void TryGetGapAtTime_Gap開始時間ではtrueを返す()
+        {
+            // Arrange
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Act - Gap開始時間（1.0秒）
+            var result = _processor.TryGetGapAtTime(gaps, 1.0, out var gapInfo);
+
+            // Assert
+            Assert.IsTrue(result);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void TryGetGapAtTime_Gap終了時間ではfalseを返す()
+        {
+            // Arrange
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+            var gaps = _processor.DetectGaps(clipInfos);
+
+            // Act - Gap終了時間（2.0秒）は次のクリップの開始時間なのでfalse
+            var result = _processor.TryGetGapAtTime(gaps, 2.0, out var gapInfo);
+
+            // Assert
+            Assert.IsFalse(result);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void CalculateGapDuration_2つのクリップ間のGap時間を計算する()
+        {
+            // Arrange: クリップ1 (0-1秒) とクリップ2 (2-3秒)
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            // Act
+            var gapDuration = _processor.CalculateGapDuration(clipInfo1, clipInfo2);
+
+            // Assert
+            Assert.AreEqual(1.0, gapDuration, 0.0001);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void CalculateGapDuration_連続したクリップ間は0を返す()
+        {
+            // Arrange: クリップ1 (0-1秒) とクリップ2 (1-2秒)
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 1.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            // Act
+            var gapDuration = _processor.CalculateGapDuration(clipInfo1, clipInfo2);
+
+            // Assert
+            Assert.AreEqual(0.0, gapDuration, 0.0001);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void CalculateGapDuration_重なりがある場合は負の値を返す()
+        {
+            // Arrange: クリップ1 (0-2秒) とクリップ2 (1-3秒) が重なっている
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 2.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 1.0;
+            timelineClip2.duration = 2.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            // Act
+            var gapDuration = _processor.CalculateGapDuration(clipInfo1, clipInfo2);
+
+            // Assert
+            Assert.AreEqual(-1.0, gapDuration, 0.0001);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void CalculateGapDuration_nullクリップの場合は0を返す()
+        {
+            // Arrange
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            // Act & Assert
+            Assert.AreEqual(0.0, _processor.CalculateGapDuration(null, clipInfo1), 0.0001);
+            Assert.AreEqual(0.0, _processor.CalculateGapDuration(clipInfo1, null), 0.0001);
+            Assert.AreEqual(0.0, _processor.CalculateGapDuration(null, null), 0.0001);
+        }
+
+        [Test]
+        public void GapInfo_プロパティが正しく設定される()
+        {
+            // Arrange
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip1 = _animationTrack.CreateClip(_testClip);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, _testClip);
+
+            var testClip2 = new AnimationClip();
+            testClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip2 = _animationTrack.CreateClip(testClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, testClip2);
+
+            // Act
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo1, clipInfo2);
+
+            // Assert
+            Assert.AreEqual(1.0, gapInfo.StartTime, 0.0001);
+            Assert.AreEqual(2.0, gapInfo.EndTime, 0.0001);
+            Assert.AreEqual(1.0, gapInfo.Duration, 0.0001);
+            Assert.IsTrue(gapInfo.IsValid);
+            Assert.AreSame(clipInfo1, gapInfo.PreviousClip);
+            Assert.AreSame(clipInfo2, gapInfo.NextClip);
+
+            Object.DestroyImmediate(testClip2);
+        }
+
+        [Test]
+        public void GapInfo_Durationが0以下の場合はIsValidがfalseになる()
+        {
+            // Act & Assert
+            var gapInfoZero = new GapInfo(1.0, 1.0, null, null);
+            Assert.IsFalse(gapInfoZero.IsValid);
+            Assert.AreEqual(0.0, gapInfoZero.Duration, 0.0001);
+
+            var gapInfoNegative = new GapInfo(2.0, 1.0, null, null);
+            Assert.IsFalse(gapInfoNegative.IsValid);
+            Assert.AreEqual(-1.0, gapInfoNegative.Duration, 0.0001);
+        }
+
+        #endregion
     }
 }
