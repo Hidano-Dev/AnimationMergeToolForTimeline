@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEngine;
 
 namespace AnimationMergeTool.Editor.UI
 {
@@ -13,6 +14,11 @@ namespace AnimationMergeTool.Editor.UI
         /// 進捗バーのタイトル
         /// </summary>
         private const string ProgressBarTitle = "Animation Merge Tool";
+
+        /// <summary>
+        /// ログ出力時のプレフィックス
+        /// </summary>
+        private const string LogPrefix = "[Animation Merge Tool] ";
 
         /// <summary>
         /// 現在の進捗状態を表示しているかどうか
@@ -76,6 +82,33 @@ namespace AnimationMergeTool.Editor.UI
             CurrentProgress = 0f;
             CurrentMessage = string.Empty;
             EditorUtility.ClearProgressBar();
+        }
+
+        /// <summary>
+        /// 成功メッセージをConsoleに出力する
+        /// </summary>
+        /// <param name="message">出力するメッセージ</param>
+        public void LogSuccess(string message)
+        {
+            Debug.Log(LogPrefix + (message ?? string.Empty));
+        }
+
+        /// <summary>
+        /// エラーメッセージをConsoleに出力する
+        /// </summary>
+        /// <param name="message">出力するメッセージ</param>
+        public void LogError(string message)
+        {
+            Debug.LogError(LogPrefix + (message ?? string.Empty));
+        }
+
+        /// <summary>
+        /// 警告メッセージをConsoleに出力する
+        /// </summary>
+        /// <param name="message">出力するメッセージ</param>
+        public void LogWarning(string message)
+        {
+            Debug.LogWarning(LogPrefix + (message ?? string.Empty));
         }
     }
 }

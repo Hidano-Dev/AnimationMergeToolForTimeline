@@ -1,4 +1,6 @@
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 using AnimationMergeTool.Editor.UI;
 
 namespace AnimationMergeTool.Editor.Tests
@@ -6,6 +8,7 @@ namespace AnimationMergeTool.Editor.Tests
     /// <summary>
     /// ProgressDisplayクラスの単体テスト
     /// タスク8.3.2: 進捗表示機能のテスト
+    /// タスク8.3.3: 処理結果のConsole出力機能のテスト
     /// </summary>
     public class ProgressDisplayTests
     {
@@ -270,6 +273,108 @@ namespace AnimationMergeTool.Editor.Tests
             Assert.IsTrue(_progressDisplay.IsDisplaying);
             Assert.AreEqual("処理2", _progressDisplay.CurrentMessage);
             Assert.AreEqual(0f, _progressDisplay.CurrentProgress);
+        }
+
+        #endregion
+
+        #region LogSuccess テスト（タスク8.3.3）
+
+        [Test]
+        public void LogSuccess_メッセージがDebugLogに出力される()
+        {
+            // Act
+            _progressDisplay.LogSuccess("処理が正常に完了しました");
+
+            // Assert - LogAssertでログ出力を検証
+            LogAssert.Expect(LogType.Log, "[Animation Merge Tool] 処理が正常に完了しました");
+        }
+
+        [Test]
+        public void LogSuccess_nullを渡すとプレフィックスのみ出力される()
+        {
+            // Act
+            _progressDisplay.LogSuccess(null);
+
+            // Assert
+            LogAssert.Expect(LogType.Log, "[Animation Merge Tool] ");
+        }
+
+        [Test]
+        public void LogSuccess_空文字を渡すとプレフィックスのみ出力される()
+        {
+            // Act
+            _progressDisplay.LogSuccess(string.Empty);
+
+            // Assert
+            LogAssert.Expect(LogType.Log, "[Animation Merge Tool] ");
+        }
+
+        #endregion
+
+        #region LogError テスト（タスク8.3.3）
+
+        [Test]
+        public void LogError_メッセージがDebugLogErrorに出力される()
+        {
+            // Act
+            _progressDisplay.LogError("処理中にエラーが発生しました");
+
+            // Assert - LogAssertでエラーログ出力を検証
+            LogAssert.Expect(LogType.Error, "[Animation Merge Tool] 処理中にエラーが発生しました");
+        }
+
+        [Test]
+        public void LogError_nullを渡すとプレフィックスのみ出力される()
+        {
+            // Act
+            _progressDisplay.LogError(null);
+
+            // Assert
+            LogAssert.Expect(LogType.Error, "[Animation Merge Tool] ");
+        }
+
+        [Test]
+        public void LogError_空文字を渡すとプレフィックスのみ出力される()
+        {
+            // Act
+            _progressDisplay.LogError(string.Empty);
+
+            // Assert
+            LogAssert.Expect(LogType.Error, "[Animation Merge Tool] ");
+        }
+
+        #endregion
+
+        #region LogWarning テスト（タスク8.3.3）
+
+        [Test]
+        public void LogWarning_メッセージがDebugLogWarningに出力される()
+        {
+            // Act
+            _progressDisplay.LogWarning("警告: 一部のトラックがスキップされました");
+
+            // Assert - LogAssertで警告ログ出力を検証
+            LogAssert.Expect(LogType.Warning, "[Animation Merge Tool] 警告: 一部のトラックがスキップされました");
+        }
+
+        [Test]
+        public void LogWarning_nullを渡すとプレフィックスのみ出力される()
+        {
+            // Act
+            _progressDisplay.LogWarning(null);
+
+            // Assert
+            LogAssert.Expect(LogType.Warning, "[Animation Merge Tool] ");
+        }
+
+        [Test]
+        public void LogWarning_空文字を渡すとプレフィックスのみ出力される()
+        {
+            // Act
+            _progressDisplay.LogWarning(string.Empty);
+
+            // Assert
+            LogAssert.Expect(LogType.Warning, "[Animation Merge Tool] ");
         }
 
         #endregion
