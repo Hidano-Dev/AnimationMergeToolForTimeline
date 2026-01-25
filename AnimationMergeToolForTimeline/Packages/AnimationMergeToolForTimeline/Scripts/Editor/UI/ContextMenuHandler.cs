@@ -143,6 +143,28 @@ namespace AnimationMergeTool.Editor.UI
         }
 
         /// <summary>
+        /// Hierarchyビューのコンテキストメニューからマージ処理を実行する
+        /// FR-001: HierarchyビューでPlayableDirectorを右クリックした際のコンテキストメニューから実行可能
+        /// </summary>
+        [MenuItem(HierarchyMenuPath, false, MenuPriority)]
+        private static void ExecuteFromHierarchyMenu()
+        {
+            var directors = GetSelectedPlayableDirectors();
+            ExecuteForPlayableDirectors(directors);
+        }
+
+        /// <summary>
+        /// Hierarchyビューのコンテキストメニューの有効状態を判定する
+        /// PlayableDirectorが選択されている場合のみ有効
+        /// </summary>
+        /// <returns>PlayableDirectorが選択されている場合はtrue</returns>
+        [MenuItem(HierarchyMenuPath, true)]
+        private static bool ValidateExecuteFromHierarchyMenu()
+        {
+            return CanExecuteFromHierarchy();
+        }
+
+        /// <summary>
         /// 選択されたTimelineAssetに対してマージ処理を実行する
         /// </summary>
         /// <param name="timelineAssets">処理対象のTimelineAsset配列</param>

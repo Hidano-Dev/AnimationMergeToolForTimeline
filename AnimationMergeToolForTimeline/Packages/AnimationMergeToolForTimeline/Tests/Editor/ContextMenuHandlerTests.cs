@@ -1,0 +1,161 @@
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
+using AnimationMergeTool.Editor.UI;
+
+namespace AnimationMergeTool.Editor.Tests
+{
+    /// <summary>
+    /// ContextMenuHandlerクラスの単体テスト
+    /// タスク8.2.2: Hierarchyビューメニュー登録のテスト
+    /// </summary>
+    public class ContextMenuHandlerTests
+    {
+        #region Hierarchyビューメニュー テスト
+
+        [Test]
+        public void HierarchyMenuPath_正しいパスが設定されている()
+        {
+            // Assert
+            Assert.AreEqual(
+                "GameObject/Animation Merge Tool/Merge Timeline Animations",
+                ContextMenuHandler.HierarchyMenuPath
+            );
+        }
+
+        [Test]
+        public void CanExecuteFromHierarchy_PlayableDirectorが選択されていない場合falseを返す()
+        {
+            // Arrange
+            UnityEditor.Selection.objects = new Object[0];
+
+            // Act
+            var result = ContextMenuHandler.CanExecuteFromHierarchy();
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void CanExecuteFromHierarchy_PlayableDirectorが選択されている場合trueを返す()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+
+            try
+            {
+                UnityEditor.Selection.objects = new Object[] { go };
+
+                // Act
+                var result = ContextMenuHandler.CanExecuteFromHierarchy();
+
+                // Assert
+                Assert.IsTrue(result);
+            }
+            finally
+            {
+                UnityEditor.Selection.objects = new Object[0];
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void CanExecuteFromHierarchy_PlayableDirectorのないGameObjectが選択されている場合falseを返す()
+        {
+            // Arrange
+            var go = new GameObject("TestObject");
+
+            try
+            {
+                UnityEditor.Selection.objects = new Object[] { go };
+
+                // Act
+                var result = ContextMenuHandler.CanExecuteFromHierarchy();
+
+                // Assert
+                Assert.IsFalse(result);
+            }
+            finally
+            {
+                UnityEditor.Selection.objects = new Object[0];
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void GetSelectedPlayableDirectors_PlayableDirectorを持つGameObjectから取得できる()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+
+            try
+            {
+                UnityEditor.Selection.gameObjects = new GameObject[] { go };
+
+                // Act
+                var directors = ContextMenuHandler.GetSelectedPlayableDirectors();
+
+                // Assert
+                Assert.AreEqual(1, directors.Length);
+                Assert.AreSame(director, directors[0]);
+            }
+            finally
+            {
+                UnityEditor.Selection.objects = new Object[0];
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void GetSelectedPlayableDirectors_複数のPlayableDirectorを取得できる()
+        {
+            // Arrange
+            var go1 = new GameObject("TestDirector1");
+            var director1 = go1.AddComponent<PlayableDirector>();
+            var go2 = new GameObject("TestDirector2");
+            var director2 = go2.AddComponent<PlayableDirector>();
+
+            try
+            {
+                UnityEditor.Selection.gameObjects = new GameObject[] { go1, go2 };
+
+                // Act
+                var directors = ContextMenuHandler.GetSelectedPlayableDirectors();
+
+                // Assert
+                Assert.AreEqual(2, directors.Length);
+            }
+            finally
+            {
+                UnityEditor.Selection.objects = new Object[0];
+                Object.DestroyImmediate(go1);
+                Object.DestroyImmediate(go2);
+            }
+        }
+
+        [Test]
+        public void ExecuteForPlayableDirectors_nullの場合falseを返す()
+        {
+            // Act
+            var result = ContextMenuHandler.ExecuteForPlayableDirectors(null);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void ExecuteForPlayableDirectors_空配列の場合falseを返す()
+        {
+            // Act
+            var result = ContextMenuHandler.ExecuteForPlayableDirectors(new PlayableDirector[0]);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        #endregion
+    }
+}
