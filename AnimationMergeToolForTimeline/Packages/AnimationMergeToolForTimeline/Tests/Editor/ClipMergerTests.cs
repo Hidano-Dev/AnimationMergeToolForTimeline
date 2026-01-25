@@ -558,5 +558,296 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region Merge テスト（カーブ統合機能）
+
+        [Test]
+        public void Merge_nullを渡すとnullを返す()
+        {
+            // Act
+            var result = _clipMerger.Merge(null);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void Merge_空のリストを渡すとnullを返す()
+        {
+            // Act
+            var result = _clipMerger.Merge(new System.Collections.Generic.List<ClipInfo>());
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void Merge_単一のClipInfoからカーブを統合できる()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(1, resultCurves.Count);
+            Assert.AreEqual("localPosition.x", resultCurves[0].Binding.propertyName);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_複数のClipInfoから異なるプロパティのカーブを統合できる()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip1 = new AnimationClip();
+            animClip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var animClip2 = new AnimationClip();
+            animClip2.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
+
+            var timelineClip1 = _animationTrack.CreateClip(animClip1);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, animClip1);
+
+            var timelineClip2 = _animationTrack.CreateClip(animClip2);
+            timelineClip2.start = 1.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, animClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(2, resultCurves.Count);
+
+            Object.DestroyImmediate(animClip1);
+            Object.DestroyImmediate(animClip2);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_同じプロパティのカーブは時間軸上で統合される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip1 = new AnimationClip();
+            animClip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var animClip2 = new AnimationClip();
+            animClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 2, 1, 3));
+
+            var timelineClip1 = _animationTrack.CreateClip(animClip1);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, animClip1);
+
+            var timelineClip2 = _animationTrack.CreateClip(animClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, animClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(1, resultCurves.Count); // 同じプロパティは1つに統合
+            // 2つのクリップから各2キー = 4キー
+            Assert.AreEqual(4, resultCurves[0].Curve.keys.Length);
+
+            Object.DestroyImmediate(animClip1);
+            Object.DestroyImmediate(animClip2);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_時間オフセットが正しく適用される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 5.0; // 5秒から開始
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(1, resultCurves.Count);
+            // キーは5秒と6秒に配置される
+            Assert.AreEqual(5f, resultCurves[0].Curve.keys[0].time, 0.0001f);
+            Assert.AreEqual(6f, resultCurves[0].Curve.keys[1].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_フレームレートが設定される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            _clipMerger.SetFrameRate(30f);
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(30f, result.frameRate, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_nullのClipInfoは無視される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { null, clipInfo, null };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(1, resultCurves.Count);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_異なるパスのカーブは別々に統合される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip1 = new AnimationClip();
+            animClip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var animClip2 = new AnimationClip();
+            animClip2.SetCurve("Child", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 2));
+
+            var timelineClip1 = _animationTrack.CreateClip(animClip1);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, animClip1);
+
+            var timelineClip2 = _animationTrack.CreateClip(animClip2);
+            timelineClip2.start = 0.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, animClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(2, resultCurves.Count); // パスが違うので別々のカーブ
+
+            Object.DestroyImmediate(animClip1);
+            Object.DestroyImmediate(animClip2);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_同じ時間のキーフレームは後のClipInfoのものが優先される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip1 = new AnimationClip();
+            var curve1 = new AnimationCurve();
+            curve1.AddKey(0f, 10f);
+            animClip1.SetCurve("", typeof(Transform), "localPosition.x", curve1);
+
+            var animClip2 = new AnimationClip();
+            var curve2 = new AnimationCurve();
+            curve2.AddKey(0f, 20f); // 同じ時間（0秒）に異なる値
+            animClip2.SetCurve("", typeof(Transform), "localPosition.x", curve2);
+
+            var timelineClip1 = _animationTrack.CreateClip(animClip1);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, animClip1);
+
+            var timelineClip2 = _animationTrack.CreateClip(animClip2);
+            timelineClip2.start = 0.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, animClip2);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(1, resultCurves.Count);
+            Assert.AreEqual(1, resultCurves[0].Curve.keys.Length);
+            // 後から処理されたclipInfo2の値が優先される
+            Assert.AreEqual(20f, resultCurves[0].Curve.keys[0].value, 0.0001f);
+
+            Object.DestroyImmediate(animClip1);
+            Object.DestroyImmediate(animClip2);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        #endregion
     }
 }

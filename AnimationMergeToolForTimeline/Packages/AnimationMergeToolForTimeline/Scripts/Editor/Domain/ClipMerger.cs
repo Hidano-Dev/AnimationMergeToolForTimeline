@@ -61,11 +61,102 @@ namespace AnimationMergeTool.Editor.Domain
                 frameRate = _frameRate
             };
 
-            // TODO: 3.2.3〜3.2.4で実装予定
-            // - 時間オフセット適用機能
-            // - カーブ統合機能
+            // 統合されたカーブを格納する辞書（EditorCurveBindingの文字列表現をキーとして使用）
+            var mergedCurves = new Dictionary<string, MergedCurveData>();
+
+            foreach (var clipInfo in clipInfos)
+            {
+                if (clipInfo?.AnimationClip == null)
+                {
+                    continue;
+                }
+
+                // ClipInfoからすべてのカーブを取得
+                var curveBindingPairs = GetAnimationCurves(clipInfo.AnimationClip);
+
+                foreach (var pair in curveBindingPairs)
+                {
+                    // 時間オフセットを適用
+                    var offsetCurve = ApplyTimeOffset(pair.Curve, clipInfo);
+                    if (offsetCurve == null || offsetCurve.keys.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    // バインディングを一意に識別する文字列キーを生成
+                    var bindingKey = GetBindingKey(pair.Binding);
+
+                    // 同じバインディングのカーブが既にある場合はキーフレームを統合
+                    if (mergedCurves.TryGetValue(bindingKey, out var existingData))
+                    {
+                        MergeCurveKeys(existingData.Curve, offsetCurve);
+                    }
+                    else
+                    {
+                        mergedCurves[bindingKey] = new MergedCurveData(pair.Binding, offsetCurve);
+                    }
+                }
+            }
+
+            // 統合したカーブをAnimationClipに設定
+            foreach (var kvp in mergedCurves)
+            {
+                AnimationUtility.SetEditorCurve(resultClip, kvp.Value.Binding, kvp.Value.Curve);
+            }
 
             return resultClip;
+        }
+
+        /// <summary>
+        /// EditorCurveBindingを一意に識別する文字列キーを生成する
+        /// </summary>
+        /// <param name="binding">EditorCurveBinding</param>
+        /// <returns>一意識別キー</returns>
+        private string GetBindingKey(EditorCurveBinding binding)
+        {
+            return $"{binding.path}|{binding.type.FullName}|{binding.propertyName}";
+        }
+
+        /// <summary>
+        /// 2つのカーブのキーフレームを統合する
+        /// ソースカーブのキーフレームをターゲットカーブに追加する
+        /// 同じ時間のキーフレームが存在する場合は後から追加されたものが優先される
+        /// </summary>
+        /// <param name="targetCurve">統合先のカーブ（変更される）</param>
+        /// <param name="sourceCurve">統合元のカーブ</param>
+        private void MergeCurveKeys(AnimationCurve targetCurve, AnimationCurve sourceCurve)
+        {
+            foreach (var key in sourceCurve.keys)
+            {
+                // 同じ時間に既存のキーがあるかチェック
+                var existingIndex = FindKeyAtTime(targetCurve, key.time);
+                if (existingIndex >= 0)
+                {
+                    // 既存のキーを削除して新しいキーで置き換え
+                    targetCurve.RemoveKey(existingIndex);
+                }
+                targetCurve.AddKey(key);
+            }
+        }
+
+        /// <summary>
+        /// 指定した時間にあるキーフレームのインデックスを探す
+        /// </summary>
+        /// <param name="curve">検索対象のカーブ</param>
+        /// <param name="time">時間</param>
+        /// <returns>キーフレームのインデックス（見つからない場合は-1）</returns>
+        private int FindKeyAtTime(AnimationCurve curve, float time)
+        {
+            const float tolerance = 0.0001f;
+            var keys = curve.keys;
+            for (var i = 0; i < keys.Length; i++)
+            {
+                if (Mathf.Abs(keys[i].time - time) < tolerance)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         /// <summary>
@@ -215,6 +306,33 @@ namespace AnimationMergeTool.Editor.Domain
         /// <param name="binding">EditorCurveBinding</param>
         /// <param name="curve">AnimationCurve</param>
         public CurveBindingPair(EditorCurveBinding binding, AnimationCurve curve)
+        {
+            Binding = binding;
+            Curve = curve;
+        }
+    }
+
+    /// <summary>
+    /// 統合処理中のカーブデータを保持するクラス
+    /// </summary>
+    internal class MergedCurveData
+    {
+        /// <summary>
+        /// カーブのバインディング情報
+        /// </summary>
+        public EditorCurveBinding Binding { get; }
+
+        /// <summary>
+        /// 統合中のアニメーションカーブ
+        /// </summary>
+        public AnimationCurve Curve { get; }
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="binding">EditorCurveBinding</param>
+        /// <param name="curve">AnimationCurve</param>
+        public MergedCurveData(EditorCurveBinding binding, AnimationCurve curve)
         {
             Binding = binding;
             Curve = curve;
