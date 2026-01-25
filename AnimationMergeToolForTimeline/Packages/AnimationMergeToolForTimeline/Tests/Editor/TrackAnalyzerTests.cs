@@ -893,5 +893,297 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region GetParentGroup テスト
+
+        [Test]
+        public void GetParentGroup_trackがnullの場合nullを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetParentGroup(null);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void GetParentGroup_ルートトラックの場合nullを返す()
+        {
+            // Arrange
+            var track = _timelineAsset.CreateTrack<AnimationTrack>(null, "Root Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetParentGroup(track);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void GetParentGroup_GroupTrack内のトラックの場合親GroupTrackを返す()
+        {
+            // Arrange
+            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
+            var childTrack = _timelineAsset.CreateTrack<AnimationTrack>(groupTrack, "Child Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetParentGroup(childTrack);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(groupTrack, result);
+        }
+
+        #endregion
+
+        #region GetChildTracksInGroup テスト
+
+        [Test]
+        public void GetChildTracksInGroup_groupTrackがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetChildTracksInGroup(null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetChildTracksInGroup_子トラックがない場合空のリストを返す()
+        {
+            // Arrange
+            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Empty Group");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetChildTracksInGroup(groupTrack);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetChildTracksInGroup_子トラックがある場合全ての子トラックを返す()
+        {
+            // Arrange
+            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
+            var child1 = _timelineAsset.CreateTrack<AnimationTrack>(groupTrack, "Child 1");
+            var child2 = _timelineAsset.CreateTrack<AnimationTrack>(groupTrack, "Child 2");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetChildTracksInGroup(groupTrack);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+            Assert.IsTrue(result.Contains(child1));
+            Assert.IsTrue(result.Contains(child2));
+        }
+
+        #endregion
+
+        #region GetAnimationTracksInGroup テスト
+
+        [Test]
+        public void GetAnimationTracksInGroup_groupTrackがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksInGroup(null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetAnimationTracksInGroup_AnimationTrackのみを返す()
+        {
+            // Arrange
+            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
+            var animTrack = _timelineAsset.CreateTrack<AnimationTrack>(groupTrack, "Animation");
+            var nestedGroup = _timelineAsset.CreateTrack<GroupTrack>(groupTrack, "Nested Group");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksInGroup(groupTrack);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(animTrack, result[0].Track);
+        }
+
+        #endregion
+
+        #region GetAllGroupTracks テスト
+
+        [Test]
+        public void GetAllGroupTracks_TimelineAssetがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(null);
+
+            // Act
+            var result = analyzer.GetAllGroupTracks();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetAllGroupTracks_GroupTrackがない場合空のリストを返す()
+        {
+            // Arrange
+            var animTrack = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAllGroupTracks();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetAllGroupTracks_ルートレベルのGroupTrackを返す()
+        {
+            // Arrange
+            var group1 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 1");
+            var group2 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 2");
+            var animTrack = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAllGroupTracks();
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+            Assert.IsTrue(result.Contains(group1));
+            Assert.IsTrue(result.Contains(group2));
+        }
+
+        #endregion
+
+        #region IsTrackInGroup テスト
+
+        [Test]
+        public void IsTrackInGroup_trackがnullの場合falseを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.IsTrackInGroup(null);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void IsTrackInGroup_ルートトラックの場合falseを返す()
+        {
+            // Arrange
+            var track = _timelineAsset.CreateTrack<AnimationTrack>(null, "Root Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.IsTrackInGroup(track);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void IsTrackInGroup_GroupTrack内のトラックの場合trueを返す()
+        {
+            // Arrange
+            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
+            var childTrack = _timelineAsset.CreateTrack<AnimationTrack>(groupTrack, "Child Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.IsTrackInGroup(childTrack);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        #endregion
+
+        #region GetTrackDepth テスト
+
+        [Test]
+        public void GetTrackDepth_trackがnullの場合マイナス1を返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetTrackDepth(null);
+
+            // Assert
+            Assert.AreEqual(-1, result);
+        }
+
+        [Test]
+        public void GetTrackDepth_ルートトラックの場合0を返す()
+        {
+            // Arrange
+            var track = _timelineAsset.CreateTrack<AnimationTrack>(null, "Root Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetTrackDepth(track);
+
+            // Assert
+            Assert.AreEqual(0, result);
+        }
+
+        [Test]
+        public void GetTrackDepth_GroupTrack内のトラックの場合1を返す()
+        {
+            // Arrange
+            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
+            var childTrack = _timelineAsset.CreateTrack<AnimationTrack>(groupTrack, "Child Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetTrackDepth(childTrack);
+
+            // Assert
+            Assert.AreEqual(1, result);
+        }
+
+        [Test]
+        public void GetTrackDepth_ネストされたGroupTrack内のトラックの場合2を返す()
+        {
+            // Arrange
+            var group1 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 1");
+            var group2 = _timelineAsset.CreateTrack<GroupTrack>(group1, "Group 2");
+            var childTrack = _timelineAsset.CreateTrack<AnimationTrack>(group2, "Nested Child");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetTrackDepth(childTrack);
+
+            // Assert
+            Assert.AreEqual(2, result);
+        }
+
+        #endregion
     }
 }

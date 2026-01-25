@@ -244,5 +244,131 @@ namespace AnimationMergeTool.Editor.Domain
                 }
             }
         }
+
+        /// <summary>
+        /// 指定されたトラックの親GroupTrackを取得する
+        /// </summary>
+        /// <param name="track">親を取得するトラック</param>
+        /// <returns>親GroupTrack。親がない場合はnull</returns>
+        public GroupTrack GetParentGroup(TrackAsset track)
+        {
+            if (track == null)
+            {
+                return null;
+            }
+
+            return track.parent as GroupTrack;
+        }
+
+        /// <summary>
+        /// 指定されたGroupTrack内の子トラックを取得する
+        /// </summary>
+        /// <param name="groupTrack">子トラックを取得するGroupTrack</param>
+        /// <returns>子トラックのリスト</returns>
+        public List<TrackAsset> GetChildTracksInGroup(GroupTrack groupTrack)
+        {
+            var result = new List<TrackAsset>();
+
+            if (groupTrack == null)
+            {
+                return result;
+            }
+
+            foreach (var childTrack in groupTrack.GetChildTracks())
+            {
+                result.Add(childTrack);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 指定されたGroupTrack内のAnimationTrackのみを取得する
+        /// </summary>
+        /// <param name="groupTrack">AnimationTrackを取得するGroupTrack</param>
+        /// <returns>AnimationTrackのTrackInfoリスト</returns>
+        public List<TrackInfo> GetAnimationTracksInGroup(GroupTrack groupTrack)
+        {
+            var result = new List<TrackInfo>();
+
+            if (groupTrack == null)
+            {
+                return result;
+            }
+
+            foreach (var childTrack in groupTrack.GetChildTracks())
+            {
+                if (childTrack is AnimationTrack animationTrack)
+                {
+                    result.Add(new TrackInfo(animationTrack));
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// TimelineAsset内の全てのGroupTrackを取得する
+        /// </summary>
+        /// <returns>GroupTrackのリスト</returns>
+        public List<GroupTrack> GetAllGroupTracks()
+        {
+            var result = new List<GroupTrack>();
+
+            if (_timelineAsset == null)
+            {
+                return result;
+            }
+
+            foreach (var track in _timelineAsset.GetRootTracks())
+            {
+                if (track is GroupTrack groupTrack)
+                {
+                    result.Add(groupTrack);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// トラックがGroupTrack内に含まれているかを判定する
+        /// </summary>
+        /// <param name="track">判定対象のトラック</param>
+        /// <returns>GroupTrack内に含まれている場合true</returns>
+        public bool IsTrackInGroup(TrackAsset track)
+        {
+            if (track == null)
+            {
+                return false;
+            }
+
+            return track.parent is GroupTrack;
+        }
+
+        /// <summary>
+        /// 階層構造を含めてトラックの深さ（ネストレベル）を取得する
+        /// ルートレベルは0、GroupTrack内は1、ネストされたGroupTrack内は2...
+        /// </summary>
+        /// <param name="track">深さを取得するトラック</param>
+        /// <returns>トラックの深さ（ネストレベル）</returns>
+        public int GetTrackDepth(TrackAsset track)
+        {
+            if (track == null)
+            {
+                return -1;
+            }
+
+            int depth = 0;
+            var parent = track.parent;
+
+            while (parent is GroupTrack)
+            {
+                depth++;
+                parent = (parent as TrackAsset)?.parent;
+            }
+
+            return depth;
+        }
     }
 }
