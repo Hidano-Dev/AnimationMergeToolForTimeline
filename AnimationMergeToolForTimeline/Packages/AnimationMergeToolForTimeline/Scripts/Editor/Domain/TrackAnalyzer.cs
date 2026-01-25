@@ -177,5 +177,72 @@ namespace AnimationMergeTool.Editor.Domain
 
             return result;
         }
+
+        /// <summary>
+        /// AnimationTrackに優先順位を割り当てて取得する
+        /// Timeline上で下にあるトラック（インデックスが大きい）ほど高い優先順位を持つ
+        /// </summary>
+        /// <returns>優先順位が設定されたTrackInfoのリスト（優先順位の低い順）</returns>
+        public List<TrackInfo> GetAnimationTracksWithPriority()
+        {
+            var result = new List<TrackInfo>();
+
+            if (_timelineAsset == null)
+            {
+                return result;
+            }
+
+            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
+            var animationTracks = new List<(int index, AnimationTrack track)>();
+
+            // AnimationTrackのみを抽出しインデックスを記録
+            for (int i = 0; i < outputTracks.Count; i++)
+            {
+                if (outputTracks[i] is AnimationTrack animationTrack)
+                {
+                    animationTracks.Add((i, animationTrack));
+                }
+            }
+
+            // 優先順位を割り当て（インデックスが大きいほど高優先 = 優先順位の数値が大きい）
+            for (int i = 0; i < animationTracks.Count; i++)
+            {
+                var (index, track) = animationTracks[i];
+                var trackInfo = new TrackInfo(track, index);
+                result.Add(trackInfo);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// トラックリストに優先順位を割り当てる
+        /// Timeline上の位置（インデックス）に基づいて優先順位を設定する
+        /// 下にあるトラック（インデックスが大きい）ほど高い優先順位を持つ
+        /// </summary>
+        /// <param name="tracks">優先順位を割り当てるトラックリスト</param>
+        public void AssignPriorities(List<TrackInfo> tracks)
+        {
+            if (tracks == null || _timelineAsset == null)
+            {
+                return;
+            }
+
+            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
+
+            foreach (var trackInfo in tracks)
+            {
+                if (trackInfo?.Track == null)
+                {
+                    continue;
+                }
+
+                var index = outputTracks.IndexOf(trackInfo.Track);
+                if (index >= 0)
+                {
+                    trackInfo.Priority = index;
+                }
+            }
+        }
     }
 }

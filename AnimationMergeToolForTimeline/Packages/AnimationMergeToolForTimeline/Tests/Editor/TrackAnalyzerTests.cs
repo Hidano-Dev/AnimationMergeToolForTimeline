@@ -673,5 +673,225 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region GetAnimationTracksWithPriority テスト
+
+        [Test]
+        public void GetAnimationTracksWithPriority_TimelineAssetがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(null);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriority();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithPriority_トラックがない場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriority();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithPriority_下にあるトラックほど高い優先順位を持つ()
+        {
+            // Arrange
+            // Timeline上の順序: Track1(上) -> Track2(中) -> Track3(下)
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriority();
+
+            // Assert
+            Assert.AreEqual(3, result.Count);
+            // Track1 はインデックス0 なので Priority = 0
+            Assert.AreEqual(track1, result[0].Track);
+            Assert.AreEqual(0, result[0].Priority);
+            // Track2 はインデックス1 なので Priority = 1
+            Assert.AreEqual(track2, result[1].Track);
+            Assert.AreEqual(1, result[1].Priority);
+            // Track3 はインデックス2 なので Priority = 2（最も高い）
+            Assert.AreEqual(track3, result[2].Track);
+            Assert.AreEqual(2, result[2].Priority);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithPriority_GroupTrackを挟んでも正しい優先順位が割り当てられる()
+        {
+            // Arrange
+            // Timeline上の順序: Track1(0) -> GroupTrack(1) -> Track2(2)
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriority();
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+            // Track1 はインデックス0 なので Priority = 0
+            Assert.AreEqual(track1, result[0].Track);
+            Assert.AreEqual(0, result[0].Priority);
+            // Track2 はインデックス2 なので Priority = 2（GroupTrackがインデックス1）
+            Assert.AreEqual(track2, result[1].Track);
+            Assert.AreEqual(2, result[1].Priority);
+        }
+
+        [Test]
+        public void GetAnimationTracksWithPriority_優先順位の大小関係が正しい()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetAnimationTracksWithPriority();
+
+            // Assert
+            // 下にあるトラックほど高い優先順位 → Priority値が大きい
+            Assert.IsTrue(result[0].Priority < result[1].Priority);
+            Assert.IsTrue(result[1].Priority < result[2].Priority);
+        }
+
+        #endregion
+
+        #region AssignPriorities テスト
+
+        [Test]
+        public void AssignPriorities_tracksがnullの場合例外を投げない()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => analyzer.AssignPriorities(null));
+        }
+
+        [Test]
+        public void AssignPriorities_TimelineAssetがnullの場合何もしない()
+        {
+            // Arrange
+            var track = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track");
+            var trackInfo = new TrackInfo(track);
+            var tracks = new List<TrackInfo> { trackInfo };
+            var analyzer = new TrackAnalyzer(null);
+
+            // Act
+            analyzer.AssignPriorities(tracks);
+
+            // Assert
+            Assert.AreEqual(0, trackInfo.Priority); // 変更されていない
+        }
+
+        [Test]
+        public void AssignPriorities_トラックに正しい優先順位を割り当てる()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+
+            var trackInfo1 = new TrackInfo(track1);
+            var trackInfo2 = new TrackInfo(track2);
+            var trackInfo3 = new TrackInfo(track3);
+            var tracks = new List<TrackInfo> { trackInfo1, trackInfo2, trackInfo3 };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            analyzer.AssignPriorities(tracks);
+
+            // Assert
+            Assert.AreEqual(0, trackInfo1.Priority);
+            Assert.AreEqual(1, trackInfo2.Priority);
+            Assert.AreEqual(2, trackInfo3.Priority);
+        }
+
+        [Test]
+        public void AssignPriorities_nullのTrackInfoはスキップされる()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var trackInfo1 = new TrackInfo(track1);
+            var tracks = new List<TrackInfo> { trackInfo1, null };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => analyzer.AssignPriorities(tracks));
+            Assert.AreEqual(0, trackInfo1.Priority);
+        }
+
+        [Test]
+        public void AssignPriorities_Timelineに存在しないトラックは優先順位が変更されない()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var otherTimeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var otherTrack = otherTimeline.CreateTrack<AnimationTrack>(null, "Other Track");
+
+            var trackInfo1 = new TrackInfo(track1);
+            var trackInfoOther = new TrackInfo(otherTrack);
+            trackInfoOther.Priority = 999; // 初期値を設定
+
+            var tracks = new List<TrackInfo> { trackInfo1, trackInfoOther };
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            analyzer.AssignPriorities(tracks);
+
+            // Assert
+            Assert.AreEqual(0, trackInfo1.Priority);
+            Assert.AreEqual(999, trackInfoOther.Priority); // 変更されていない
+
+            // クリーンアップ
+            Object.DestroyImmediate(otherTimeline);
+        }
+
+        [Test]
+        public void AssignPriorities_リスト内の順序に関係なく正しい優先順位が割り当てられる()
+        {
+            // Arrange
+            var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
+            var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
+            var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
+
+            // リストの順序を逆にする
+            var trackInfo1 = new TrackInfo(track1);
+            var trackInfo2 = new TrackInfo(track2);
+            var trackInfo3 = new TrackInfo(track3);
+            var tracks = new List<TrackInfo> { trackInfo3, trackInfo1, trackInfo2 };
+
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            analyzer.AssignPriorities(tracks);
+
+            // Assert
+            // リスト順序に関係なく、Timelineの位置に基づいて優先順位が設定される
+            Assert.AreEqual(0, trackInfo1.Priority);
+            Assert.AreEqual(1, trackInfo2.Priority);
+            Assert.AreEqual(2, trackInfo3.Priority);
+        }
+
+        #endregion
     }
 }
