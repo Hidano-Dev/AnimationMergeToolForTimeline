@@ -638,6 +638,204 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region PingPong Extrapolation テスト（4.1.5）
+
+        [Test]
+        public void TryGetExtrapolatedValue_PreExtrapolationがPingPongの場合_クリップ開始前は往復した値を返す()
+        {
+            // Arrange: 0→0, 1→10 の線形カーブ（1秒のクリップ）
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 2.0; // クリップは2秒から開始
+            timelineClip.duration = 1.0;
+            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 1.5秒はクリップ開始前（0.5秒前）
+            // PingPong: |(-0.5) * 1.0| = 0.5 → PingPong(0.5, 1.0) = 0.5 → curve.Evaluate(0.5) = 5
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(5f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_PostExtrapolationがPingPongの場合_クリップ終了後は往復した値を返す()
+        {
+            // Arrange: 0→0, 1→10 の線形カーブ（1秒のクリップ）
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0; // クリップは1秒で終了
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 1.5秒はクリップ終了後
+            // PingPong: |1.5 * 1.0| = 1.5 → PingPong(1.5, 1.0) = 0.5 → curve.Evaluate(0.5) = 5
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(5f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_PingPongで往路と復路の値を正しく計算する()
+        {
+            // Arrange: 0→0, 1→10 の線形カーブ（1秒のクリップ）
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act & Assert - 1.3秒（往路の折り返し後、復路の0.3秒目）
+            // PingPong: PingPong(1.3, 1.0) = 0.7 → curve.Evaluate(0.7) = 7
+            var result1 = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.3f, out var value1);
+            Assert.IsTrue(result1);
+            Assert.AreEqual(7f, value1, 0.0001f);
+
+            // Act & Assert - 2.3秒（2往復目の往路0.3秒目）
+            // PingPong: PingPong(2.3, 1.0) = 0.3 → curve.Evaluate(0.3) = 3
+            var result2 = _processor.TryGetExtrapolatedValue(curve, clipInfo, 2.3f, out var value2);
+            Assert.IsTrue(result2);
+            Assert.AreEqual(3f, value2, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_PingPongとTimeScaleの組み合わせ()
+        {
+            // Arrange: TimeScale=2で2倍速再生
+            var curve = AnimationCurve.Linear(0, 0, 2, 20); // 0→0, 2→20
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0; // Timeline上では1秒
+            timelineClip.timeScale = 2.0; // 2倍速で2秒分のアニメーションを再生
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 1.5秒はクリップ終了後
+            // PingPong: |1.5 * 2.0| = 3.0 → PingPong(3.0, 2.0) = 1.0 → curve.Evaluate(1.0) = 10
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(10f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_PingPongとClipInの組み合わせ()
+        {
+            // Arrange: ClipIn=0.5でトリミング
+            var curve = AnimationCurve.Linear(0, 0, 2, 20); // 0→0, 2→20
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.clipIn = 0.5; // ソースクリップの0.5秒からスタート
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 1.5秒はクリップ終了後
+            // PingPong: PingPong(1.5, 1.0) = 0.5
+            // clipIn=0.5なので → curve.Evaluate(0.5 + 0.5) = curve.Evaluate(1.0) = 10
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(10f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_PingPongでクリップ範囲内は通常の値を返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 1.0;
+            timelineClip.duration = 1.0;
+            timelineClip.preExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act - 1.7秒はクリップ範囲内
+            var result = _processor.TryGetExtrapolatedValue(curve, clipInfo, 1.7f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(7f, value, 0.0001f); // 線形補間された値
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_PingPong境界での動作確認()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+
+            // Act & Assert - ちょうど2秒目（1往復完了、折り返し点）
+            // PingPong: PingPong(2.0, 1.0) = 0.0 → curve.Evaluate(0.0) = 0
+            var resultAt2 = _processor.TryGetExtrapolatedValue(curve, clipInfo, 2.0f, out var valueAt2);
+            Assert.IsTrue(resultAt2);
+            Assert.AreEqual(0f, valueAt2, 0.0001f);
+
+            // Act & Assert - ちょうど3秒目（復路の終点）
+            // PingPong: PingPong(3.0, 1.0) = 1.0 → curve.Evaluate(1.0) = 10
+            var resultAt3 = _processor.TryGetExtrapolatedValue(curve, clipInfo, 3.0f, out var valueAt3);
+            Assert.IsTrue(resultAt3);
+            Assert.AreEqual(10f, valueAt3, 0.0001f);
+
+            // Act & Assert - ちょうど4秒目（2往復完了）
+            // PingPong: PingPong(4.0, 1.0) = 0.0 → curve.Evaluate(0.0) = 0
+            var resultAt4 = _processor.TryGetExtrapolatedValue(curve, clipInfo, 4.0f, out var valueAt4);
+            Assert.IsTrue(resultAt4);
+            Assert.AreEqual(0f, valueAt4, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetExtrapolatedValue_PingPongとLoopの違いを確認()
+        {
+            // Arrange: 同じカーブでLoopとPingPongの挙動の違いを確認
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var timelineClipLoop = _animationTrack.CreateClip(_testClip);
+            timelineClipLoop.start = 0.0;
+            timelineClipLoop.duration = 1.0;
+            timelineClipLoop.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            var clipInfoLoop = new ClipInfo(timelineClipLoop, _testClip);
+
+            var timelineClipPingPong = _animationTrack.CreateClip(_testClip);
+            timelineClipPingPong.start = 0.0;
+            timelineClipPingPong.duration = 1.0;
+            timelineClipPingPong.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            var clipInfoPingPong = new ClipInfo(timelineClipPingPong, _testClip);
+
+            // Act & Assert - 1.7秒での比較
+            // Loop: Repeat(1.7, 1.0) = 0.7 → 7
+            // PingPong: PingPong(1.7, 1.0) = 0.3 → 3 (復路なので逆方向)
+            _processor.TryGetExtrapolatedValue(curve, clipInfoLoop, 1.7f, out var valueLoop);
+            _processor.TryGetExtrapolatedValue(curve, clipInfoPingPong, 1.7f, out var valuePingPong);
+
+            Assert.AreEqual(7f, valueLoop, 0.0001f);
+            Assert.AreEqual(3f, valuePingPong, 0.0001f);
+            Assert.AreNotEqual(valueLoop, valuePingPong);
+        }
+
+        #endregion
+
         #region フレームレート設定テスト
 
         [Test]
