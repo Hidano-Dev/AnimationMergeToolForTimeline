@@ -954,5 +954,144 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region タスク10.2.1 空のTimelineAssetの処理（エッジケース）テスト
+
+        [Test]
+        public void MergeFromTimelineAsset_完全に空のTimelineAssetの場合エラーログを出力して空のリストを返す()
+        {
+            // Arrange
+            // トラックが一切ないTimelineAsset
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "CompletelyEmptyTimeline";
+
+            try
+            {
+                // Act
+                var capturedLogs = new List<string>();
+                var originalLogHandler = Debug.unityLogger.logHandler;
+                var testLogHandler = new TestLogHandler(originalLogHandler, capturedLogs);
+                Debug.unityLogger.logHandler = testLogHandler;
+
+                try
+                {
+                    var results = _service.MergeFromTimelineAsset(timeline);
+
+                    // Assert
+                    Assert.IsNotNull(results, "結果がnullであってはならない");
+                    Assert.AreEqual(0, results.Count, "空のTimelineAssetの場合、空のリストを返すべき");
+
+                    // エラーログが出力されたことを確認
+                    Assert.IsTrue(
+                        capturedLogs.Exists(log =>
+                            log.Contains("[AnimationMergeTool]") &&
+                            log.Contains("有効なAnimationTrackが見つかりません")),
+                        "空のTimelineAssetに対するエラーログが出力されるべき");
+                }
+                finally
+                {
+                    Debug.unityLogger.logHandler = originalLogHandler;
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+            }
+        }
+
+        [Test]
+        public void MergeFromPlayableDirector_空のTimelineAssetがバインドされている場合エラーログを出力して空のリストを返す()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "EmptyTimelineForDirector";
+            director.playableAsset = timeline;
+            // トラックが一切ないTimelineAssetをバインド
+
+            try
+            {
+                // Act
+                var capturedLogs = new List<string>();
+                var originalLogHandler = Debug.unityLogger.logHandler;
+                var testLogHandler = new TestLogHandler(originalLogHandler, capturedLogs);
+                Debug.unityLogger.logHandler = testLogHandler;
+
+                try
+                {
+                    var results = _service.MergeFromPlayableDirector(director);
+
+                    // Assert
+                    Assert.IsNotNull(results, "結果がnullであってはならない");
+                    Assert.AreEqual(0, results.Count, "空のTimelineAssetの場合、空のリストを返すべき");
+
+                    // エラーログが出力されたことを確認
+                    Assert.IsTrue(
+                        capturedLogs.Exists(log =>
+                            log.Contains("[AnimationMergeTool]") &&
+                            log.Contains("バインドされたAnimatorが見つかりません")),
+                        "空のTimelineAssetに対するエラーログが出力されるべき");
+                }
+                finally
+                {
+                    Debug.unityLogger.logHandler = originalLogHandler;
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(timeline);
+            }
+        }
+
+        [Test]
+        public void MergeFromTimelineAsset_AnimationTrack以外のトラックのみのTimelineAssetの場合空のリストを返す()
+        {
+            // Arrange
+            // AnimationTrack以外のトラック（例: AudioTrack、SignalTrack等）のみを含むTimeline
+            // UnityのTimelineにはAudioTrackなど他のトラックタイプもあるが、
+            // テストではAnimationTrack以外が含まれないケースを想定
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "NonAnimationTrackTimeline";
+
+            // GroupTrackを追加（AnimationTrackではない）
+            timeline.CreateTrack<GroupTrack>(null, "EmptyGroup");
+
+            try
+            {
+                // Act
+                var capturedLogs = new List<string>();
+                var originalLogHandler = Debug.unityLogger.logHandler;
+                var testLogHandler = new TestLogHandler(originalLogHandler, capturedLogs);
+                Debug.unityLogger.logHandler = testLogHandler;
+
+                try
+                {
+                    var results = _service.MergeFromTimelineAsset(timeline);
+
+                    // Assert
+                    Assert.IsNotNull(results, "結果がnullであってはならない");
+                    Assert.AreEqual(0, results.Count, "AnimationTrackがない場合、空のリストを返すべき");
+
+                    // エラーログが出力されたことを確認
+                    Assert.IsTrue(
+                        capturedLogs.Exists(log =>
+                            log.Contains("[AnimationMergeTool]") &&
+                            log.Contains("有効なAnimationTrackが見つかりません")),
+                        "AnimationTrackがない場合のエラーログが出力されるべき");
+                }
+                finally
+                {
+                    Debug.unityLogger.logHandler = originalLogHandler;
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+            }
+        }
+
+        #endregion
     }
 }
