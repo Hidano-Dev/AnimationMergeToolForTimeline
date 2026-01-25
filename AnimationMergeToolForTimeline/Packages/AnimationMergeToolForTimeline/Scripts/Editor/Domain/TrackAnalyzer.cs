@@ -57,8 +57,24 @@ namespace AnimationMergeTool.Editor.Domain
         /// <returns>OverrideTrackのTrackInfoリスト</returns>
         public List<TrackInfo> GetOverrideTracks(AnimationTrack parentTrack)
         {
-            // 1.3.3で実装予定
-            return new List<TrackInfo>();
+            var result = new List<TrackInfo>();
+
+            if (parentTrack == null)
+            {
+                return result;
+            }
+
+            // 親トラックの子トラックを取得し、AnimationTrackのみをフィルタリング
+            foreach (var childTrack in parentTrack.GetChildTracks())
+            {
+                if (childTrack is AnimationTrack overrideTrack)
+                {
+                    var trackInfo = new TrackInfo(overrideTrack);
+                    result.Add(trackInfo);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

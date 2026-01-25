@@ -122,5 +122,87 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region GetOverrideTracks テスト
+
+        [Test]
+        public void GetOverrideTracks_parentTrackがnullの場合空のリストを返す()
+        {
+            // Arrange
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetOverrideTracks(null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetOverrideTracks_子トラックがない場合空のリストを返す()
+        {
+            // Arrange
+            var parentTrack = _timelineAsset.CreateTrack<AnimationTrack>(null, "Parent Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetOverrideTracks(parentTrack);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void GetOverrideTracks_OverrideTrackが1つある場合1つのTrackInfoを返す()
+        {
+            // Arrange
+            var parentTrack = _timelineAsset.CreateTrack<AnimationTrack>(null, "Parent Track");
+            var overrideTrack = _timelineAsset.CreateTrack<AnimationTrack>(parentTrack, "Override Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetOverrideTracks(parentTrack);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(overrideTrack, result[0].Track);
+        }
+
+        [Test]
+        public void GetOverrideTracks_複数のOverrideTrackがある場合全てのTrackInfoを返す()
+        {
+            // Arrange
+            var parentTrack = _timelineAsset.CreateTrack<AnimationTrack>(null, "Parent Track");
+            var override1 = _timelineAsset.CreateTrack<AnimationTrack>(parentTrack, "Override 1");
+            var override2 = _timelineAsset.CreateTrack<AnimationTrack>(parentTrack, "Override 2");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetOverrideTracks(parentTrack);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+        }
+
+        [Test]
+        public void GetOverrideTracks_親トラックのバインド情報とは独立したTrackInfoが返される()
+        {
+            // Arrange
+            var parentTrack = _timelineAsset.CreateTrack<AnimationTrack>(null, "Parent Track");
+            var overrideTrack = _timelineAsset.CreateTrack<AnimationTrack>(parentTrack, "Override Track");
+            var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // Act
+            var result = analyzer.GetOverrideTracks(parentTrack);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.IsNotNull(result[0]);
+            Assert.AreEqual(overrideTrack.name, result[0].Track.name);
+        }
+
+        #endregion
     }
 }
