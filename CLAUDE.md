@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 言語設定
+
+このプロジェクトでは**日本語で応答してください**。コード内のコメントも日本語で記述します。
+
 ## ドキュメント
 
 プロジェクトの詳細な仕様やテスト要件は以下のドキュメントを参照してください：
@@ -13,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Unity 6 (6000.0.64f1) で構築された、タイムラインシステム向けのアニメーション結合ツール。
+Unity 6 (6000.0.64f1) で構築された、タイムラインシステム向けのアニメーション結合ツール。Timeline上の複数のAnimationTrackを単一のAnimationClipに結合し、Timelineの再生動作を再現するエディタ拡張ツール。
 
 ## 開発環境
 
@@ -27,9 +31,14 @@ Unity 6 (6000.0.64f1) で構築された、タイムラインシステム向け�
 ```
 AnimationMergeToolForTimeline/
 ├── Assets/                    # ゲームアセット・スクリプト
-├── Packages/                  # Unity パッケージ依存関係
-├── ProjectSettings/           # Unity プロジェクト設定
-├── Assembly-CSharp.csproj     # ランタイムアセンブリ
+│   ├── Editor/               # エディタ専用スクリプト（予定）
+│   └── Scripts/              # ランタイムスクリプト（予定）
+├── Packages/
+│   ├── manifest.json         # パッケージ依存関係
+│   └── AnimationMergeToolForTimeline/
+│       └── Docs/             # 要件定義書・QAシート
+├── ProjectSettings/          # Unity プロジェクト設定
+├── Assembly-CSharp.csproj    # ランタイムアセンブリ
 └── Assembly-CSharp-Editor.csproj  # エディタ拡張アセンブリ
 ```
 
@@ -38,6 +47,15 @@ AnimationMergeToolForTimeline/
 ### Unity エディタでの操作
 - **プロジェクトを開く**: Unity Hub から `AnimationMergeToolForTimeline` フォルダを開く
 - **テスト実行**: Unity エディタ → Window → General → Test Runner
+
+### コマンドラインテスト
+```bash
+# EditMode テストの実行
+Unity.exe -batchmode -projectPath ./AnimationMergeToolForTimeline -runTests -testPlatform EditMode -testResults ./TestResults.xml
+
+# PlayMode テストの実行
+Unity.exe -batchmode -projectPath ./AnimationMergeToolForTimeline -runTests -testPlatform PlayMode -testResults ./TestResults.xml
+```
 
 ### コマンドラインビルド
 ```bash
@@ -54,11 +72,12 @@ Unity.exe -batchmode -projectPath ./AnimationMergeToolForTimeline -executeMethod
 
 | アセンブリ | 用途 |
 |-----------|------|
-| Assembly-CSharp | ランタイムスクリプト（ゲーム実行時に動作） |
-| Assembly-CSharp-Editor | エディタ拡張スクリプト（Unityエディタ内でのみ動作） |
+| Assembly-CSharp | ランタイムスクリプト（クリップ結合ロジック） |
+| Assembly-CSharp-Editor | エディタ拡張スクリプト（コンテキストメニュー、UI、アセット保存） |
 
 ## コーディング規約
 
 - エディタ専用コードは `Editor` フォルダ配下に配置
 - タイムライン関連の拡張は `Timeline` 名前空間を使用
 - ランタイムとエディタのコードを明確に分離
+- クリップデータ生成ロジックとアセットファイル作成を分離（要件定義書 NF-002参照）
