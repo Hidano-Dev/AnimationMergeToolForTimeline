@@ -18,13 +18,6 @@ namespace AnimationMergeTool.Editor.Domain
         private float _frameRate = 60f;
 
         /// <summary>
-        /// コンストラクタ
-        /// </summary>
-        public ClipMerger()
-        {
-        }
-
-        /// <summary>
         /// フレームレートを設定する
         /// </summary>
         /// <param name="frameRate">フレームレート（fps）</param>
@@ -263,9 +256,6 @@ namespace AnimationMergeTool.Editor.Domain
 
                 newCurve.AddKey(newKey);
             }
-
-            // カーブの補間モードを維持するため、元のカーブの設定を可能な限りコピー
-            // （AddKeyで追加したキーのtangentModeは個別に設定する必要がある）
 
             return newCurve;
         }
