@@ -913,6 +913,215 @@ namespace AnimationMergeTool.Editor.Tests
             }
         }
 
+        /// <summary>
+        /// タスク10.2.4: 大量のカーブを持つAnimationClipの処理
+        /// 多数のカーブを持つアニメーションでも正常に処理できることを検証
+        /// </summary>
+        [Test]
+        public void パフォーマンス_大量のカーブを持つAnimationClipの処理()
+        {
+            // Arrange: 100個以上のカーブを持つAnimationClipを作成
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "ManyCurvesTest";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "ManyCurvesTrack");
+
+            var animClip = new AnimationClip();
+            var curveCount = 100; // 100個のカーブ
+            var duration = 2.0f;
+
+            // 様々なプロパティに対するカーブを追加
+            for (int i = 0; i < curveCount; i++)
+            {
+                var curve = AnimationCurve.Linear(0, i, duration, i + 100);
+                animClip.SetCurve($"Bone_{i}", typeof(Transform), "localPosition.x", curve);
+            }
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = duration;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act: 処理時間を計測
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+                stopwatch.Stop();
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "処理は成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // 全てのカーブが正しく処理されていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+                Assert.AreEqual(curveCount, bindings.Length, $"{curveCount}個のカーブが含まれるべき");
+
+                // パフォーマンス: 100カーブは5秒以内に処理されるべき
+                Assert.Less(stopwatch.ElapsedMilliseconds, 5000,
+                    $"{curveCount}カーブは5秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
+
+                Debug.Log($"大量のカーブ（{curveCount}個）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// タスク10.2.4: 複数トラックにまたがる大量のカーブの処理
+        /// 複数のトラックに分散された大量のカーブを持つタイムラインでも正常に処理できることを検証
+        /// </summary>
+        [Test]
+        public void パフォーマンス_複数トラックにまたがる大量のカーブ()
+        {
+            // Arrange: 5トラック × 50カーブ = 250カーブ
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "MultiTrackManyCurvesTest";
+
+            var trackCount = 5;
+            var curvesPerTrack = 50;
+            var duration = 2.0f;
+
+            var createdClips = new List<AnimationClip>();
+
+            for (int t = 0; t < trackCount; t++)
+            {
+                var track = timeline.CreateTrack<AnimationTrack>(null, $"Track_{t}");
+                var animClip = new AnimationClip();
+                animClip.name = $"Clip_{t}";
+                createdClips.Add(animClip);
+
+                for (int c = 0; c < curvesPerTrack; c++)
+                {
+                    var curve = AnimationCurve.Linear(0, c, duration, c + 50);
+                    animClip.SetCurve($"Bone_T{t}_C{c}", typeof(Transform), "localPosition.x", curve);
+                }
+
+                var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+                timelineClip.start = 0;
+                timelineClip.duration = duration;
+                (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+            }
+
+            try
+            {
+                // Act
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+                stopwatch.Stop();
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "処理は成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // 全てのカーブが正しく処理されていることを確認
+                var totalCurves = trackCount * curvesPerTrack;
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+                Assert.AreEqual(totalCurves, bindings.Length, $"{totalCurves}個のカーブが含まれるべき");
+
+                // パフォーマンス: 250カーブは10秒以内に処理されるべき
+                Assert.Less(stopwatch.ElapsedMilliseconds, 10000,
+                    $"{totalCurves}カーブは10秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
+
+                Debug.Log($"複数トラックの大量カーブ（{trackCount}トラック×{curvesPerTrack}カーブ={totalCurves}個）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                foreach (var clip in createdClips)
+                {
+                    Object.DestroyImmediate(clip);
+                }
+            }
+        }
+
+        /// <summary>
+        /// タスク10.2.4: 極端に多いカーブを持つAnimationClipの処理
+        /// 500個のカーブを持つアニメーションでも処理できることを検証
+        /// </summary>
+        [Test]
+        public void パフォーマンス_極端に多いカーブを持つAnimationClipの処理()
+        {
+            // Arrange: 500個のカーブを持つAnimationClipを作成（Humanoidアバターの全ボーン×複数プロパティを想定）
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "VeryManyCurvesTest";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "VeryManyCurvesTrack");
+
+            var animClip = new AnimationClip();
+            var curveCount = 500; // 500個のカーブ
+            var duration = 3.0f;
+
+            // 様々なプロパティに対するカーブを追加（位置、回転、スケール）
+            for (int i = 0; i < curveCount / 3; i++)
+            {
+                var curveX = AnimationCurve.Linear(0, i, duration, i + 10);
+                var curveY = AnimationCurve.Linear(0, i * 2, duration, i * 2 + 10);
+                var curveZ = AnimationCurve.Linear(0, i * 3, duration, i * 3 + 10);
+                animClip.SetCurve($"Bone_{i}", typeof(Transform), "localPosition.x", curveX);
+                animClip.SetCurve($"Bone_{i}", typeof(Transform), "localPosition.y", curveY);
+                animClip.SetCurve($"Bone_{i}", typeof(Transform), "localPosition.z", curveZ);
+            }
+
+            // 残りのカーブを追加
+            var remainingCurves = curveCount - (curveCount / 3) * 3;
+            for (int i = 0; i < remainingCurves; i++)
+            {
+                var curve = AnimationCurve.Linear(0, i, duration, i + 5);
+                animClip.SetCurve($"Extra_{i}", typeof(Transform), "localScale.x", curve);
+            }
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = duration;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+                stopwatch.Stop();
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "処理は成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // カーブが正しく処理されていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+                Assert.GreaterOrEqual(bindings.Length, curveCount - 10, "ほぼ全てのカーブが含まれるべき");
+
+                // パフォーマンス: 500カーブは15秒以内に処理されるべき
+                Assert.Less(stopwatch.ElapsedMilliseconds, 15000,
+                    $"{curveCount}カーブは15秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
+
+                Debug.Log($"極端に多いカーブ（{bindings.Length}個）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
         #endregion
 
         #region ヘルパーメソッド
