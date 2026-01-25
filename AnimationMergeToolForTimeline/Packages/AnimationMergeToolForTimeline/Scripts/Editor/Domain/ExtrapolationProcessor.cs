@@ -448,5 +448,107 @@ namespace AnimationMergeTool.Editor.Domain
 
             return secondClip.StartTime - firstClip.EndTime;
         }
+
+        /// <summary>
+        /// Gap区間の補間処理を行い、前のクリップのPostExtrapolation設定に基づいてカーブを生成する
+        /// </summary>
+        /// <param name="sourceCurve">元のAnimationCurve</param>
+        /// <param name="gapInfo">Gap情報</param>
+        /// <returns>Gap区間の補間されたAnimationCurve（値がない場合やGapが無効な場合はnull）</returns>
+        public AnimationCurve FillGapWithExtrapolation(AnimationCurve sourceCurve, GapInfo gapInfo)
+        {
+            // 無効なパラメータチェック
+            if (sourceCurve == null || sourceCurve.keys.Length == 0)
+            {
+                return null;
+            }
+
+            if (!gapInfo.IsValid || gapInfo.PreviousClip == null)
+            {
+                return null;
+            }
+
+            var previousClip = gapInfo.PreviousClip;
+
+            // PostExtrapolationがNoneの場合は値を出力しない
+            if (previousClip.PostExtrapolation == TimelineClip.ClipExtrapolation.None)
+            {
+                return null;
+            }
+
+            var gapCurve = new AnimationCurve();
+            var frameInterval = 1f / _frameRate;
+            var gapStart = (float)gapInfo.StartTime;
+            var gapEnd = (float)gapInfo.EndTime;
+
+            // Gap区間をフレームレートに基づいてサンプリング
+            for (var time = gapStart; time < gapEnd; time += frameInterval)
+            {
+                if (TryGetExtrapolatedValue(sourceCurve, previousClip, time, out var value))
+                {
+                    gapCurve.AddKey(new Keyframe(time, value));
+                }
+            }
+
+            // Gap終了直前の最後のキーフレームを追加（精度確保のため）
+            var lastTime = gapEnd - 0.0001f;
+            if (lastTime > gapStart && TryGetExtrapolatedValue(sourceCurve, previousClip, lastTime, out var lastValue))
+            {
+                // 既存のキーがなければ追加
+                var hasKeyAtLastTime = false;
+                foreach (var key in gapCurve.keys)
+                {
+                    if (Mathf.Abs(key.time - lastTime) < 0.0001f)
+                    {
+                        hasKeyAtLastTime = true;
+                        break;
+                    }
+                }
+                if (!hasKeyAtLastTime)
+                {
+                    gapCurve.AddKey(new Keyframe(lastTime, lastValue));
+                }
+            }
+
+            return gapCurve.keys.Length > 0 ? gapCurve : null;
+        }
+
+        /// <summary>
+        /// Gap区間の指定時間における補間値を取得する
+        /// 前のクリップのPostExtrapolation設定に基づいて値を計算する
+        /// </summary>
+        /// <param name="sourceCurve">元のAnimationCurve</param>
+        /// <param name="gapInfo">Gap情報</param>
+        /// <param name="time">評価する時間（Timeline上の絶対時間）</param>
+        /// <param name="value">出力値</param>
+        /// <returns>値が存在する場合はtrue</returns>
+        public bool TryGetGapInterpolatedValue(
+            AnimationCurve sourceCurve,
+            GapInfo gapInfo,
+            float time,
+            out float value)
+        {
+            value = 0f;
+
+            // 無効なパラメータチェック
+            if (sourceCurve == null || sourceCurve.keys.Length == 0)
+            {
+                return false;
+            }
+
+            if (!gapInfo.IsValid || gapInfo.PreviousClip == null)
+            {
+                return false;
+            }
+
+            // 時間がGap区間内かチェック
+            if (time < gapInfo.StartTime || time >= gapInfo.EndTime)
+            {
+                return false;
+            }
+
+            // 前のクリップのPostExtrapolation設定を使用して値を取得
+            return TryGetExtrapolatedValue(sourceCurve, gapInfo.PreviousClip, time, out value);
+        }
     }
 }

@@ -1609,5 +1609,408 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region Gap区間の補間処理テスト（4.2.2）
+
+        [Test]
+        public void FillGapWithExtrapolation_nullカーブを渡すとnullを返す()
+        {
+            // Arrange
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.FillGapWithExtrapolation(null, gapInfo);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void FillGapWithExtrapolation_空のカーブを渡すとnullを返す()
+        {
+            // Arrange
+            var emptyCurve = new AnimationCurve();
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.FillGapWithExtrapolation(emptyCurve, gapInfo);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void FillGapWithExtrapolation_無効なGapInfoを渡すとnullを返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            var invalidGapInfo = new GapInfo(2.0, 1.0, null, null); // Duration < 0
+
+            // Act
+            var result = _processor.FillGapWithExtrapolation(curve, invalidGapInfo);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void FillGapWithExtrapolation_PreviousClipがnullの場合はnullを返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            var gapInfo = new GapInfo(1.0, 2.0, null, null);
+
+            // Act
+            var result = _processor.FillGapWithExtrapolation(curve, gapInfo);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void FillGapWithExtrapolation_PostExtrapolationがNoneの場合はnullを返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.FillGapWithExtrapolation(curve, gapInfo);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void FillGapWithExtrapolation_PostExtrapolationがHoldの場合はGap区間全体で最後の値を維持する()
+        {
+            // Arrange: クリップ (0-1秒)、Gap (1-2秒)
+            var curve = AnimationCurve.Linear(0, 0, 1, 10); // 0→0, 1→10
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.FillGapWithExtrapolation(curve, gapInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.Greater(result.keys.Length, 0);
+
+            // Gap区間内の値はすべて10（Hold）
+            foreach (var key in result.keys)
+            {
+                Assert.GreaterOrEqual(key.time, 1.0f);
+                Assert.Less(key.time, 2.0f);
+                Assert.AreEqual(10f, key.value, 0.0001f);
+            }
+        }
+
+        [Test]
+        public void FillGapWithExtrapolation_PostExtrapolationがLoopの場合はGap区間でループする()
+        {
+            // Arrange: クリップ (0-1秒)、Gap (1-2秒)
+            var curve = AnimationCurve.Linear(0, 0, 1, 10); // 0→0, 1→10
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.FillGapWithExtrapolation(curve, gapInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.Greater(result.keys.Length, 0);
+
+            // Gap区間内でループが正しく行われることを確認
+            // 例: 1.5秒 → Repeat(1.5, 1.0) = 0.5 → curve.Evaluate(0.5) = 5
+            var midKey = FindKeyNearTime(result, 1.5f);
+            if (midKey.HasValue)
+            {
+                Assert.AreEqual(5f, midKey.Value.value, 0.5f); // フレームレートによる誤差を許容
+            }
+        }
+
+        [Test]
+        public void FillGapWithExtrapolation_PostExtrapolationがContinueの場合はGap区間で接線延長する()
+        {
+            // Arrange: クリップ (0-1秒)、Gap (1-2秒)
+            var curve = AnimationCurve.Linear(0, 0, 1, 10); // 傾き=10
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.FillGapWithExtrapolation(curve, gapInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.Greater(result.keys.Length, 0);
+
+            // Gap区間内で接線延長が正しく行われることを確認
+            // 例: 1.5秒 → lastKeyValue + outTangent * timeDelta = 10 + 10 * 0.5 = 15
+            var midKey = FindKeyNearTime(result, 1.5f);
+            if (midKey.HasValue)
+            {
+                Assert.AreEqual(15f, midKey.Value.value, 0.5f); // フレームレートによる誤差を許容
+            }
+        }
+
+        [Test]
+        public void FillGapWithExtrapolation_フレームレートに基づいてサンプリングされる()
+        {
+            // Arrange: フレームレート30fps、Gap 1秒 → 約30サンプル
+            _processor.SetFrameRate(30f);
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.FillGapWithExtrapolation(curve, gapInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // 30fpsで1秒のGapなので約30サンプル（最後のキーフレーム追加を含む）
+            Assert.GreaterOrEqual(result.keys.Length, 29);
+            Assert.LessOrEqual(result.keys.Length, 32);
+        }
+
+        [Test]
+        public void TryGetGapInterpolatedValue_nullカーブを渡すとfalseを返す()
+        {
+            // Arrange
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.TryGetGapInterpolatedValue(null, gapInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsFalse(result);
+            Assert.AreEqual(0f, value);
+        }
+
+        [Test]
+        public void TryGetGapInterpolatedValue_無効なGapInfoを渡すとfalseを返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            var invalidGapInfo = new GapInfo(2.0, 1.0, null, null);
+
+            // Act
+            var result = _processor.TryGetGapInterpolatedValue(curve, invalidGapInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsFalse(result);
+            Assert.AreEqual(0f, value);
+        }
+
+        [Test]
+        public void TryGetGapInterpolatedValue_Gap区間外の時間ではfalseを返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act & Assert - Gap開始前
+            var resultBefore = _processor.TryGetGapInterpolatedValue(curve, gapInfo, 0.5f, out var valueBefore);
+            Assert.IsFalse(resultBefore);
+
+            // Act & Assert - Gap終了後（終了時間を含まない）
+            var resultAfter = _processor.TryGetGapInterpolatedValue(curve, gapInfo, 2.0f, out var valueAfter);
+            Assert.IsFalse(resultAfter);
+        }
+
+        [Test]
+        public void TryGetGapInterpolatedValue_Gap区間内の時間でHold設定の場合は正しい値を返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.TryGetGapInterpolatedValue(curve, gapInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(10f, value, 0.0001f); // Holdなので最後の値を維持
+        }
+
+        [Test]
+        public void TryGetGapInterpolatedValue_Gap区間内の時間でLoop設定の場合は正しい値を返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Loop;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act - 1.5秒 → Repeat(1.5, 1.0) = 0.5 → curve.Evaluate(0.5) = 5
+            var result = _processor.TryGetGapInterpolatedValue(curve, gapInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(5f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetGapInterpolatedValue_Gap区間内の時間でContinue設定の場合は正しい値を返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10); // 傾き=10
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Continue;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act - 1.5秒 → lastKeyValue + outTangent * timeDelta = 10 + 10 * 0.5 = 15
+            var result = _processor.TryGetGapInterpolatedValue(curve, gapInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(15f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetGapInterpolatedValue_Gap区間内の時間でPingPong設定の場合は正しい値を返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.PingPong;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act - 1.5秒 → PingPong(1.5, 1.0) = 0.5 → curve.Evaluate(0.5) = 5
+            var result = _processor.TryGetGapInterpolatedValue(curve, gapInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(5f, value, 0.0001f);
+        }
+
+        [Test]
+        public void TryGetGapInterpolatedValue_Gap区間内の時間でNone設定の場合はfalseを返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.None;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act
+            var result = _processor.TryGetGapInterpolatedValue(curve, gapInfo, 1.5f, out var value);
+
+            // Assert
+            Assert.IsFalse(result);
+            Assert.AreEqual(0f, value);
+        }
+
+        [Test]
+        public void TryGetGapInterpolatedValue_Gap開始時間ではtrueを返す()
+        {
+            // Arrange
+            var curve = AnimationCurve.Linear(0, 0, 1, 10);
+            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var timelineClip = _animationTrack.CreateClip(_testClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            timelineClip.postExtrapolationMode = TimelineClip.ClipExtrapolation.Hold;
+            var clipInfo = new ClipInfo(timelineClip, _testClip);
+            var gapInfo = new GapInfo(1.0, 2.0, clipInfo, null);
+
+            // Act - Gap開始時間ぴったり
+            var result = _processor.TryGetGapInterpolatedValue(curve, gapInfo, 1.0f, out var value);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.AreEqual(10f, value, 0.0001f);
+        }
+
+        /// <summary>
+        /// 指定した時間に近いキーフレームを検索するヘルパーメソッド
+        /// </summary>
+        private Keyframe? FindKeyNearTime(AnimationCurve curve, float time)
+        {
+            if (curve == null || curve.keys.Length == 0)
+            {
+                return null;
+            }
+
+            const float tolerance = 0.05f; // 50ms以内
+            foreach (var key in curve.keys)
+            {
+                if (Mathf.Abs(key.time - time) < tolerance)
+                {
+                    return key;
+                }
+            }
+            return null;
+        }
+
+        #endregion
     }
 }
