@@ -497,5 +497,306 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region BlendCurveValues テスト
+
+        [Test]
+        public void BlendCurveValues_ウェイト0の場合value1を返す()
+        {
+            // Arrange
+            float value1 = 10f;
+            float value2 = 20f;
+
+            // Act
+            var result = _blendProcessor.BlendCurveValues(value1, value2, 0f);
+
+            // Assert
+            Assert.AreEqual(10f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValues_ウェイト1の場合value2を返す()
+        {
+            // Arrange
+            float value1 = 10f;
+            float value2 = 20f;
+
+            // Act
+            var result = _blendProcessor.BlendCurveValues(value1, value2, 1f);
+
+            // Assert
+            Assert.AreEqual(20f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValues_ウェイト05の場合中間値を返す()
+        {
+            // Arrange
+            float value1 = 10f;
+            float value2 = 20f;
+
+            // Act
+            var result = _blendProcessor.BlendCurveValues(value1, value2, 0.5f);
+
+            // Assert
+            Assert.AreEqual(15f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValues_ウェイト025の場合正しい補間値を返す()
+        {
+            // Arrange
+            float value1 = 0f;
+            float value2 = 100f;
+
+            // Act
+            var result = _blendProcessor.BlendCurveValues(value1, value2, 0.25f);
+
+            // Assert
+            Assert.AreEqual(25f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValues_負のウェイトは0にクランプされる()
+        {
+            // Arrange
+            float value1 = 10f;
+            float value2 = 20f;
+
+            // Act
+            var result = _blendProcessor.BlendCurveValues(value1, value2, -0.5f);
+
+            // Assert
+            Assert.AreEqual(10f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValues_1より大きいウェイトは1にクランプされる()
+        {
+            // Arrange
+            float value1 = 10f;
+            float value2 = 20f;
+
+            // Act
+            var result = _blendProcessor.BlendCurveValues(value1, value2, 1.5f);
+
+            // Assert
+            Assert.AreEqual(20f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValues_負の値でも正しく補間する()
+        {
+            // Arrange
+            float value1 = -10f;
+            float value2 = 10f;
+
+            // Act
+            var result = _blendProcessor.BlendCurveValues(value1, value2, 0.5f);
+
+            // Assert
+            Assert.AreEqual(0f, result, 0.0001f);
+        }
+
+        #endregion
+
+        #region BlendCurveValuesAtTime テスト
+
+        [Test]
+        public void BlendCurveValuesAtTime_両方nullの場合0を返す()
+        {
+            // Act
+            var result = _blendProcessor.BlendCurveValuesAtTime(null, null, 0.5f, 0.5f);
+
+            // Assert
+            Assert.AreEqual(0f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValuesAtTime_curve1がnullの場合curve2の値を返す()
+        {
+            // Arrange
+            var curve2 = AnimationCurve.Linear(0, 10, 1, 20);
+
+            // Act
+            var result = _blendProcessor.BlendCurveValuesAtTime(null, curve2, 0.5f, 0.5f);
+
+            // Assert
+            Assert.AreEqual(15f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValuesAtTime_curve2がnullの場合curve1の値を返す()
+        {
+            // Arrange
+            var curve1 = AnimationCurve.Linear(0, 10, 1, 20);
+
+            // Act
+            var result = _blendProcessor.BlendCurveValuesAtTime(curve1, null, 0.5f, 0.5f);
+
+            // Assert
+            Assert.AreEqual(15f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValuesAtTime_2つのカーブを正しく補間する()
+        {
+            // Arrange
+            var curve1 = AnimationCurve.Constant(0, 1, 10f);  // 常に10
+            var curve2 = AnimationCurve.Constant(0, 1, 20f);  // 常に20
+
+            // Act
+            var result = _blendProcessor.BlendCurveValuesAtTime(curve1, curve2, 0.5f, 0.5f);
+
+            // Assert
+            Assert.AreEqual(15f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValuesAtTime_異なる時間での評価が正しい()
+        {
+            // Arrange
+            var curve1 = AnimationCurve.Linear(0, 0, 1, 100);  // 0〜100
+            var curve2 = AnimationCurve.Linear(0, 100, 1, 0);  // 100〜0
+
+            // Act - time=0.5でweight=0.5
+            var result = _blendProcessor.BlendCurveValuesAtTime(curve1, curve2, 0.5f, 0.5f);
+
+            // Assert
+            // curve1(0.5) = 50, curve2(0.5) = 50, 補間結果 = 50
+            Assert.AreEqual(50f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValuesAtTime_ウェイト0でcurve1の値を返す()
+        {
+            // Arrange
+            var curve1 = AnimationCurve.Constant(0, 1, 10f);
+            var curve2 = AnimationCurve.Constant(0, 1, 20f);
+
+            // Act
+            var result = _blendProcessor.BlendCurveValuesAtTime(curve1, curve2, 0.5f, 0f);
+
+            // Assert
+            Assert.AreEqual(10f, result, 0.0001f);
+        }
+
+        [Test]
+        public void BlendCurveValuesAtTime_ウェイト1でcurve2の値を返す()
+        {
+            // Arrange
+            var curve1 = AnimationCurve.Constant(0, 1, 10f);
+            var curve2 = AnimationCurve.Constant(0, 1, 20f);
+
+            // Act
+            var result = _blendProcessor.BlendCurveValuesAtTime(curve1, curve2, 0.5f, 1f);
+
+            // Assert
+            Assert.AreEqual(20f, result, 0.0001f);
+        }
+
+        #endregion
+
+        #region BlendVector3Values テスト
+
+        [Test]
+        public void BlendVector3Values_ウェイト0の場合value1を返す()
+        {
+            // Arrange
+            var value1 = new Vector3(0, 0, 0);
+            var value2 = new Vector3(10, 20, 30);
+
+            // Act
+            var result = _blendProcessor.BlendVector3Values(value1, value2, 0f);
+
+            // Assert
+            Assert.AreEqual(value1, result);
+        }
+
+        [Test]
+        public void BlendVector3Values_ウェイト1の場合value2を返す()
+        {
+            // Arrange
+            var value1 = new Vector3(0, 0, 0);
+            var value2 = new Vector3(10, 20, 30);
+
+            // Act
+            var result = _blendProcessor.BlendVector3Values(value1, value2, 1f);
+
+            // Assert
+            Assert.AreEqual(value2, result);
+        }
+
+        [Test]
+        public void BlendVector3Values_ウェイト05の場合中間値を返す()
+        {
+            // Arrange
+            var value1 = new Vector3(0, 0, 0);
+            var value2 = new Vector3(10, 20, 30);
+
+            // Act
+            var result = _blendProcessor.BlendVector3Values(value1, value2, 0.5f);
+
+            // Assert
+            Assert.AreEqual(new Vector3(5, 10, 15), result);
+        }
+
+        #endregion
+
+        #region BlendQuaternionValues テスト
+
+        [Test]
+        public void BlendQuaternionValues_ウェイト0の場合value1を返す()
+        {
+            // Arrange
+            var value1 = Quaternion.identity;
+            var value2 = Quaternion.Euler(0, 90, 0);
+
+            // Act
+            var result = _blendProcessor.BlendQuaternionValues(value1, value2, 0f);
+
+            // Assert
+            Assert.AreEqual(value1.x, result.x, 0.0001f);
+            Assert.AreEqual(value1.y, result.y, 0.0001f);
+            Assert.AreEqual(value1.z, result.z, 0.0001f);
+            Assert.AreEqual(value1.w, result.w, 0.0001f);
+        }
+
+        [Test]
+        public void BlendQuaternionValues_ウェイト1の場合value2を返す()
+        {
+            // Arrange
+            var value1 = Quaternion.identity;
+            var value2 = Quaternion.Euler(0, 90, 0);
+
+            // Act
+            var result = _blendProcessor.BlendQuaternionValues(value1, value2, 1f);
+
+            // Assert
+            Assert.AreEqual(value2.x, result.x, 0.0001f);
+            Assert.AreEqual(value2.y, result.y, 0.0001f);
+            Assert.AreEqual(value2.z, result.z, 0.0001f);
+            Assert.AreEqual(value2.w, result.w, 0.0001f);
+        }
+
+        [Test]
+        public void BlendQuaternionValues_ウェイト05の場合中間の回転を返す()
+        {
+            // Arrange
+            var value1 = Quaternion.identity;
+            var value2 = Quaternion.Euler(0, 90, 0);
+
+            // Act
+            var result = _blendProcessor.BlendQuaternionValues(value1, value2, 0.5f);
+
+            // Assert
+            var expected = Quaternion.Euler(0, 45, 0);
+            Assert.AreEqual(expected.x, result.x, 0.001f);
+            Assert.AreEqual(expected.y, result.y, 0.001f);
+            Assert.AreEqual(expected.z, result.z, 0.001f);
+            Assert.AreEqual(expected.w, result.w, 0.001f);
+        }
+
+        #endregion
     }
 }
