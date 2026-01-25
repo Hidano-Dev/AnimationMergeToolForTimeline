@@ -495,15 +495,7 @@ namespace AnimationMergeTool.Editor.Domain
             if (lastTime > gapStart && TryGetExtrapolatedValue(sourceCurve, previousClip, lastTime, out var lastValue))
             {
                 // 既存のキーがなければ追加
-                var hasKeyAtLastTime = false;
-                foreach (var key in gapCurve.keys)
-                {
-                    if (Mathf.Abs(key.time - lastTime) < 0.0001f)
-                    {
-                        hasKeyAtLastTime = true;
-                        break;
-                    }
-                }
+                var hasKeyAtLastTime = gapCurve.keys.Any(key => Mathf.Abs(key.time - lastTime) < 0.0001f);
                 if (!hasKeyAtLastTime)
                 {
                     gapCurve.AddKey(new Keyframe(lastTime, lastValue));
