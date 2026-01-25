@@ -1,7 +1,10 @@
 using NUnit.Framework;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.Timeline;
+using UnityEngine.Playables;
 using AnimationMergeTool.Editor.Domain;
+using AnimationMergeTool.Editor.Domain.Models;
 
 namespace AnimationMergeTool.Editor.Tests
 {
@@ -604,6 +607,259 @@ namespace AnimationMergeTool.Editor.Tests
             Assert.AreEqual(binding.type, pair.Binding.type);
             Assert.AreEqual(binding.propertyName, pair.Binding.propertyName);
             Assert.AreEqual(curve, pair.Curve);
+        }
+
+        #endregion
+
+        #region ApplyPartialOverrideWithExtrapolation テスト
+
+        /// <summary>
+        /// テスト用のClipInfoを作成するヘルパーメソッド
+        /// </summary>
+        private ClipInfo CreateTestClipInfo(
+            double startTime,
+            double duration,
+            TimelineClip.ClipExtrapolation preExtrapolation = TimelineClip.ClipExtrapolation.None,
+            TimelineClip.ClipExtrapolation postExtrapolation = TimelineClip.ClipExtrapolation.None)
+        {
+            // TimelineAssetとTrackを作成
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "Test Track");
+
+            // AnimationClipを作成
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, (float)duration, (float)duration);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            // TimelineClipを作成
+            var timelineClip = track.CreateClip(animClip);
+            timelineClip.start = startTime;
+            timelineClip.duration = duration;
+            timelineClip.preExtrapolationMode = preExtrapolation;
+            timelineClip.postExtrapolationMode = postExtrapolation;
+
+            return new ClipInfo(timelineClip, animClip);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithExtrapolation_高優先順位がnullの場合_低優先順位カーブを返す()
+        {
+            // Arrange
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(4f, 4f);
+
+            var lowerClipInfo = CreateTestClipInfo(0, 4);
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithExtrapolation(
+                lowerCurve, lowerClipInfo, null, null, null);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].value);
+            Assert.AreEqual(4f, result.keys[1].value);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithExtrapolation_低優先順位がnullの場合_高優先順位カーブを返す()
+        {
+            // Arrange
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(1f, 10f);
+            higherCurve.AddKey(2f, 20f);
+
+            var higherClipInfo = CreateTestClipInfo(1, 1);
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithExtrapolation(
+                null, null, higherCurve, higherClipInfo, null);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(10f, result.keys[0].value);
+            Assert.AreEqual(20f, result.keys[1].value);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithExtrapolation_ExtrapolationがNoneの場合_重なり区間外は低優先順位カーブを使用()
+        {
+            // Arrange
+            // 低優先順位: 0秒から4秒まで
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(4f, 4f);
+
+            var lowerClipInfo = CreateTestClipInfo(0, 4,
+                TimelineClip.ClipExtrapolation.None, TimelineClip.ClipExtrapolation.None);
+
+            // 高優先順位: 1秒から2秒まで（Extrapolation = None）
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(1f, 100f);
+            higherCurve.AddKey(2f, 200f);
+
+            var higherClipInfo = CreateTestClipInfo(1, 1,
+                TimelineClip.ClipExtrapolation.None, TimelineClip.ClipExtrapolation.None);
+
+            var processor = new ExtrapolationProcessor();
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithExtrapolation(
+                lowerCurve, lowerClipInfo, higherCurve, higherClipInfo, processor);
+
+            // Assert
+            // ExtrapolationがNoneなので、重なり区間（1-2秒）は高優先順位、
+            // それ以外（0秒、4秒）は低優先順位のキーが残る
+            Assert.IsTrue(result.keys.Length >= 4);
+
+            // 0秒のキーは低優先順位の値
+            Assert.AreEqual(0f, result.Evaluate(0f), 0.1f);
+
+            // 1-2秒の区間は高優先順位の値
+            Assert.AreEqual(100f, result.Evaluate(1f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(2f), 0.1f);
+
+            // 4秒のキーは低優先順位の値
+            Assert.AreEqual(4f, result.Evaluate(4f), 0.1f);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithExtrapolation_PostExtrapolationがHoldの場合_終了後は高優先順位の値を維持()
+        {
+            // Arrange
+            // 低優先順位: 0秒から4秒まで
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(4f, 4f);
+
+            var lowerClipInfo = CreateTestClipInfo(0, 4,
+                TimelineClip.ClipExtrapolation.None, TimelineClip.ClipExtrapolation.None);
+
+            // 高優先順位: 1秒から2秒まで（PostExtrapolation = Hold）
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(1f, 100f);
+            higherCurve.AddKey(2f, 200f);
+
+            var higherClipInfo = CreateTestClipInfo(1, 1,
+                TimelineClip.ClipExtrapolation.None, TimelineClip.ClipExtrapolation.Hold);
+
+            var processor = new ExtrapolationProcessor();
+            processor.SetFrameRate(10f); // テスト用に低フレームレートを使用
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithExtrapolation(
+                lowerCurve, lowerClipInfo, higherCurve, higherClipInfo, processor);
+
+            // Assert
+            // 2秒以降は高優先順位の最終値（200）をHoldする
+            Assert.AreEqual(200f, result.Evaluate(3f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(4f), 0.1f);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithExtrapolation_PreExtrapolationがHoldの場合_開始前は高優先順位の値を維持()
+        {
+            // Arrange
+            // 低優先順位: 0秒から4秒まで
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(4f, 4f);
+
+            var lowerClipInfo = CreateTestClipInfo(0, 4,
+                TimelineClip.ClipExtrapolation.None, TimelineClip.ClipExtrapolation.None);
+
+            // 高優先順位: 2秒から3秒まで（PreExtrapolation = Hold）
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(2f, 100f);
+            higherCurve.AddKey(3f, 200f);
+
+            var higherClipInfo = CreateTestClipInfo(2, 1,
+                TimelineClip.ClipExtrapolation.Hold, TimelineClip.ClipExtrapolation.None);
+
+            var processor = new ExtrapolationProcessor();
+            processor.SetFrameRate(10f);
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithExtrapolation(
+                lowerCurve, lowerClipInfo, higherCurve, higherClipInfo, processor);
+
+            // Assert
+            // 2秒より前は高優先順位の最初の値（100）をHoldする
+            Assert.AreEqual(100f, result.Evaluate(0f), 0.1f);
+            Assert.AreEqual(100f, result.Evaluate(1f), 0.1f);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithExtrapolation_両方のExtrapolationがHoldの場合_全区間で高優先順位が有効()
+        {
+            // Arrange
+            // 低優先順位: 0秒から5秒まで
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(5f, 5f);
+
+            var lowerClipInfo = CreateTestClipInfo(0, 5,
+                TimelineClip.ClipExtrapolation.None, TimelineClip.ClipExtrapolation.None);
+
+            // 高優先順位: 2秒から3秒まで（両方Hold）
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(2f, 100f);
+            higherCurve.AddKey(3f, 200f);
+
+            var higherClipInfo = CreateTestClipInfo(2, 1,
+                TimelineClip.ClipExtrapolation.Hold, TimelineClip.ClipExtrapolation.Hold);
+
+            var processor = new ExtrapolationProcessor();
+            processor.SetFrameRate(10f);
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithExtrapolation(
+                lowerCurve, lowerClipInfo, higherCurve, higherClipInfo, processor);
+
+            // Assert
+            // 0-2秒はPreExtrapolation(Hold)により100
+            Assert.AreEqual(100f, result.Evaluate(0f), 0.1f);
+            Assert.AreEqual(100f, result.Evaluate(1f), 0.1f);
+
+            // 2-3秒はクリップ内の値
+            Assert.AreEqual(100f, result.Evaluate(2f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(3f), 0.1f);
+
+            // 3-5秒はPostExtrapolation(Hold)により200
+            Assert.AreEqual(200f, result.Evaluate(4f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(5f), 0.1f);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithExtrapolation_元のカーブを変更しない()
+        {
+            // Arrange
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(4f, 4f);
+
+            var lowerClipInfo = CreateTestClipInfo(0, 4);
+
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(1f, 10f);
+            higherCurve.AddKey(2f, 20f);
+
+            var higherClipInfo = CreateTestClipInfo(1, 1,
+                TimelineClip.ClipExtrapolation.None, TimelineClip.ClipExtrapolation.Hold);
+
+            var originalLowerKeyCount = lowerCurve.keys.Length;
+            var originalHigherKeyCount = higherCurve.keys.Length;
+            var processor = new ExtrapolationProcessor();
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithExtrapolation(
+                lowerCurve, lowerClipInfo, higherCurve, higherClipInfo, processor);
+
+            // Assert
+            Assert.AreEqual(originalLowerKeyCount, lowerCurve.keys.Length);
+            Assert.AreEqual(originalHigherKeyCount, higherCurve.keys.Length);
+            Assert.AreNotSame(lowerCurve, result);
+            Assert.AreNotSame(higherCurve, result);
         }
 
         #endregion

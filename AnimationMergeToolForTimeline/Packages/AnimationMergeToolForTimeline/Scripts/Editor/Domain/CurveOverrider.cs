@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using AnimationMergeTool.Editor.Domain.Models;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 namespace AnimationMergeTool.Editor.Domain
 {
@@ -232,6 +234,150 @@ namespace AnimationMergeTool.Editor.Domain
                 copy.AddKey(key);
             }
             return copy;
+        }
+
+        /// <summary>
+        /// 部分的重なりのOverride処理を行う（Extrapolation設定対応）
+        /// FR-041: 下の段のクリップが上の段のクリップと部分的にしか重ならない場合、
+        /// 下の段のクリップのAnimationExtrapolation設定に従って処理する
+        /// </summary>
+        /// <param name="lowerPriorityCurve">低優先順位（上の段）のカーブ</param>
+        /// <param name="lowerPriorityClipInfo">低優先順位クリップの情報</param>
+        /// <param name="higherPriorityCurve">高優先順位（下の段）のカーブ</param>
+        /// <param name="higherPriorityClipInfo">高優先順位クリップの情報</param>
+        /// <param name="extrapolationProcessor">Extrapolation処理用プロセッサ</param>
+        /// <returns>Override処理後のカーブ</returns>
+        public AnimationCurve ApplyPartialOverrideWithExtrapolation(
+            AnimationCurve lowerPriorityCurve,
+            ClipInfo lowerPriorityClipInfo,
+            AnimationCurve higherPriorityCurve,
+            ClipInfo higherPriorityClipInfo,
+            ExtrapolationProcessor extrapolationProcessor)
+        {
+            var resultCurve = new AnimationCurve();
+
+            // 高優先順位カーブがnullの場合は低優先順位をそのまま返す
+            if (higherPriorityCurve == null || higherPriorityClipInfo == null)
+            {
+                return lowerPriorityCurve != null ? CopyCurve(lowerPriorityCurve) : resultCurve;
+            }
+
+            // 低優先順位カーブがnullの場合は高優先順位をそのまま返す
+            if (lowerPriorityCurve == null || lowerPriorityClipInfo == null)
+            {
+                return CopyCurve(higherPriorityCurve);
+            }
+
+            if (extrapolationProcessor == null)
+            {
+                extrapolationProcessor = new ExtrapolationProcessor();
+            }
+
+            var higherStartTime = (float)higherPriorityClipInfo.StartTime;
+            var higherEndTime = (float)higherPriorityClipInfo.EndTime;
+            var lowerStartTime = (float)lowerPriorityClipInfo.StartTime;
+            var lowerEndTime = (float)lowerPriorityClipInfo.EndTime;
+
+            // 低優先順位カーブのキーを追加（高優先順位の区間外のみ）
+            foreach (var key in lowerPriorityCurve.keys)
+            {
+                // 高優先順位の区間内のキーはスキップ
+                if (key.time >= higherStartTime && key.time <= higherEndTime)
+                {
+                    continue;
+                }
+                resultCurve.AddKey(key);
+            }
+
+            // 高優先順位カーブのキーをすべて追加
+            foreach (var key in higherPriorityCurve.keys)
+            {
+                resultCurve.AddKey(key);
+            }
+
+            // Extrapolation 処理:
+            // 高優先順位クリップが存在しない区間で、高優先順位のExtrapolation設定に基づいて値を追加
+            var frameRate = extrapolationProcessor.GetFrameRate();
+            var frameInterval = 1f / frameRate;
+
+            // 高優先順位クリップ開始前の区間（PreExtrapolation）
+            // 低優先順位クリップの範囲内で、高優先順位より前の区間
+            if (higherStartTime > lowerStartTime)
+            {
+                var preExtrapStart = Mathf.Max(lowerStartTime, higherStartTime - GetExtrapolationRange(higherPriorityClipInfo.PreExtrapolation));
+
+                // PreExtrapolationがNone以外の場合のみ処理
+                if (higherPriorityClipInfo.PreExtrapolation != TimelineClip.ClipExtrapolation.None)
+                {
+                    // 高優先順位クリップのPreExtrapolationで低優先順位のキーを上書き
+                    for (var time = lowerStartTime; time < higherStartTime; time += frameInterval)
+                    {
+                        if (extrapolationProcessor.TryGetExtrapolatedValue(
+                            higherPriorityCurve, higherPriorityClipInfo, time, out var value))
+                        {
+                            // 既存のキーを削除して新しい値で置換
+                            RemoveKeyAtTime(resultCurve, time);
+                            resultCurve.AddKey(new Keyframe(time, value));
+                        }
+                    }
+                }
+            }
+
+            // 高優先順位クリップ終了後の区間（PostExtrapolation）
+            // 低優先順位クリップの範囲内で、高優先順位より後の区間
+            if (higherEndTime < lowerEndTime)
+            {
+                // PostExtrapolationがNone以外の場合のみ処理
+                if (higherPriorityClipInfo.PostExtrapolation != TimelineClip.ClipExtrapolation.None)
+                {
+                    // 高優先順位クリップのPostExtrapolationで低優先順位のキーを上書き
+                    for (var time = higherEndTime + frameInterval; time <= lowerEndTime; time += frameInterval)
+                    {
+                        if (extrapolationProcessor.TryGetExtrapolatedValue(
+                            higherPriorityCurve, higherPriorityClipInfo, time, out var value))
+                        {
+                            // 既存のキーを削除して新しい値で置換
+                            RemoveKeyAtTime(resultCurve, time);
+                            resultCurve.AddKey(new Keyframe(time, value));
+                        }
+                    }
+
+                    // 最終時間に近いポイントを追加（精度確保）
+                    var lastTime = lowerEndTime;
+                    if (extrapolationProcessor.TryGetExtrapolatedValue(
+                        higherPriorityCurve, higherPriorityClipInfo, lastTime, out var lastValue))
+                    {
+                        RemoveKeyAtTime(resultCurve, lastTime);
+                        resultCurve.AddKey(new Keyframe(lastTime, lastValue));
+                    }
+                }
+            }
+
+            return resultCurve;
+        }
+
+        /// <summary>
+        /// Extrapolationモードに基づいて処理する範囲を取得する
+        /// </summary>
+        private float GetExtrapolationRange(TimelineClip.ClipExtrapolation mode)
+        {
+            // 実際の範囲は低優先順位クリップの範囲で制限されるため、
+            // ここでは大きな値を返して全範囲を処理対象とする
+            return mode == TimelineClip.ClipExtrapolation.None ? 0f : float.MaxValue;
+        }
+
+        /// <summary>
+        /// 指定時間付近のキーフレームを削除する
+        /// </summary>
+        private void RemoveKeyAtTime(AnimationCurve curve, float time, float tolerance = 0.0001f)
+        {
+            for (var i = curve.keys.Length - 1; i >= 0; i--)
+            {
+                if (Mathf.Abs(curve.keys[i].time - time) < tolerance)
+                {
+                    curve.RemoveKey(i);
+                }
+            }
         }
     }
 
