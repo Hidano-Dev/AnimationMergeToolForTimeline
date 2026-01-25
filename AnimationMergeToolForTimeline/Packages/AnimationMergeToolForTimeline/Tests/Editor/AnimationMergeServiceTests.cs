@@ -566,5 +566,207 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region タスク8.1.3 Animator単位の処理分割 テスト
+
+        [Test]
+        public void MergeFromPlayableDirector_複数Animatorがある場合それぞれ別のAnimationClipを出力する()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+
+            // Animator A
+            var animatorGoA = new GameObject("AnimatorA");
+            var animatorA = animatorGoA.AddComponent<Animator>();
+
+            // Animator B
+            var animatorGoB = new GameObject("AnimatorB");
+            var animatorB = animatorGoB.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+
+            // Animator Aにバインドするトラック
+            var trackA = timeline.CreateTrack<AnimationTrack>(null, "TrackA");
+            var animClipA = new AnimationClip();
+            var curveA = AnimationCurve.Linear(0, 0, 1, 10);
+            animClipA.SetCurve("", typeof(Transform), "localPosition.x", curveA);
+            var timelineClipA = trackA.CreateClip<AnimationPlayableAsset>();
+            timelineClipA.start = 0;
+            timelineClipA.duration = 1;
+            (timelineClipA.asset as AnimationPlayableAsset).clip = animClipA;
+
+            // Animator Bにバインドするトラック
+            var trackB = timeline.CreateTrack<AnimationTrack>(null, "TrackB");
+            var animClipB = new AnimationClip();
+            var curveB = AnimationCurve.Linear(0, 0, 1, 20);
+            animClipB.SetCurve("", typeof(Transform), "localPosition.y", curveB);
+            var timelineClipB = trackB.CreateClip<AnimationPlayableAsset>();
+            timelineClipB.start = 0;
+            timelineClipB.duration = 1;
+            (timelineClipB.asset as AnimationPlayableAsset).clip = animClipB;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(trackA, animatorA);
+            director.SetGenericBinding(trackB, animatorB);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(2, results.Count, "2つのAnimatorに対して2つのMergeResultが生成されるべき");
+
+                // 各結果が正しいAnimatorに紐づいているか確認
+                MergeResult resultA = null;
+                MergeResult resultB = null;
+                foreach (var result in results)
+                {
+                    if (result.TargetAnimator == animatorA)
+                    {
+                        resultA = result;
+                    }
+                    else if (result.TargetAnimator == animatorB)
+                    {
+                        resultB = result;
+                    }
+                }
+
+                Assert.IsNotNull(resultA, "AnimatorAに対する結果が存在すべき");
+                Assert.IsNotNull(resultB, "AnimatorBに対する結果が存在すべき");
+                Assert.IsTrue(resultA.IsSuccess, "AnimatorAの処理が成功すべき");
+                Assert.IsTrue(resultB.IsSuccess, "AnimatorBの処理が成功すべき");
+                Assert.IsNotNull(resultA.GeneratedClip, "AnimatorA用のAnimationClipが生成されるべき");
+                Assert.IsNotNull(resultB.GeneratedClip, "AnimatorB用のAnimationClipが生成されるべき");
+
+                // 生成されたクリップが別々であることを確認
+                Assert.AreNotSame(resultA.GeneratedClip, resultB.GeneratedClip, "2つの別々のAnimationClipが生成されるべき");
+
+                // 各クリップに正しいカーブが含まれていることを確認
+                var bindingsA = AnimationUtility.GetCurveBindings(resultA.GeneratedClip);
+                var bindingsB = AnimationUtility.GetCurveBindings(resultB.GeneratedClip);
+
+                Assert.AreEqual(1, bindingsA.Length, "AnimatorA用クリップには1つのカーブがあるべき");
+                Assert.AreEqual(1, bindingsB.Length, "AnimatorB用クリップには1つのカーブがあるべき");
+                Assert.AreEqual("localPosition.x", bindingsA[0].propertyName, "AnimatorA用クリップにはlocalPosition.xカーブがあるべき");
+                Assert.AreEqual("localPosition.y", bindingsB[0].propertyName, "AnimatorB用クリップにはlocalPosition.yカーブがあるべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var result in results)
+                {
+                    foreach (var log in result.Logs)
+                    {
+                        if (log.Contains("出力完了:") || log.Contains(".anim"))
+                        {
+                            var parts = log.Split(' ');
+                            foreach (var part in parts)
+                            {
+                                if (part.EndsWith(".anim"))
+                                {
+                                    _createdAssetPaths.Add(part);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGoA);
+                Object.DestroyImmediate(animatorGoB);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClipA);
+                Object.DestroyImmediate(animClipB);
+            }
+        }
+
+        [Test]
+        public void MergeFromPlayableDirector_同一Animatorに複数トラックがバインドされている場合1つのAnimationClipに統合される()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("TestAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+
+            // 同じAnimatorにバインドする2つのトラック
+            var track1 = timeline.CreateTrack<AnimationTrack>(null, "Track1");
+            var animClip1 = new AnimationClip();
+            var curve1 = AnimationCurve.Linear(0, 0, 1, 10);
+            animClip1.SetCurve("", typeof(Transform), "localPosition.x", curve1);
+            var timelineClip1 = track1.CreateClip<AnimationPlayableAsset>();
+            timelineClip1.start = 0;
+            timelineClip1.duration = 1;
+            (timelineClip1.asset as AnimationPlayableAsset).clip = animClip1;
+
+            var track2 = timeline.CreateTrack<AnimationTrack>(null, "Track2");
+            var animClip2 = new AnimationClip();
+            var curve2 = AnimationCurve.Linear(0, 0, 1, 20);
+            animClip2.SetCurve("", typeof(Transform), "localPosition.y", curve2);
+            var timelineClip2 = track2.CreateClip<AnimationPlayableAsset>();
+            timelineClip2.start = 0;
+            timelineClip2.duration = 1;
+            (timelineClip2.asset as AnimationPlayableAsset).clip = animClip2;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track1, animator);
+            director.SetGenericBinding(track2, animator);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(1, results.Count, "同一Animatorなので1つのMergeResultのみ");
+                Assert.IsTrue(results[0].IsSuccess);
+                Assert.AreSame(animator, results[0].TargetAnimator);
+                Assert.IsNotNull(results[0].GeneratedClip);
+
+                // 両方のカーブが1つのクリップに含まれていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+                Assert.AreEqual(2, bindings.Length, "両方のカーブが1つのクリップに統合されるべき");
+
+                var propertyNames = new HashSet<string>();
+                foreach (var binding in bindings)
+                {
+                    propertyNames.Add(binding.propertyName);
+                }
+                Assert.IsTrue(propertyNames.Contains("localPosition.x"), "localPosition.xカーブが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("localPosition.y"), "localPosition.yカーブが含まれるべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains("出力完了:") || log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip1);
+                Object.DestroyImmediate(animClip2);
+            }
+        }
+
+        #endregion
     }
 }
