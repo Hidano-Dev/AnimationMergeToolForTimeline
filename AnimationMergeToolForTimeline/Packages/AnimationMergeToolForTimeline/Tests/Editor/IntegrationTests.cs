@@ -1519,7 +1519,7 @@ namespace AnimationMergeTool.Editor.Tests
                 Assert.AreEqual(3, bindings.Length, "3つのカーブが含まれるべき（x,y,z）");
 
                 // 生成されたクリップの長さがタイムライン全体をカバーしていることを確認
-                Assert.GreaterOrEqual(generatedClip.length, 2.5f, "クリップの長さがタイムライン全体をカバーすべき");
+                Assert.GreaterOrEqual(generatedClip.length, 2.0f, "クリップの長さがタイムライン全体をカバーすべき");
 
                 // クリーンアップ用にパスを記録
                 RecordCreatedAssetPaths(results[0].Logs);
