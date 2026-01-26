@@ -353,16 +353,22 @@ namespace AnimationMergeTool.Editor.Domain
                 return new ConsecutiveBlendInfo { BlendStartTime = 0, BlendEndTime = 0 };
             }
 
-            // ブレンド区間の検出：次のクリップの開始がEaseIn区間を持ち、
-            // かつ前のクリップの終了がEaseOut区間を持ち、両者が重なっている場合
-            double previousClipEaseOutStart = previousClip.EndTime - previousClip.EaseOutDuration;
-            double nextClipEaseInEnd = nextClip.StartTime + nextClip.EaseInDuration;
+            // クリップの時間的オーバーラップを直接検出
+            // 注意: UnityのTimelineClipでは、クリップがオーバーラップしている場合、
+            // easeOutDuration/easeInDurationは0を返すため、直接時間の重なりを計算する
 
-            // 重なり区間を計算
-            double overlapStart = Math.Max(previousClipEaseOutStart, nextClip.StartTime);
-            double overlapEnd = Math.Min(previousClip.EndTime, nextClipEaseInEnd);
+            // クリップが時間的に重なっていない場合
+            if (nextClip.StartTime >= previousClip.EndTime)
+            {
+                return new ConsecutiveBlendInfo { BlendStartTime = 0, BlendEndTime = 0 };
+            }
 
-            // クリップが時間的に重なっていない、またはブレンド区間が存在しない場合
+            // オーバーラップ区間を計算
+            // ブレンド区間 = 次のクリップの開始から、前のクリップの終了まで
+            double overlapStart = nextClip.StartTime;
+            double overlapEnd = Math.Min(previousClip.EndTime, nextClip.EndTime);
+
+            // オーバーラップがない場合
             if (overlapStart >= overlapEnd)
             {
                 return new ConsecutiveBlendInfo { BlendStartTime = 0, BlendEndTime = 0 };
@@ -417,36 +423,36 @@ namespace AnimationMergeTool.Editor.Domain
             // 前のクリップのEaseOutウェイトを計算
             // mixOutCurveは1→0に遷移するカーブなので、そのまま使用
             float previousWeight = 1f;
-            if (blendInfo.PreviousClipEaseOutCurve != null && blendInfo.PreviousClip != null && blendInfo.PreviousClip.EaseOutDuration > 0)
+            bool usedPreviousCurve = false;
+
+            // カーブが存在し、ブレンド区間内であればカーブを評価
+            // 注意: オーバーラップ時はEaseOutDurationが0を返すため、ブレンド区間自体を使用
+            if (blendInfo.PreviousClipEaseOutCurve != null && blendInfo.PreviousClip != null)
             {
-                double easeOutStartTime = blendInfo.PreviousClip.EndTime - blendInfo.PreviousClip.EaseOutDuration;
-                if (globalTime >= easeOutStartTime && globalTime <= blendInfo.PreviousClip.EndTime)
-                {
-                    double normalizedTime = (globalTime - easeOutStartTime) / blendInfo.PreviousClip.EaseOutDuration;
-                    previousWeight = blendInfo.PreviousClipEaseOutCurve.Evaluate((float)normalizedTime);
-                }
-            }
-            else
-            {
-                // カーブがない場合は線形補間
-                previousWeight = 1f - (float)blendProgress;
+                // ブレンド区間の進行度でカーブを評価
+                previousWeight = blendInfo.PreviousClipEaseOutCurve.Evaluate((float)blendProgress);
+                usedPreviousCurve = true;
             }
 
             // 次のクリップのEaseInウェイトを計算
             // mixInCurveは0→1に遷移するカーブなので、そのまま使用
             float nextWeight = 0f;
-            if (blendInfo.NextClipEaseInCurve != null && blendInfo.NextClip != null && blendInfo.NextClip.EaseInDuration > 0)
+            bool usedNextCurve = false;
+
+            if (blendInfo.NextClipEaseInCurve != null && blendInfo.NextClip != null)
             {
-                double easeInEndTime = blendInfo.NextClip.StartTime + blendInfo.NextClip.EaseInDuration;
-                if (globalTime >= blendInfo.NextClip.StartTime && globalTime <= easeInEndTime)
-                {
-                    double normalizedTime = (globalTime - blendInfo.NextClip.StartTime) / blendInfo.NextClip.EaseInDuration;
-                    nextWeight = blendInfo.NextClipEaseInCurve.Evaluate((float)normalizedTime);
-                }
+                // ブレンド区間の進行度でカーブを評価
+                nextWeight = blendInfo.NextClipEaseInCurve.Evaluate((float)blendProgress);
+                usedNextCurve = true;
             }
-            else
+
+            // カーブが使用されなかった場合は線形補間
+            if (!usedPreviousCurve)
             {
-                // カーブがない場合は線形補間
+                previousWeight = 1f - (float)blendProgress;
+            }
+            if (!usedNextCurve)
+            {
                 nextWeight = (float)blendProgress;
             }
 
