@@ -580,6 +580,10 @@ namespace AnimationMergeTool.Editor.Tests
             director.playableAsset = timeline;
             // Animatorをバインドしない
 
+            // バインドなしトラックに対するエラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] トラック \"UnboundTrack\" にAnimatorがバインドされていません。");
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] バインドされたAnimatorが見つかりません。");
+
             try
             {
                 // Act
