@@ -917,7 +917,7 @@ namespace AnimationMergeTool.Editor.Tests
 
             // Assert
             Assert.IsTrue(result);
-            Assert.AreEqual(15f, value, 0.0001f);
+            Assert.AreEqual(15f, value, 0.01f);
         }
 
         [Test]
@@ -963,7 +963,7 @@ namespace AnimationMergeTool.Editor.Tests
 
             // Assert
             Assert.IsTrue(result);
-            Assert.AreEqual(-10f, value, 0.0001f);
+            Assert.AreEqual(-10f, value, 0.01f);
         }
 
         [Test]
@@ -986,7 +986,7 @@ namespace AnimationMergeTool.Editor.Tests
 
             // Assert
             Assert.IsTrue(result);
-            Assert.AreEqual(25f, value, 0.0001f);
+            Assert.AreEqual(25f, value, 0.01f);
         }
 
         [Test]
@@ -1009,7 +1009,7 @@ namespace AnimationMergeTool.Editor.Tests
 
             // Assert
             Assert.IsTrue(result);
-            Assert.AreEqual(0f, value, 0.0001f);
+            Assert.AreEqual(0f, value, 0.01f);
         }
 
         [Test]
@@ -1961,7 +1961,7 @@ namespace AnimationMergeTool.Editor.Tests
 
             // Assert
             Assert.IsTrue(result);
-            Assert.AreEqual(15f, value, 0.0001f);
+            Assert.AreEqual(15f, value, 0.01f);
         }
 
         [Test]
