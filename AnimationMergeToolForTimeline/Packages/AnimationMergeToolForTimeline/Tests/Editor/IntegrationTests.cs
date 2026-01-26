@@ -969,14 +969,16 @@ namespace AnimationMergeTool.Editor.Tests
                 Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
 
                 // 全てのカーブが正しく処理されていることを確認
+                // 注: localPosition.xを設定するとUnityは内部的にx,y,zの3つのバインディングを作成する
+                var sourceBindings = AnimationUtility.GetCurveBindings(animClip);
                 var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
-                Assert.AreEqual(curveCount, bindings.Length, $"{curveCount}個のカーブが含まれるべき");
+                Assert.AreEqual(sourceBindings.Length, bindings.Length, $"ソースと同じ{sourceBindings.Length}個のカーブが含まれるべき");
 
-                // パフォーマンス: 100カーブは5秒以内に処理されるべき
+                // パフォーマンス: 大量のカーブは5秒以内に処理されるべき
                 Assert.Less(stopwatch.ElapsedMilliseconds, 5000,
-                    $"{curveCount}カーブは5秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
+                    $"{sourceBindings.Length}カーブは5秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
 
-                Debug.Log($"大量のカーブ（{curveCount}個）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
+                Debug.Log($"大量のカーブ（{curveCount}ボーン={sourceBindings.Length}個のカーブバインディング）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
 
                 // 生成されたファイルパスを記録
                 RecordCreatedAssetPaths(results[0].Logs);
@@ -1038,15 +1040,20 @@ namespace AnimationMergeTool.Editor.Tests
                 Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
 
                 // 全てのカーブが正しく処理されていることを確認
-                var totalCurves = trackCount * curvesPerTrack;
+                // 注: localPosition.xを設定するとUnityは内部的にx,y,zの3つのバインディングを作成する
+                var expectedCurveCount = 0;
+                foreach (var clip in createdClips)
+                {
+                    expectedCurveCount += AnimationUtility.GetCurveBindings(clip).Length;
+                }
                 var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
-                Assert.AreEqual(totalCurves, bindings.Length, $"{totalCurves}個のカーブが含まれるべき");
+                Assert.AreEqual(expectedCurveCount, bindings.Length, $"ソースと同じ{expectedCurveCount}個のカーブが含まれるべき");
 
-                // パフォーマンス: 250カーブは10秒以内に処理されるべき
+                // パフォーマンス: 大量のカーブは10秒以内に処理されるべき
                 Assert.Less(stopwatch.ElapsedMilliseconds, 10000,
-                    $"{totalCurves}カーブは10秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
+                    $"{expectedCurveCount}カーブは10秒以内に処理されるべき。実際: {stopwatch.ElapsedMilliseconds}ms");
 
-                Debug.Log($"複数トラックの大量カーブ（{trackCount}トラック×{curvesPerTrack}カーブ={totalCurves}個）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
+                Debug.Log($"複数トラックの大量カーブ（{trackCount}トラック×{curvesPerTrack}ボーン={expectedCurveCount}個のカーブバインディング）の処理時間: {stopwatch.ElapsedMilliseconds}ms");
 
                 // 生成されたファイルパスを記録
                 RecordCreatedAssetPaths(results[0].Logs);
