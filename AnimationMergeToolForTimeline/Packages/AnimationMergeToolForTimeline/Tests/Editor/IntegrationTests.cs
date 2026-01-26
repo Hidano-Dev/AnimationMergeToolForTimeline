@@ -96,8 +96,9 @@ namespace AnimationMergeTool.Editor.Tests
                 Assert.AreSame(animator, results[0].TargetAnimator, "正しいAnimatorに紐づいているべき");
 
                 // 生成されたクリップのカーブを検証
+                // SetCurveを使用すると、Unityは内部的に全てのコンポーネント（x,y,z）を生成する
                 var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
-                Assert.AreEqual(2, bindings.Length, "2つのカーブが含まれるべき");
+                Assert.AreEqual(3, bindings.Length, "3つのカーブが含まれるべき（x,y,z）");
 
                 var propertyNames = new HashSet<string>();
                 foreach (var binding in bindings)
@@ -349,9 +350,15 @@ namespace AnimationMergeTool.Editor.Tests
                 // localPosition.xのカーブが存在することを確認
                 // 両トラックが同一プロパティ(localPosition.x)を持つため、
                 // 優先順位に基づくOverride処理により1つのマージされたカーブのみが生成されるべき
+                // SetCurveを使用すると、Unityは内部的に全てのコンポーネント（x,y,z）を生成する
                 var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
-                Assert.AreEqual(1, bindings.Length, "同一プロパティへのOverride処理により1つのカーブのみが含まれるべき");
-                Assert.AreEqual("localPosition.x", bindings[0].propertyName, "localPosition.xプロパティのカーブが含まれるべき");
+                Assert.AreEqual(3, bindings.Length, "同一プロパティへのOverride処理により3つのカーブが含まれるべき（x,y,z）");
+                var propertyNames = new HashSet<string>();
+                foreach (var binding in bindings)
+                {
+                    propertyNames.Add(binding.propertyName);
+                }
+                Assert.IsTrue(propertyNames.Contains("m_LocalPosition.x"), "localPosition.xプロパティのカーブが含まれるべき");
 
                 // 生成されたファイルパスを記録
                 RecordCreatedAssetPaths(results[0].Logs);
@@ -414,9 +421,15 @@ namespace AnimationMergeTool.Editor.Tests
                 Assert.IsTrue(results[0].IsSuccess);
 
                 // Muteトラックのカーブは含まれないことを確認
+                // SetCurveを使用すると、Unityは内部的に全てのコンポーネント（x,y,z）を生成する
                 var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
-                Assert.AreEqual(1, bindings.Length, "Muteトラックのカーブは含まれないべき");
-                Assert.AreEqual("localPosition.x", bindings[0].propertyName, "有効なトラックのカーブのみ含まれるべき");
+                Assert.AreEqual(3, bindings.Length, "有効なトラックの3つのカーブ（x,y,z）のみ含まれるべき");
+                var propertyNames = new HashSet<string>();
+                foreach (var binding in bindings)
+                {
+                    propertyNames.Add(binding.propertyName);
+                }
+                Assert.IsTrue(propertyNames.Contains("m_LocalPosition.x"), "有効なトラックのm_LocalPosition.xカーブが含まれるべき");
 
                 // 生成されたファイルパスを記録
                 RecordCreatedAssetPaths(results[0].Logs);
@@ -1215,8 +1228,9 @@ namespace AnimationMergeTool.Editor.Tests
                 Assert.GreaterOrEqual(bindings.Length, 1, "少なくとも1つのカーブが含まれるべき");
 
                 // localPosition.yカーブが存在することを確認
-                var hasPositionY = System.Array.Exists(bindings, b => b.propertyName == "localPosition.y");
-                Assert.IsTrue(hasPositionY, "localPosition.yカーブが含まれるべき");
+                // SetCurveを使用すると、Unityは内部的に"m_LocalPosition.y"として保存する
+                var hasPositionY = System.Array.Exists(bindings, b => b.propertyName == "m_LocalPosition.y");
+                Assert.IsTrue(hasPositionY, "m_LocalPosition.yカーブが含まれるべき");
 
                 // クリーンアップ用にパスを記録
                 _createdAssetPaths.Add(expectedAssetPath);
@@ -1497,7 +1511,8 @@ namespace AnimationMergeTool.Editor.Tests
 
                 var generatedClip = results[0].GeneratedClip;
                 var bindings = AnimationUtility.GetCurveBindings(generatedClip);
-                Assert.AreEqual(1, bindings.Length, "1つのカーブが含まれるべき");
+                // SetCurveを使用すると、Unityは内部的に全てのコンポーネント（x,y,z）を生成する
+                Assert.AreEqual(3, bindings.Length, "3つのカーブが含まれるべき（x,y,z）");
 
                 // 生成されたクリップの長さがタイムライン全体をカバーしていることを確認
                 Assert.GreaterOrEqual(generatedClip.length, 2.5f, "クリップの長さがタイムライン全体をカバーすべき");

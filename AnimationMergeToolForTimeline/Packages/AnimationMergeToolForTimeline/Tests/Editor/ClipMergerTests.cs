@@ -62,15 +62,17 @@ namespace AnimationMergeTool.Editor.Tests
         public void GetAnimationCurves_単一のカーブを持つクリップから取得できる()
         {
             // Arrange
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
             var curve = AnimationCurve.Linear(0, 0, 1, 1);
-            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(_testClip, binding, curve);
 
             // Act
             var result = _clipMerger.GetAnimationCurves(_testClip);
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            Assert.AreEqual("localPosition.x", result[0].Binding.propertyName);
+            Assert.AreEqual("m_LocalPosition.x", result[0].Binding.propertyName);
             Assert.AreEqual(typeof(Transform), result[0].Binding.type);
             Assert.IsNotNull(result[0].Curve);
         }
@@ -97,10 +99,13 @@ namespace AnimationMergeTool.Editor.Tests
         public void GetAnimationCurves_異なるパスのカーブを取得できる()
         {
             // Arrange
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
             var curveRoot = AnimationCurve.Linear(0, 0, 1, 1);
             var curveChild = AnimationCurve.Linear(0, 0, 1, 2);
-            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curveRoot);
-            _testClip.SetCurve("Child/GrandChild", typeof(Transform), "localPosition.x", curveChild);
+            var bindingRoot = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            var bindingChild = EditorCurveBinding.FloatCurve("Child/GrandChild", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(_testClip, bindingRoot, curveRoot);
+            AnimationUtility.SetEditorCurve(_testClip, bindingChild, curveChild);
 
             // Act
             var result = _clipMerger.GetAnimationCurves(_testClip);
@@ -121,8 +126,10 @@ namespace AnimationMergeTool.Editor.Tests
         public void GetAnimationCurves_EditorCurveBinding情報が正しく取得できる()
         {
             // Arrange
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
             var curve = AnimationCurve.Linear(0, 0, 1, 1);
-            _testClip.SetCurve("TestPath", typeof(Transform), "localScale.x", curve);
+            var binding = EditorCurveBinding.FloatCurve("TestPath", typeof(Transform), "m_LocalScale.x");
+            AnimationUtility.SetEditorCurve(_testClip, binding, curve);
 
             // Act
             var result = _clipMerger.GetAnimationCurves(_testClip);
@@ -130,7 +137,7 @@ namespace AnimationMergeTool.Editor.Tests
             // Assert
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual("TestPath", result[0].Binding.path);
-            Assert.AreEqual("localScale.x", result[0].Binding.propertyName);
+            Assert.AreEqual("m_LocalScale.x", result[0].Binding.propertyName);
             Assert.AreEqual(typeof(Transform), result[0].Binding.type);
         }
 
@@ -138,11 +145,13 @@ namespace AnimationMergeTool.Editor.Tests
         public void GetAnimationCurves_カーブのキーフレーム情報が保持される()
         {
             // Arrange
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
             var curve = new AnimationCurve();
             curve.AddKey(0f, 0f);
             curve.AddKey(0.5f, 1f);
             curve.AddKey(1f, 0.5f);
-            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(_testClip, binding, curve);
 
             // Act
             var result = _clipMerger.GetAnimationCurves(_testClip);
@@ -189,9 +198,10 @@ namespace AnimationMergeTool.Editor.Tests
         public void GetAnimationCurve_存在するバインディングのカーブを取得できる()
         {
             // Arrange
+            // AnimationUtility.SetEditorCurveを使用してUnity内部名で設定
             var curve = AnimationCurve.Linear(0, 0, 1, 1);
-            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
-            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "localPosition.x");
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(_testClip, binding, curve);
 
             // Act
             var result = _clipMerger.GetAnimationCurve(_testClip, binding);
@@ -205,10 +215,11 @@ namespace AnimationMergeTool.Editor.Tests
         public void GetAnimationCurve_正しいパスのバインディングでのみ取得できる()
         {
             // Arrange
+            // AnimationUtility.SetEditorCurveを使用してUnity内部名で設定
             var curve = AnimationCurve.Linear(0, 0, 1, 1);
-            _testClip.SetCurve("CorrectPath", typeof(Transform), "localPosition.x", curve);
-            var correctBinding = EditorCurveBinding.FloatCurve("CorrectPath", typeof(Transform), "localPosition.x");
-            var wrongBinding = EditorCurveBinding.FloatCurve("WrongPath", typeof(Transform), "localPosition.x");
+            var correctBinding = EditorCurveBinding.FloatCurve("CorrectPath", typeof(Transform), "m_LocalPosition.x");
+            var wrongBinding = EditorCurveBinding.FloatCurve("WrongPath", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(_testClip, correctBinding, curve);
 
             // Act
             var correctResult = _clipMerger.GetAnimationCurve(_testClip, correctBinding);
@@ -589,7 +600,9 @@ namespace AnimationMergeTool.Editor.Tests
             SetUpTimelineForTimeOffsetTests();
             var animClip = new AnimationClip();
             var curve = AnimationCurve.Linear(0, 0, 1, 1);
-            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, curve);
 
             var timelineClip = _animationTrack.CreateClip(animClip);
             timelineClip.start = 0.0;
@@ -604,7 +617,6 @@ namespace AnimationMergeTool.Editor.Tests
             Assert.IsNotNull(result);
             var resultCurves = _clipMerger.GetAnimationCurves(result);
             Assert.AreEqual(1, resultCurves.Count);
-            // SetCurveを使用した場合、Unityは内部的にプロパティ名を"m_LocalPosition.x"に変換する
             Assert.AreEqual("m_LocalPosition.x", resultCurves[0].Binding.propertyName);
 
             Object.DestroyImmediate(animClip);
@@ -618,9 +630,12 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             SetUpTimelineForTimeOffsetTests();
             var animClip1 = new AnimationClip();
-            animClip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
+            var binding1 = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip1, binding1, AnimationCurve.Linear(0, 0, 1, 1));
             var animClip2 = new AnimationClip();
-            animClip2.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
+            var binding2 = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.y");
+            AnimationUtility.SetEditorCurve(animClip2, binding2, AnimationCurve.Linear(0, 0, 1, 2));
 
             var timelineClip1 = _animationTrack.CreateClip(animClip1);
             timelineClip1.start = 0.0;
@@ -654,9 +669,11 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             SetUpTimelineForTimeOffsetTests();
             var animClip1 = new AnimationClip();
-            animClip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip1, binding, AnimationCurve.Linear(0, 0, 1, 1));
             var animClip2 = new AnimationClip();
-            animClip2.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 2, 1, 3));
+            AnimationUtility.SetEditorCurve(animClip2, binding, AnimationCurve.Linear(0, 2, 1, 3));
 
             var timelineClip1 = _animationTrack.CreateClip(animClip1);
             timelineClip1.start = 0.0;
@@ -760,7 +777,9 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             SetUpTimelineForTimeOffsetTests();
             var animClip = new AnimationClip();
-            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, AnimationCurve.Linear(0, 0, 1, 1));
 
             var timelineClip = _animationTrack.CreateClip(animClip);
             timelineClip.start = 0.0;
@@ -787,9 +806,12 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             SetUpTimelineForTimeOffsetTests();
             var animClip1 = new AnimationClip();
-            animClip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
+            var binding1 = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip1, binding1, AnimationCurve.Linear(0, 0, 1, 1));
             var animClip2 = new AnimationClip();
-            animClip2.SetCurve("Child", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 2));
+            var binding2 = EditorCurveBinding.FloatCurve("Child", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip2, binding2, AnimationCurve.Linear(0, 0, 1, 2));
 
             var timelineClip1 = _animationTrack.CreateClip(animClip1);
             timelineClip1.start = 0.0;
@@ -825,12 +847,14 @@ namespace AnimationMergeTool.Editor.Tests
             var animClip1 = new AnimationClip();
             var curve1 = new AnimationCurve();
             curve1.AddKey(0f, 10f);
-            animClip1.SetCurve("", typeof(Transform), "localPosition.x", curve1);
+            // AnimationUtility.SetEditorCurveを使用して単一のカーブのみを設定
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip1, binding, curve1);
 
             var animClip2 = new AnimationClip();
             var curve2 = new AnimationCurve();
             curve2.AddKey(0f, 20f); // 同じ時間（0秒）に異なる値
-            animClip2.SetCurve("", typeof(Transform), "localPosition.x", curve2);
+            AnimationUtility.SetEditorCurve(animClip2, binding, curve2);
 
             var timelineClip1 = _animationTrack.CreateClip(animClip1);
             timelineClip1.start = 0.0;
@@ -994,10 +1018,11 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             var bindingRootT = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
             var bindingRootQ = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.x");
+            var bindingLocalPos = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
             var curve = AnimationCurve.Linear(0, 0, 1, 1);
             AnimationUtility.SetEditorCurve(_testClip, bindingRootT, curve);
             AnimationUtility.SetEditorCurve(_testClip, bindingRootQ, curve);
-            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            AnimationUtility.SetEditorCurve(_testClip, bindingLocalPos, curve);
 
             // Act
             var result = _clipMerger.GetAnimationCurves(_testClip);
@@ -1125,8 +1150,9 @@ namespace AnimationMergeTool.Editor.Tests
             SetUpTimelineForTimeOffsetTests();
             var animClip = new AnimationClip();
             var bindingRootT = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x");
+            var bindingLocalPos = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
             AnimationUtility.SetEditorCurve(animClip, bindingRootT, AnimationCurve.Linear(0, 0, 1, 1));
-            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 2));
+            AnimationUtility.SetEditorCurve(animClip, bindingLocalPos, AnimationCurve.Linear(0, 0, 1, 2));
 
             var timelineClip = _animationTrack.CreateClip(animClip);
             timelineClip.start = 0.0;
@@ -1223,9 +1249,10 @@ namespace AnimationMergeTool.Editor.Tests
         {
             // Arrange
             var bindingMuscle = EditorCurveBinding.FloatCurve("", typeof(Animator), "Left Arm Down-Up");
+            var bindingLocalPos = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
             var curve = AnimationCurve.Linear(0, 0, 1, 1);
             AnimationUtility.SetEditorCurve(_testClip, bindingMuscle, curve);
-            _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+            AnimationUtility.SetEditorCurve(_testClip, bindingLocalPos, curve);
 
             // Act
             var result = _clipMerger.GetAnimationCurves(_testClip);
@@ -1336,8 +1363,9 @@ namespace AnimationMergeTool.Editor.Tests
             SetUpTimelineForTimeOffsetTests();
             var animClip = new AnimationClip();
             var bindingMuscle = EditorCurveBinding.FloatCurve("", typeof(Animator), "Left Arm Down-Up");
+            var bindingLocalPos = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
             AnimationUtility.SetEditorCurve(animClip, bindingMuscle, AnimationCurve.Linear(0, 0, 1, 0.5f));
-            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 2));
+            AnimationUtility.SetEditorCurve(animClip, bindingLocalPos, AnimationCurve.Linear(0, 0, 1, 2));
 
             var timelineClip = _animationTrack.CreateClip(animClip);
             timelineClip.start = 0.0;
@@ -1463,11 +1491,12 @@ namespace AnimationMergeTool.Editor.Tests
             var bindingFinger = EditorCurveBinding.FloatCurve("", typeof(Animator), "RightHand.Ring.2 Stretched");
             // ルートモーション
             var bindingRootT = EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.z");
+            // 通常のTransformカーブ（AnimationUtility.SetEditorCurveを使用）
+            var bindingLocalRot = EditorCurveBinding.FloatCurve("Child", typeof(Transform), "m_LocalRotation.x");
             AnimationUtility.SetEditorCurve(animClip, bindingSpine, AnimationCurve.Linear(0, 0, 1, 0.5f));
             AnimationUtility.SetEditorCurve(animClip, bindingFinger, AnimationCurve.Linear(0, 0, 1, 0.7f));
             AnimationUtility.SetEditorCurve(animClip, bindingRootT, AnimationCurve.Linear(0, 0, 1, 3f));
-            // 通常のTransformカーブ
-            animClip.SetCurve("Child", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0.1f));
+            AnimationUtility.SetEditorCurve(animClip, bindingLocalRot, AnimationCurve.Linear(0, 0, 1, 0.1f));
 
             var timelineClip = _animationTrack.CreateClip(animClip);
             timelineClip.start = 0.0;
