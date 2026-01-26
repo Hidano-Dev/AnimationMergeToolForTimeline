@@ -222,38 +222,46 @@ namespace AnimationMergeTool.Editor.Application
                     continue;
                 }
 
-                // トラック内のクリップをマージ
-                var mergedClip = clipMerger.Merge(clipInfos);
-                if (mergedClip == null)
-                {
-                    result.AddLog($"トラック \"{trackInfo.Track.name}\" のマージに失敗しました。");
-                    continue;
-                }
-
-                // マージされたクリップからカーブを取得
-                var curveBindingPairs = clipMerger.GetAnimationCurves(mergedClip);
-
                 // トラックの時間範囲を計算
                 var trackStartTime = (float)clipInfos.Min(c => c.StartTime);
                 var trackEndTime = (float)clipInfos.Max(c => c.EndTime);
 
-                foreach (var pair in curveBindingPairs)
+                // 各クリップから直接カーブを取得して統合
+                foreach (var clipInfo in clipInfos)
                 {
-                    var bindingKey = curveOverrider.GetBindingKey(pair.Binding);
-
-                    if (!allCurveData.ContainsKey(bindingKey))
+                    if (clipInfo?.AnimationClip == null)
                     {
-                        allCurveData[bindingKey] = new List<CurveWithTimeRangeAndPriority>();
+                        continue;
                     }
 
-                    allCurveData[bindingKey].Add(new CurveWithTimeRangeAndPriority
+                    // ClipInfoから直接カーブを取得
+                    var curveBindingPairs = clipMerger.GetAnimationCurves(clipInfo.AnimationClip);
+
+                    foreach (var pair in curveBindingPairs)
                     {
-                        Binding = pair.Binding,
-                        Curve = pair.Curve,
-                        StartTime = trackStartTime,
-                        EndTime = trackEndTime,
-                        Priority = trackInfo.Priority
-                    });
+                        // 時間オフセットを適用
+                        var offsetCurve = clipMerger.ApplyTimeOffset(pair.Curve, clipInfo);
+                        if (offsetCurve == null || offsetCurve.keys.Length == 0)
+                        {
+                            continue;
+                        }
+
+                        var bindingKey = curveOverrider.GetBindingKey(pair.Binding);
+
+                        if (!allCurveData.ContainsKey(bindingKey))
+                        {
+                            allCurveData[bindingKey] = new List<CurveWithTimeRangeAndPriority>();
+                        }
+
+                        allCurveData[bindingKey].Add(new CurveWithTimeRangeAndPriority
+                        {
+                            Binding = pair.Binding,
+                            Curve = offsetCurve,
+                            StartTime = trackStartTime,
+                            EndTime = trackEndTime,
+                            Priority = trackInfo.Priority
+                        });
+                    }
                 }
 
                 result.AddLog($"トラック \"{trackInfo.Track.name}\" を処理しました（優先順位: {trackInfo.Priority}）");
