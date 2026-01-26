@@ -232,8 +232,9 @@ namespace AnimationMergeTool.Editor.Domain
                     return true;
 
                 case TimelineClip.ClipExtrapolation.Loop:
-                    // クリップの長さでループ
-                    value = EvaluateLooped(curve, clipInfo, time, clipIn, clipDuration * timeScale);
+                    // クリップの長さでループ（カーブの実際の長さを使用）
+                    var loopCurveDuration = keys.Length > 1 ? keys[keys.Length - 1].time - keys[0].time : clipDuration * timeScale;
+                    value = EvaluateLooped(curve, clipInfo, time, clipIn, loopCurveDuration);
                     return true;
 
                 case TimelineClip.ClipExtrapolation.PingPong:
