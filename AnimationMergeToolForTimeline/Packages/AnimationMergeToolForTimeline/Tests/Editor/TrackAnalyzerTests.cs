@@ -606,7 +606,7 @@ namespace AnimationMergeTool.Editor.Tests
         {
             // Arrange
             var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
-            var track2 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
+            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
             var track3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 3");
             var analyzer = new TrackAnalyzer(_timelineAsset);
 
@@ -614,10 +614,10 @@ namespace AnimationMergeTool.Editor.Tests
             var result = analyzer.GetOutputTracksInOrder();
 
             // Assert
-            Assert.AreEqual(3, result.Count);
+            // GetOutputTracks()はGroupTrackを含まない（出力を持つトラックのみ返す）
+            Assert.AreEqual(2, result.Count);
             Assert.AreEqual(track1, result[0]);
-            Assert.AreEqual(track2, result[1]);
-            Assert.AreEqual(track3, result[2]);
+            Assert.AreEqual(track3, result[1]);
         }
 
         #endregion
@@ -643,7 +643,6 @@ namespace AnimationMergeTool.Editor.Tests
         {
             // Arrange
             var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation 1");
-            var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
             var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation 2");
             var analyzer = new TrackAnalyzer(_timelineAsset);
 
@@ -655,8 +654,8 @@ namespace AnimationMergeTool.Editor.Tests
             // track1 はインデックス0
             Assert.AreEqual(0, result[0].index);
             Assert.AreEqual(track1, result[0].trackInfo.Track);
-            // track2 はインデックス2（GroupTrackがインデックス1）
-            Assert.AreEqual(2, result[1].index);
+            // track2 はインデックス1
+            Assert.AreEqual(1, result[1].index);
             Assert.AreEqual(track2, result[1].trackInfo.Track);
         }
 
@@ -664,23 +663,26 @@ namespace AnimationMergeTool.Editor.Tests
         public void GetAnimationTracksWithIndex_インデックスはTimeline上の全トラック位置を反映する()
         {
             // Arrange
-            var groupTrack1 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 1");
+            // GetOutputTracks()はGroupTrackを含まないため、AnimationTrackのみで構成
             var animTrack1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation 1");
-            var groupTrack2 = _timelineAsset.CreateTrack<GroupTrack>(null, "Group 2");
             var animTrack2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation 2");
+            var animTrack3 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Animation 3");
             var analyzer = new TrackAnalyzer(_timelineAsset);
 
             // Act
             var result = analyzer.GetAnimationTracksWithIndex();
 
             // Assert
-            Assert.AreEqual(2, result.Count);
-            // animTrack1 はインデックス1（GroupTrack1がインデックス0）
-            Assert.AreEqual(1, result[0].index);
+            Assert.AreEqual(3, result.Count);
+            // animTrack1 はインデックス0
+            Assert.AreEqual(0, result[0].index);
             Assert.AreEqual(animTrack1, result[0].trackInfo.Track);
-            // animTrack2 はインデックス3（GroupTrack2がインデックス2）
-            Assert.AreEqual(3, result[1].index);
+            // animTrack2 はインデックス1
+            Assert.AreEqual(1, result[1].index);
             Assert.AreEqual(animTrack2, result[1].trackInfo.Track);
+            // animTrack3 はインデックス2
+            Assert.AreEqual(2, result[2].index);
+            Assert.AreEqual(animTrack3, result[2].trackInfo.Track);
         }
 
         #endregion
@@ -745,7 +747,8 @@ namespace AnimationMergeTool.Editor.Tests
         public void GetAnimationTracksWithPriority_GroupTrackを挟んでも正しい優先順位が割り当てられる()
         {
             // Arrange
-            // Timeline上の順序: Track1(0) -> GroupTrack(1) -> Track2(2)
+            // Timeline上の順序: Track1(0) -> GroupTrack -> Track2(1)
+            // GetOutputTracks()はGroupTrackを含まないため、AnimationTrackのみでインデックスが決まる
             var track1 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 1");
             var groupTrack = _timelineAsset.CreateTrack<GroupTrack>(null, "Group");
             var track2 = _timelineAsset.CreateTrack<AnimationTrack>(null, "Track 2");
@@ -759,9 +762,9 @@ namespace AnimationMergeTool.Editor.Tests
             // Track1 はインデックス0 なので Priority = 0
             Assert.AreEqual(track1, result[0].Track);
             Assert.AreEqual(0, result[0].Priority);
-            // Track2 はインデックス2 なので Priority = 2（GroupTrackがインデックス1）
+            // Track2 はインデックス1 なので Priority = 1（GroupTrackはGetOutputTracksに含まれない）
             Assert.AreEqual(track2, result[1].Track);
-            Assert.AreEqual(2, result[1].Priority);
+            Assert.AreEqual(1, result[1].Priority);
         }
 
         [Test]
