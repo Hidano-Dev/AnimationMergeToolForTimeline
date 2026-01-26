@@ -339,8 +339,8 @@ namespace AnimationMergeTool.Editor.Domain
             var lastKey = curve.keys[curve.keys.Length - 1];
             var lastKeyValue = curve.Evaluate(lastKeyTime);
 
-            // 接線を取得（inTangent を使用。outTangentは最後のキーでは設定されていないことが多い）
-            var tangent = lastKey.inTangent;
+            // 接線を取得（outTangent を使用。クリップ終了後は出力方向の接線で延長する）
+            var tangent = lastKey.outTangent;
 
             // 時間差を計算してExtrapolate
             var timeDelta = time - endTime;
