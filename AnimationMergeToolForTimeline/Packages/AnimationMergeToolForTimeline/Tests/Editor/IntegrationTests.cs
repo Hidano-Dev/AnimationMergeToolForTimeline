@@ -2110,6 +2110,429 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region Phase 13 統合テスト: スケルトン・Transform出力
+
+        /// <summary>
+        /// P13-008: スケルトン取得からTransformカーブ抽出までの統合テスト
+        /// AnimatorからSkeletonを取得し、そのボーン階層のカーブを正しく抽出できることを検証
+        /// </summary>
+        [Test]
+        public void Phase13統合_スケルトン取得とTransformカーブ抽出の連携()
+        {
+            // Arrange
+            var root = new GameObject("TestCharacter");
+            var animator = root.AddComponent<Animator>();
+
+            // ボーン階層を作成
+            var hips = new GameObject("Hips");
+            hips.transform.SetParent(root.transform);
+            var spine = new GameObject("Spine");
+            spine.transform.SetParent(hips.transform);
+            var chest = new GameObject("Chest");
+            chest.transform.SetParent(spine.transform);
+
+            // SkinnedMeshRendererを追加してボーンを定義
+            var meshObj = new GameObject("Body");
+            meshObj.transform.SetParent(root.transform);
+            var skinnedMesh = meshObj.AddComponent<SkinnedMeshRenderer>();
+            skinnedMesh.bones = new Transform[]
+            {
+                hips.transform, spine.transform, chest.transform
+            };
+            skinnedMesh.rootBone = hips.transform;
+
+            // ボーンをアニメートするAnimationClipを作成
+            var animClip = new AnimationClip();
+            animClip.name = "SkeletonAnimClip";
+            animClip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            animClip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.z", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.w", AnimationCurve.Linear(0, 1, 1, 1));
+
+            try
+            {
+                // Act
+                var skeletonExtractor = new Infrastructure.SkeletonExtractor();
+                var skeleton = skeletonExtractor.Extract(animator);
+
+                var exporter = new Infrastructure.FbxAnimationExporter(skeletonExtractor);
+                var transformCurves = exporter.ExtractTransformCurves(animClip, animator);
+
+                // Assert - スケルトン取得の検証
+                Assert.IsTrue(skeleton.HasSkeleton, "スケルトンが取得できるべき");
+                Assert.AreEqual(hips.transform, skeleton.RootBone, "Hipsがルートボーンであるべき");
+                Assert.AreEqual(3, skeleton.Bones.Count, "3つのボーンが含まれるべき");
+
+                // Assert - Transformカーブ抽出の検証
+                Assert.IsNotNull(transformCurves);
+                Assert.Greater(transformCurves.Count, 0, "Transformカーブが抽出されるべき");
+
+                // ボーンパスのカーブが存在することを確認
+                bool hasHipsCurve = false;
+                bool hasSpineCurve = false;
+                foreach (var curve in transformCurves)
+                {
+                    if (curve.Path == "Hips") hasHipsCurve = true;
+                    if (curve.Path == "Hips/Spine") hasSpineCurve = true;
+                }
+                Assert.IsTrue(hasHipsCurve, "Hipsのカーブが存在すべき");
+                Assert.IsTrue(hasSpineCurve, "Spineのカーブが存在すべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// P13-008: 非スケルトンTransform（プロップ等）の取得とカーブ抽出の統合テスト
+        /// スケルトン以外のGameObject（プロップなど）のTransformカーブも正しく抽出できることを検証
+        /// </summary>
+        [Test]
+        public void Phase13統合_非スケルトンTransformのカーブ抽出()
+        {
+            // Arrange
+            var root = new GameObject("TestCharacter");
+            var animator = root.AddComponent<Animator>();
+
+            // ボーン階層を作成
+            var hips = new GameObject("Hips");
+            hips.transform.SetParent(root.transform);
+            var rightHand = new GameObject("RightHand");
+            rightHand.transform.SetParent(hips.transform);
+
+            // SkinnedMeshRendererを追加
+            var meshObj = new GameObject("Body");
+            meshObj.transform.SetParent(root.transform);
+            var skinnedMesh = meshObj.AddComponent<SkinnedMeshRenderer>();
+            skinnedMesh.bones = new Transform[] { hips.transform, rightHand.transform };
+            skinnedMesh.rootBone = hips.transform;
+
+            // プロップ（非スケルトンTransform）を追加
+            var sword = new GameObject("Sword");
+            sword.transform.SetParent(rightHand.transform);
+            sword.AddComponent<MeshFilter>();
+
+            // プロップをアニメートするAnimationClipを作成
+            var animClip = new AnimationClip();
+            animClip.name = "PropAnimClip";
+            animClip.SetCurve("Hips/RightHand/Sword", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 2));
+            animClip.SetCurve("Hips/RightHand/Sword", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Hips/RightHand/Sword", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Hips/RightHand/Sword", typeof(Transform), "localRotation.z", AnimationCurve.Linear(0, 0, 1, 0.7f));
+            animClip.SetCurve("Hips/RightHand/Sword", typeof(Transform), "localRotation.w", AnimationCurve.Linear(0, 1, 1, 0.7f));
+
+            try
+            {
+                // Act
+                var skeletonExtractor = new Infrastructure.SkeletonExtractor();
+                var skeleton = skeletonExtractor.Extract(animator);
+                var nonSkeletonTransforms = skeletonExtractor.ExtractNonSkeletonTransforms(animator, skeleton, animClip);
+
+                var exporter = new Infrastructure.FbxAnimationExporter(skeletonExtractor);
+                var transformCurves = exporter.ExtractTransformCurves(animClip, animator);
+
+                // Assert - 非スケルトンTransform取得の検証
+                Assert.IsNotNull(nonSkeletonTransforms);
+                bool hasSword = false;
+                foreach (var t in nonSkeletonTransforms)
+                {
+                    if (t.name == "Sword") hasSword = true;
+                }
+                Assert.IsTrue(hasSword, "Swordが非スケルトンTransformとして取得されるべき");
+
+                // Assert - プロップのカーブが抽出されていることを確認
+                bool hasSwordCurve = false;
+                foreach (var curve in transformCurves)
+                {
+                    if (curve.Path == "Hips/RightHand/Sword")
+                    {
+                        hasSwordCurve = true;
+                        break;
+                    }
+                }
+                Assert.IsTrue(hasSwordCurve, "Swordのカーブが抽出されるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// P13-008: FbxExportDataの構築とエクスポート可否判定の統合テスト
+        /// スケルトンとTransformカーブから正しくFbxExportDataが構築され、エクスポート可能と判定されることを検証
+        /// </summary>
+        [Test]
+        public void Phase13統合_FbxExportDataの構築とエクスポート判定()
+        {
+            // Arrange
+            var root = new GameObject("ExportTestCharacter");
+            var animator = root.AddComponent<Animator>();
+
+            // ボーン階層を作成
+            var hips = new GameObject("Hips");
+            hips.transform.SetParent(root.transform);
+            var spine = new GameObject("Spine");
+            spine.transform.SetParent(hips.transform);
+
+            // SkinnedMeshRendererを追加
+            var meshObj = new GameObject("Body");
+            meshObj.transform.SetParent(root.transform);
+            var skinnedMesh = meshObj.AddComponent<SkinnedMeshRenderer>();
+            skinnedMesh.bones = new Transform[] { hips.transform, spine.transform };
+            skinnedMesh.rootBone = hips.transform;
+
+            // AnimationClipを作成
+            var animClip = new AnimationClip();
+            animClip.name = "ExportTestClip";
+            animClip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            animClip.SetCurve("Hips", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
+            animClip.SetCurve("Hips", typeof(Transform), "localPosition.z", AnimationCurve.Linear(0, 0, 1, 3));
+
+            try
+            {
+                // Act
+                var skeletonExtractor = new Infrastructure.SkeletonExtractor();
+                var exporter = new Infrastructure.FbxAnimationExporter(skeletonExtractor);
+
+                // スケルトン取得
+                var skeleton = exporter.ExtractSkeleton(animator);
+
+                // Transformカーブ抽出
+                var transformCurves = exporter.ExtractTransformCurves(animClip, animator);
+
+                // FbxExportData構築
+                var exportData = exporter.PrepareTransformCurvesForExport(animator, animClip, transformCurves);
+
+                // Assert - FbxExportDataの検証
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
+                Assert.AreSame(animator, exportData.SourceAnimator, "Animatorが正しく設定されるべき");
+                Assert.AreSame(animClip, exportData.MergedClip, "AnimationClipが正しく設定されるべき");
+                Assert.Greater(exportData.TransformCurves.Count, 0, "Transformカーブが含まれるべき");
+                Assert.IsTrue(exportData.HasExportableData, "エクスポート可能なデータがあるべき");
+
+                // エクスポート可否判定
+                Assert.IsTrue(exporter.CanExport(exportData), "エクスポート可能と判定されるべき");
+                Assert.IsNull(exporter.ValidateExportData(exportData), "バリデーションエラーがないべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// P13-008: 複数のTransformタイプ（Position/Rotation/Scale）が混在するアニメーションの統合テスト
+        /// </summary>
+        [Test]
+        public void Phase13統合_複数TransformタイプのカーブをFbxExportDataに含める()
+        {
+            // Arrange
+            var root = new GameObject("MultiTypeCharacter");
+            var animator = root.AddComponent<Animator>();
+
+            var bone = new GameObject("Bone");
+            bone.transform.SetParent(root.transform);
+
+            // SkinnedMeshRendererを追加
+            var meshObj = new GameObject("Body");
+            meshObj.transform.SetParent(root.transform);
+            var skinnedMesh = meshObj.AddComponent<SkinnedMeshRenderer>();
+            skinnedMesh.bones = new Transform[] { bone.transform };
+            skinnedMesh.rootBone = bone.transform;
+
+            // Position/Rotation/Scale全てを含むAnimationClipを作成
+            var animClip = new AnimationClip();
+            animClip.name = "MultiTypeClip";
+
+            // Position
+            animClip.SetCurve("Bone", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            animClip.SetCurve("Bone", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
+            animClip.SetCurve("Bone", typeof(Transform), "localPosition.z", AnimationCurve.Linear(0, 0, 1, 3));
+
+            // Rotation
+            animClip.SetCurve("Bone", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Bone", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Bone", typeof(Transform), "localRotation.z", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Bone", typeof(Transform), "localRotation.w", AnimationCurve.Linear(0, 1, 1, 1));
+
+            // Scale
+            animClip.SetCurve("Bone", typeof(Transform), "localScale.x", AnimationCurve.Linear(0, 1, 1, 2));
+            animClip.SetCurve("Bone", typeof(Transform), "localScale.y", AnimationCurve.Linear(0, 1, 1, 2));
+            animClip.SetCurve("Bone", typeof(Transform), "localScale.z", AnimationCurve.Linear(0, 1, 1, 2));
+
+            try
+            {
+                // Act
+                var skeletonExtractor = new Infrastructure.SkeletonExtractor();
+                var exporter = new Infrastructure.FbxAnimationExporter(skeletonExtractor);
+                var transformCurves = exporter.ExtractTransformCurves(animClip, animator);
+                var exportData = exporter.PrepareTransformCurvesForExport(animator, animClip, transformCurves);
+
+                // Assert - 各タイプのカーブ数を確認
+                int positionCount = 0;
+                int rotationCount = 0;
+                int scaleCount = 0;
+
+                foreach (var curve in exportData.TransformCurves)
+                {
+                    switch (curve.CurveType)
+                    {
+                        case Domain.Models.TransformCurveType.Position:
+                            positionCount++;
+                            break;
+                        case Domain.Models.TransformCurveType.Rotation:
+                            rotationCount++;
+                            break;
+                        case Domain.Models.TransformCurveType.Scale:
+                            scaleCount++;
+                            break;
+                    }
+                }
+
+                Assert.AreEqual(3, positionCount, "Positionカーブは3つ（x,y,z）であるべき");
+                Assert.AreEqual(4, rotationCount, "Rotationカーブは4つ（x,y,z,w）であるべき");
+                Assert.AreEqual(3, scaleCount, "Scaleカーブは3つ（x,y,z）であるべき");
+                Assert.AreEqual(10, exportData.TransformCurves.Count, "合計10のカーブが含まれるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// P13-008: スケルトンボーンと非スケルトンTransformが混在するアニメーションの統合テスト
+        /// </summary>
+        [Test]
+        public void Phase13統合_スケルトンと非スケルトンの混在アニメーション()
+        {
+            // Arrange
+            var root = new GameObject("MixedCharacter");
+            var animator = root.AddComponent<Animator>();
+
+            // ボーン階層
+            var hips = new GameObject("Hips");
+            hips.transform.SetParent(root.transform);
+            var rightHand = new GameObject("RightHand");
+            rightHand.transform.SetParent(hips.transform);
+
+            // SkinnedMeshRenderer（ボーン定義）
+            var meshObj = new GameObject("Body");
+            meshObj.transform.SetParent(root.transform);
+            var skinnedMesh = meshObj.AddComponent<SkinnedMeshRenderer>();
+            skinnedMesh.bones = new Transform[] { hips.transform, rightHand.transform };
+            skinnedMesh.rootBone = hips.transform;
+
+            // プロップ（非スケルトン）
+            var sword = new GameObject("Sword");
+            sword.transform.SetParent(rightHand.transform);
+            sword.AddComponent<MeshFilter>();
+
+            // スケルトンボーンとプロップの両方をアニメートするClip
+            var animClip = new AnimationClip();
+            animClip.name = "MixedAnimClip";
+
+            // スケルトンボーン（Hips）のアニメーション
+            animClip.SetCurve("Hips", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 1));
+
+            // プロップ（Sword）のアニメーション
+            animClip.SetCurve("Hips/RightHand/Sword", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Hips/RightHand/Sword", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 1, 0));
+            animClip.SetCurve("Hips/RightHand/Sword", typeof(Transform), "localRotation.z", AnimationCurve.Linear(0, 0, 1, 0.7f));
+            animClip.SetCurve("Hips/RightHand/Sword", typeof(Transform), "localRotation.w", AnimationCurve.Linear(0, 1, 1, 0.7f));
+
+            try
+            {
+                // Act
+                var skeletonExtractor = new Infrastructure.SkeletonExtractor();
+                var exporter = new Infrastructure.FbxAnimationExporter(skeletonExtractor);
+
+                var skeleton = exporter.ExtractSkeleton(animator);
+                var nonSkeletonTransforms = skeletonExtractor.ExtractNonSkeletonTransforms(animator, skeleton, animClip);
+                var transformCurves = exporter.ExtractTransformCurves(animClip, animator);
+                var exportData = exporter.PrepareTransformCurvesForExport(animator, animClip, transformCurves);
+
+                // Assert - スケルトンの検証
+                Assert.IsTrue(skeleton.HasSkeleton, "スケルトンが存在すべき");
+                Assert.AreEqual(2, skeleton.Bones.Count, "Hips, RightHandの2つのボーンがあるべき");
+
+                // Assert - 非スケルトンTransformの検証
+                bool hasSword = false;
+                foreach (var t in nonSkeletonTransforms)
+                {
+                    if (t.name == "Sword") hasSword = true;
+                }
+                Assert.IsTrue(hasSword, "Swordが非スケルトンとして取得されるべき");
+
+                // Assert - 両方のパスのカーブが抽出されていることを確認
+                bool hasHipsCurve = false;
+                bool hasSwordCurve = false;
+                foreach (var curve in transformCurves)
+                {
+                    if (curve.Path == "Hips") hasHipsCurve = true;
+                    if (curve.Path == "Hips/RightHand/Sword") hasSwordCurve = true;
+                }
+                Assert.IsTrue(hasHipsCurve, "スケルトンボーン（Hips）のカーブが抽出されるべき");
+                Assert.IsTrue(hasSwordCurve, "非スケルトン（Sword）のカーブが抽出されるべき");
+
+                // Assert - FbxExportDataの検証
+                Assert.IsTrue(exportData.HasExportableData, "エクスポート可能なデータがあるべき");
+                Assert.IsTrue(exporter.CanExport(exportData), "エクスポート可能と判定されるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// P13-008: エクスポートデータなしの場合のエラーハンドリング統合テスト
+        /// </summary>
+        [Test]
+        public void Phase13統合_エクスポート可能なデータがない場合の処理()
+        {
+            // Arrange
+            var root = new GameObject("EmptyDataCharacter");
+            var animator = root.AddComponent<Animator>();
+
+            // Transformカーブを含まないAnimationClip（マテリアルカーブのみ）
+            var animClip = new AnimationClip();
+            animClip.name = "NoTransformClip";
+            animClip.SetCurve("", typeof(MeshRenderer), "material._Color.r", AnimationCurve.Linear(0, 0, 1, 1));
+
+            try
+            {
+                // Act
+                var skeletonExtractor = new Infrastructure.SkeletonExtractor();
+                var exporter = new Infrastructure.FbxAnimationExporter(skeletonExtractor);
+                var transformCurves = exporter.ExtractTransformCurves(animClip, animator);
+                var exportData = exporter.PrepareTransformCurvesForExport(animator, animClip, transformCurves);
+
+                // Assert
+                Assert.AreEqual(0, transformCurves.Count, "Transformカーブは抽出されないべき");
+                Assert.IsFalse(exportData.HasExportableData, "エクスポート可能なデータがないべき");
+                Assert.IsFalse(exporter.CanExport(exportData), "エクスポート不可と判定されるべき");
+
+                var validationError = exporter.ValidateExportData(exportData);
+                Assert.IsNotNull(validationError, "バリデーションエラーがあるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        #endregion
+
         #region ヘルパーメソッド
 
         /// <summary>

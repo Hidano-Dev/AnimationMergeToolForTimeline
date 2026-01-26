@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="6" result="Passed" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.0762522">
+  <test-suite type="TestSuite" id="1000" name="AnimationMergeToolForTimeline" fullname="AnimationMergeToolForTimeline" runstate="Runnable" testcasecount="730" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.076252" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1752" name="AnimationMergeTool.Editor.Tests.dll" fullname="D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.dll" runstate="Runnable" testcasecount="730" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.063888" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="547832" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1753" name="AnimationMergeTool" fullname="AnimationMergeTool" runstate="Runnable" testcasecount="730" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.057289" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1754" name="Editor" fullname="AnimationMergeTool.Editor" runstate="Runnable" testcasecount="730" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.050988" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1755" name="Tests" fullname="AnimationMergeTool.Editor.Tests" runstate="Runnable" testcasecount="730" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.044358" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1491" name="IntegrationTests" fullname="AnimationMergeTool.Editor.Tests.IntegrationTests" classname="AnimationMergeTool.Editor.Tests.IntegrationTests" runstate="Runnable" testcasecount="37" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.033646" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1525" name="Phase13統合_FbxExportDataの構築とエクスポート判定" fullname="AnimationMergeTool.Editor.Tests.IntegrationTests.Phase13統合_FbxExportDataの構築とエクスポート判定" methodname="Phase13統合_FbxExportDataの構築とエクスポート判定" classname="AnimationMergeTool.Editor.Tests.IntegrationTests" runstate="Runnable" seed="1021472660" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.014479" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1528" name="Phase13統合_エクスポート可能なデータがない場合の処理" fullname="AnimationMergeTool.Editor.Tests.IntegrationTests.Phase13統合_エクスポート可能なデータがない場合の処理" methodname="Phase13統合_エクスポート可能なデータがない場合の処理" classname="AnimationMergeTool.Editor.Tests.IntegrationTests" runstate="Runnable" seed="1106906524" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.002362" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1527" name="Phase13統合_スケルトンと非スケルトンの混在アニメーション" fullname="AnimationMergeTool.Editor.Tests.IntegrationTests.Phase13統合_スケルトンと非スケルトンの混在アニメーション" methodname="Phase13統合_スケルトンと非スケルトンの混在アニメーション" classname="AnimationMergeTool.Editor.Tests.IntegrationTests" runstate="Runnable" seed="1560827119" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.001781" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1523" name="Phase13統合_スケルトン取得とTransformカーブ抽出の連携" fullname="AnimationMergeTool.Editor.Tests.IntegrationTests.Phase13統合_スケルトン取得とTransformカーブ抽出の連携" methodname="Phase13統合_スケルトン取得とTransformカーブ抽出の連携" classname="AnimationMergeTool.Editor.Tests.IntegrationTests" runstate="Runnable" seed="1565238465" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.000753" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1524" name="Phase13統合_非スケルトンTransformのカーブ抽出" fullname="AnimationMergeTool.Editor.Tests.IntegrationTests.Phase13統合_非スケルトンTransformのカーブ抽出" methodname="Phase13統合_非スケルトンTransformのカーブ抽出" classname="AnimationMergeTool.Editor.Tests.IntegrationTests" runstate="Runnable" seed="2114456777" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.000623" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1526" name="Phase13統合_複数TransformタイプのカーブをFbxExportDataに含める" fullname="AnimationMergeTool.Editor.Tests.IntegrationTests.Phase13統合_複数TransformタイプのカーブをFbxExportDataに含める" methodname="Phase13統合_複数TransformタイプのカーブをFbxExportDataに含める" classname="AnimationMergeTool.Editor.Tests.IntegrationTests" runstate="Runnable" seed="1373202488" result="Passed" start-time="2026-01-26 18:13:14Z" end-time="2026-01-26 18:13:14Z" duration="0.000627" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: D:\Personal\Repositries\AnimationMergeToolForTimeline\TestResults_P13-008.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
