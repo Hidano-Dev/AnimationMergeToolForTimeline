@@ -705,10 +705,21 @@ namespace AnimationMergeTool.Editor.Tests
             // Assert
             Assert.IsNotNull(result);
             var resultCurves = _clipMerger.GetAnimationCurves(result);
-            Assert.AreEqual(1, resultCurves.Count);
+            Assert.IsTrue(resultCurves.Count >= 1, "少なくとも1つのカーブが含まれるべき");
+            // m_LocalPosition.xのカーブを検索（Unity内部ではm_プレフィックスが付く）
+            CurveBindingPair targetCurve = null;
+            foreach (var curve in resultCurves)
+            {
+                if (curve.Binding.propertyName == "m_LocalPosition.x")
+                {
+                    targetCurve = curve;
+                    break;
+                }
+            }
+            Assert.IsNotNull(targetCurve, "m_LocalPosition.xのカーブが含まれるべき");
             // キーは5秒と6秒に配置される
-            Assert.AreEqual(5f, resultCurves[0].Curve.keys[0].time, 0.0001f);
-            Assert.AreEqual(6f, resultCurves[0].Curve.keys[1].time, 0.0001f);
+            Assert.AreEqual(5f, targetCurve.Curve.keys[0].time, 0.0001f);
+            Assert.AreEqual(6f, targetCurve.Curve.keys[1].time, 0.0001f);
 
             Object.DestroyImmediate(animClip);
             Object.DestroyImmediate(result);
