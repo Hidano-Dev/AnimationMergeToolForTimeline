@@ -224,21 +224,19 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
         /// <summary>
         /// スケルトン以外のTransformを取得する（プロップ等）
-        /// タスク P13-005で実装予定
+        /// タスク P13-005で実装
         /// </summary>
         /// <param name="animator">対象のAnimator</param>
         /// <param name="skeleton">スケルトン情報（除外対象）</param>
         /// <returns>非スケルトンTransformのリスト</returns>
         public List<Transform> ExtractNonSkeletonTransforms(Animator animator, SkeletonData skeleton)
         {
-            // P13-005で実装予定
-            // 現在は空のリストを返すスタブ実装
-            return new List<Transform>();
+            return ExtractNonSkeletonTransforms(animator, skeleton, null);
         }
 
         /// <summary>
         /// スケルトン以外のTransformを取得する（AnimationClipでフィルタリング）
-        /// タスク P13-005で実装予定
+        /// タスク P13-005で実装
         /// </summary>
         /// <param name="animator">対象のAnimator</param>
         /// <param name="skeleton">スケルトン情報（除外対象）</param>
@@ -246,9 +244,100 @@ namespace AnimationMergeTool.Editor.Infrastructure
         /// <returns>非スケルトンTransformのリスト</returns>
         public List<Transform> ExtractNonSkeletonTransforms(Animator animator, SkeletonData skeleton, AnimationClip clip)
         {
-            // P13-005で実装予定
-            // 現在は空のリストを返すスタブ実装
-            return new List<Transform>();
+            var result = new List<Transform>();
+
+            if (animator == null)
+            {
+                return result;
+            }
+
+            // スケルトンボーンのセットを作成（高速検索用）
+            var skeletonBones = new HashSet<Transform>();
+            if (skeleton != null && skeleton.Bones != null)
+            {
+                foreach (var bone in skeleton.Bones)
+                {
+                    if (bone != null)
+                    {
+                        skeletonBones.Add(bone);
+                    }
+                }
+            }
+
+            // AnimationClipからアニメートされているパスを取得
+            HashSet<string> animatedPaths = null;
+            if (clip != null)
+            {
+                animatedPaths = new HashSet<string>();
+                var bindings = UnityEditor.AnimationUtility.GetCurveBindings(clip);
+                foreach (var binding in bindings)
+                {
+                    animatedPaths.Add(binding.path);
+                }
+            }
+
+            // 再帰的に非スケルトンTransformを収集
+            CollectNonSkeletonTransformsRecursive(
+                animator.transform,
+                animator,
+                skeletonBones,
+                animatedPaths,
+                result);
+
+            return result;
+        }
+
+        /// <summary>
+        /// 非スケルトンTransformを再帰的に収集する
+        /// </summary>
+        private void CollectNonSkeletonTransformsRecursive(
+            Transform current,
+            Animator animator,
+            HashSet<Transform> skeletonBones,
+            HashSet<string> animatedPaths,
+            List<Transform> result)
+        {
+            for (int i = 0; i < current.childCount; i++)
+            {
+                var child = current.GetChild(i);
+
+                // スケルトンボーンは除外
+                if (skeletonBones.Contains(child))
+                {
+                    // ただし、スケルトンボーンの子は探索を続ける
+                    CollectNonSkeletonTransformsRecursive(child, animator, skeletonBones, animatedPaths, result);
+                    continue;
+                }
+
+                // SkinnedMeshRendererを持つオブジェクトは除外（メッシュ描画用）
+                if (child.GetComponent<SkinnedMeshRenderer>() != null)
+                {
+                    // 子の探索は続ける
+                    CollectNonSkeletonTransformsRecursive(child, animator, skeletonBones, animatedPaths, result);
+                    continue;
+                }
+
+                // AnimationClipでフィルタリング
+                if (animatedPaths != null)
+                {
+                    var path = GetBonePath(animator, child);
+                    if (!animatedPaths.Contains(path))
+                    {
+                        // アニメートされていないパスは追加しないが、子の探索は続ける
+                        CollectNonSkeletonTransformsRecursive(child, animator, skeletonBones, animatedPaths, result);
+                        continue;
+                    }
+                }
+
+                // 非スケルトンTransformとして追加
+                if (!result.Contains(child))
+                {
+                    result.Add(child);
+                }
+
+                // 子を再帰的に探索
+                CollectNonSkeletonTransformsRecursive(child, animator, skeletonBones, animatedPaths, result);
+            }
         }
     }
 }
