@@ -2,8 +2,8 @@
 Built from '6000.0/respin/6000.0.64f1-d4299b69b02d' branch; Version is '6000.0.64f1 (5360b7cd7953) revision 5464247'; Using compiler version '193933523'; Build Type 'Release'
 OS: 'Windows 11  (10.0.26100) 64bit Professional' Language: 'ja' Physical Memory: 65249 MB
 BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
-Date: 2026-01-26T18:32:17Z
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano" at "2026-01-26T18:32:17.8203365Z"
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano" at "2026-01-26T18:45:22.4260302Z"
+Date: 2026-01-26T18:45:22Z
 
 COMMAND LINE ARGUMENTS:
 C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Unity.exe
@@ -13,13 +13,11 @@ D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimel
 -runTests
 -testPlatform
 EditMode
--testFilter
-HumanoidToGenericConverterTests
 -testResults
 D:\Personal\Repositries\AnimationMergeToolForTimeline\TestResults.xml
 -logFile
 D:\Personal\Repositries\AnimationMergeToolForTimeline\unity_test.log
--nographics
+-quit
 Successfully changed project path to: D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline
 D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
 [UnityMemory] Configuration Parameters - Can be set up in boot.config
@@ -57,16 +55,16 @@ D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimel
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gfx=262144"
-Player connection [501080]  Target information:
+Player connection [548248]  Target information:
 
-Player connection [501080]  * "[IP] 192.168.0.112 [Port] 55505 [Flags] 2 [Guid] 1130019890 [EditorId] 1130019890 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-794D179) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [548248]  * "[IP] 192.168.0.112 [Port] 55505 [Flags] 2 [Guid] 390990622 [EditorId] 390990622 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-794D179) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [501080] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [501080] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Player connection [548248] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [548248] Host joined alternative multi-casting on [225.0.0.222:34997]...
 Input System module state changed to: Initialized.
 [Physics::Module] Initialized fallback backend.
 [Physics::Module] Id: 0xdecafbad
-[Package Manager] Connected to IPC stream "Upm-545916" after 0.2 seconds.
+[Package Manager] Connected to IPC stream "Upm-550404" after 0.2 seconds.
 Library Redirect Path: Library/
 [Physics::Module] Selected backend.
 [Physics::Module] Name: PhysX
@@ -79,17 +77,18 @@ Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 6000.0.64f1 (5360b7cd7953)
 [Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Resources/UnitySubsystems
 [Subsystems] Discovering subsystems at path D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/Assets
-Forcing GfxDevice: Null
 GfxDevice: creating device client; kGfxThreadingModeNonThreaded
-NullGfxDevice:
-    Version:  NULL 1.0 [1.0]
-    Renderer: Null Device
-    Vendor:   Unity Technologies
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce RTX 4070 Ti SUPER (ID=0x2705)
+    Vendor:   NVIDIA
+    VRAM:     16063 MB
+    Driver:   32.0.15.6094
 Initialize mono
 Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed'
 Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
 Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56916
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56404
 Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
 Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
 ImportWorker Server TCP listen port: 0
@@ -97,12 +96,12 @@ AcceleratorClientConnectionCallback - disconnected - :0
 Begin MonoManager ReloadAssembly
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.17.4+4293ba1
-  Session Id:              e6ad93004ec44d3788deb71670a64532
+  Session Id:              f1d063c7be80430b9a9b77d05be0c4e1
   Correlation Id:          b2cd0e2ca88a776c54a1e2e5ce5fac7d
-  External correlation Id: 8464378697275923544
+  External correlation Id: 4788152221514280160
   Machine Id:              NJnCi2kLka6rUvnOkC/kk5D1Dzo=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-Hidano" (connect: 0.00s, validation: 0.00s, handshake: 0.54s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano-notifications" at "2026-01-26T18:32:18.3638312Z"
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-Hidano" (connect: 0.00s, validation: 0.00s, handshake: 0.55s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano-notifications" at "2026-01-26T18:45:22.9802878Z"
 [Licensing::Module] Error: Access token is unavailable; failed to update
 [Licensing::Client] Successfully resolved entitlement details
 [Licensing::Module] License group:
@@ -111,42 +110,42 @@ Begin MonoManager ReloadAssembly
   Type: Assigned
   Expiration: Unlimited
 [Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
-[Licensing::Module] Licensing Background thread has ended after 0.55s
+[Licensing::Module] Licensing Background thread has ended after 0.56s
 Registering precompiled unity dll's ...
 Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
-Registered in 0.001351 seconds.
+Registered in 0.001326 seconds.
 - Loaded All Assemblies, in  0.223 seconds
 Native extension for WindowsStandalone target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.191 seconds
-Domain Reload Profiling: 414ms
-	BeginReloadAssembly (78ms)
+- Finished resetting the current domain, in  0.182 seconds
+Domain Reload Profiling: 404ms
+	BeginReloadAssembly (76ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (1ms)
-	RebuildCommonClasses (21ms)
+		CreateAndSetChildDomain (0ms)
+	RebuildCommonClasses (22ms)
 	RebuildNativeTypeToScriptingClass (7ms)
-	initialDomainReloadingComplete (28ms)
-	LoadAllAssembliesAndSetupDomain (88ms)
-		LoadAssemblies (77ms)
+	initialDomainReloadingComplete (27ms)
+	LoadAllAssembliesAndSetupDomain (89ms)
+		LoadAssemblies (75ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (86ms)
-			TypeCache.Refresh (85ms)
-				TypeCache.ScanAssembly (77ms)
+		AnalyzeDomain (88ms)
+			TypeCache.Refresh (87ms)
+				TypeCache.ScanAssembly (78ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (191ms)
+	FinalizeReload (182ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (171ms)
+		SetupLoadedEditorAssemblies (163ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (15ms)
+			InitializePlatformSupportModulesInManaged (14ms)
 			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (34ms)
-			ProcessInitializeOnLoadAttributes (83ms)
-			ProcessInitializeOnLoadMethodAttributes (35ms)
+			BeforeProcessingInitializeOnLoad (33ms)
+			ProcessInitializeOnLoadAttributes (80ms)
+			ProcessInitializeOnLoadMethodAttributes (33ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -204,8 +203,7 @@ Embedded package [com.hidano.animation-merge-tool] was found in the directory [D
   Embedded packages:
     com.hidano.animation-merge-tool@file:D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline\Packages\AnimationMergeToolForTimeline (location: D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline\Packages\AnimationMergeToolForTimeline)
 [Subsystems] No new subsystems found in resolved package list.
-[Package Manager] Done registering packages in 0.01 seconds
-[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+[Package Manager] Done registering packages in 0.02 seconds
 info: Microsoft.Hosting.Lifetime[14]
       Now listening on: http://localhost:80
 info: Microsoft.Hosting.Lifetime[0]
@@ -221,223 +219,105 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 24.5882ms
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 22.7417ms
 Starting: C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Data\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aEDbg.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
 WorkingDir: D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
 DisplayProgressbar: Compiling Scripts
-ExitCode: 0 Duration: 1s593ms
-[247/253    0s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.dll (+2 others)
-[           0s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.dll (+2 others) [CacheWrite 00000000000000000000000000000004]
-[248/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.pdb
-[249/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.dll
-[250/253    0s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.dll (+2 others)
-[           0s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.dll (+2 others) [CacheWrite 00000000000000000000000000000004]
-[251/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.pdb
-[252/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.dll
-*** Tundra build success (1.57 seconds), 6 items updated, 253 evaluated
-AssetDatabase: script compilation time: 1.953469s
+ExitCode: 0 Duration: 0s73ms
+*** Tundra build success (0.05 seconds), 0 items updated, 253 evaluated
+AssetDatabase: script compilation time: 0.377075s
 Begin MonoManager ReloadAssembly
-- Loaded All Assemblies, in  0.786 seconds
+- Loaded All Assemblies, in  0.383 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Native extension for WindowsStandalone target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.289 seconds
-Domain Reload Profiling: 1074ms
-	BeginReloadAssembly (218ms)
+- Finished resetting the current domain, in  0.288 seconds
+Domain Reload Profiling: 670ms
+	BeginReloadAssembly (209ms)
 		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (16ms)
+		DisableScriptedObjects (9ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (119ms)
+		CreateAndSetChildDomain (121ms)
 	RebuildCommonClasses (21ms)
 	RebuildNativeTypeToScriptingClass (7ms)
 	initialDomainReloadingComplete (14ms)
-	LoadAllAssembliesAndSetupDomain (525ms)
-		LoadAssemblies (536ms)
+	LoadAllAssembliesAndSetupDomain (130ms)
+		LoadAssemblies (143ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (47ms)
-			TypeCache.Refresh (38ms)
-				TypeCache.ScanAssembly (33ms)
-			BuildScriptInfoCaches (7ms)
+		AnalyzeDomain (46ms)
+			TypeCache.Refresh (37ms)
+				TypeCache.ScanAssembly (32ms)
+			BuildScriptInfoCaches (6ms)
 			ResolveRequiredComponents (1ms)
-	FinalizeReload (289ms)
+	FinalizeReload (288ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (221ms)
+		SetupLoadedEditorAssemblies (222ms)
 			LogAssemblyErrors (0ms)
 			InitializePlatformSupportModulesInManaged (8ms)
 			SetLoadedEditorAssemblies (2ms)
-			BeforeProcessingInitializeOnLoad (64ms)
+			BeforeProcessingInitializeOnLoad (65ms)
 			ProcessInitializeOnLoadAttributes (126ms)
-			ProcessInitializeOnLoadMethodAttributes (17ms)
+			ProcessInitializeOnLoadMethodAttributes (18ms)
 			AfterProcessingInitializeOnLoad (2ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
 		AwakeInstancesAfterBackupRestoration (6ms)
+Start importing Packages/com.hidano.animation-merge-tool/Docs/調査メモ_P15-001_FBX_BlendShapeエクスポート仕様調査.md using Guid(2d450d40f69d0b6449faa5fe31177c94) (TextScriptImporter) -> (artifact id: '8e5ddf3547a764349f85983edfbacb3d') in 0.0209932 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=11d142c5a04ddff46bb13474959bfd35): Total: 3.281 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+Asset Pipeline Refresh (id=ca019d9ea2a323c4c9829e97f4f663b4): Total: 1.289 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
 	Summary:
-		Imports: total=0 (actual=0, local cache=0, cache server=0)
-		Asset DB Process Time: managed=0 ms, native=457 ms
-		Asset DB Callback time: managed=49 ms, native=14 ms
-		Scripting: domain reloads=1, domain reload time=786 ms, compile time=1954 ms, other=17 ms
-		Project Asset Count: scripts=346, non-scripts=266
-		Asset File Changes: new=0, changed=2, moved=0, deleted=0
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=3 ms, native=442 ms
+		Asset DB Callback time: managed=47 ms, native=17 ms
+		Scripting: domain reloads=1, domain reload time=383 ms, compile time=378 ms, other=17 ms
+		Project Asset Count: scripts=346, non-scripts=267
+		Asset File Changes: new=1, changed=1, moved=0, deleted=0
 		Scan Filter Count: 0
 	InvokeCustomDependenciesCallbacks: 0.001ms
-	InvokePackagesCallback: 14.454ms
-	ApplyChangesToAssetFolders: 0.343ms
-	Scan: 99.606ms
-	OnSourceAssetsModified: 0.602ms
-	CategorizeAssetsWithTransientArtifact: 5.609ms
-	ProcessAssetsWithTransientArtifactChanges: 9.473ms
-	CategorizeAssets: 2.528ms
-	ImportOutOfDateAssets: 289.905ms (-1664.579ms without children)
-		CompileScripts: 1954.195ms
+	InvokePackagesCallback: 17.510ms
+	ApplyChangesToAssetFolders: 0.316ms
+	Scan: 65.649ms
+	OnSourceAssetsModified: 0.523ms
+	CategorizeAssetsWithTransientArtifact: 5.910ms
+	ProcessAssetsWithTransientArtifactChanges: 9.753ms
+	CategorizeAssets: 2.577ms
+	ImportOutOfDateAssets: 310.954ms (-88.924ms without children)
+		ImportManagerImport: 21.813ms (0.620ms without children)
+			ImportInProcess: 21.176ms
+			UpdateCategorizedAssets: 0.017ms
+		CompileScripts: 377.764ms
 		ReloadNativeAssets: 0.000ms
-		UnloadImportedAssets: 0.065ms
-		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.062ms
-		InitializingProgressBar: 0.000ms
+		UnloadImportedAssets: 0.111ms
+		ReloadImportedAssets: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.064ms
+		InitializingProgressBar: 0.005ms
 		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
-		OnDemandSchedulerStart: 0.162ms
-	PostProcessAllAssets: 50.109ms
-	Hotreload: 0.456ms
+		OnDemandSchedulerStart: 0.120ms
+	PostProcessAllAssets: 46.590ms
+	Hotreload: 0.922ms
 	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
-	UnloadStreamsBegin: 0.133ms
-	PersistCurrentRevisions: 0.013ms
-	UnloadStreamsEnd: 0.001ms
-	GenerateScriptTypeHashes: 0.131ms
-	Untracked: 2807.474ms
+	UnloadStreamsBegin: 0.132ms
+	PersistCurrentRevisions: 0.051ms
+	UnloadStreamsEnd: 0.000ms
+	GenerateScriptTypeHashes: 0.164ms
+	Untracked: 827.675ms
 
 Application.AssetDatabase Initial Refresh End
-Scanning for USB devices : 3.911ms
+Scanning for USB devices : 4.199ms
 Initializing Unity extensions:
 Script 'Packages/AnimationMergeToolForTimeline/package.json' will not be compiled because it exists outside the Assets folder and does not to belong to any assembly definition file.
 [MODES] ModeService[none].Initialize
 [MODES] ModeService[none].LoadModes
 [MODES] Loading mode Default (0) for mode-current-id-AnimationMergeToolForTimeline
 Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 1276 unused Assets / (0.8 MB). Loaded Objects now: 1788.
-Memory consumption went from 92.6 MB to 91.8 MB.
-Total: 3.631600 ms (FindLiveObjects: 0.083200 ms CreateObjectMapping: 0.027700 ms MarkObjects: 3.198000 ms  DeleteObjects: 0.322200 ms)
+Unloading 1276 unused Assets / (0.9 MB). Loaded Objects now: 1790.
+Memory consumption went from 94.0 MB to 93.1 MB.
+Total: 3.486300 ms (FindLiveObjects: 0.101700 ms CreateObjectMapping: 0.043000 ms MarkObjects: 2.993100 ms  DeleteObjects: 0.347900 ms)
 
-Microsoft Media Foundation video decoding to texture disabled: graphics device is Null, only Direct3D 11 and Direct3D 12 (only on desktop) are supported for hardware-accelerated video decoding.
-[Project] Loading completed in 7.526 seconds
-	Project init time: 				4.292 seconds
-		Template init time: 		0.000 seconds
-		Package Manager init time: 		0.230 seconds
-		Asset Database init time: 		0.163 seconds
-		Global illumination init time: 	0.002 seconds
-		Assemblies load time: 			0.424 seconds
-		Unity extensions init time: 	0.001 seconds
-		Asset Database refresh time: 	3.281 seconds
-	Scene opening time: 			3.135 seconds
-##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1769452345259,"processId":545916,"projectLoad":7.5256973,"projectInit":4.2922767,"templateInit":0.0,"packageManagerInit":0.2301006,"assetDatabaseInit":0.1630886,"globalIlluminationInit":0.0020703,"assembliesLoad":0.4244752,"unityExtensionsInit":0.0010977,"assetDatabaseRefresh":3.2807713,"sceneOpening":3.1353136}
-##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1769452345259,"processId":545916,"editorVersion":"6000.0.64f1 (5360b7cd7953)","branch":"6000.0/respin/6000.0.64f1-d4299b69b02d","buildType":"Release","platform":"Windows"}
-Asset Pipeline Refresh (id=11e954ba008126444bc07becc18f1bcf): Total: 0.007 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
-Running tests for ExecutionSettings with details:
-targetPlatform = 
-playerHeartbeatTimeout = 600
-filters[0] = 
-   Filter with settings:
-   testMode = EditMode
-   targetPlatform = 
-   testNames = null
-   groupNames = HumanoidToGenericConverterTests
-   categoryNames = null
-   assemblyNames = null
-ignoreTests = {}
-featureFlags = null
-
-UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
-UnityEngine.StackTraceUtility:ExtractStackTrace ()
-UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
-UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
-UnityEngine.Logger:Log (UnityEngine.LogType,object)
-UnityEngine.Debug:Log (object)
-UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:InitializeAndExecuteRun (string[]) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs:53)
-UnityEditor.TestTools.TestRunner.CommandLineTest.TestStarter:InitializeAndExecuteRun () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/TestStarter.cs:64)
-UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
-
-(Filename: ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 53)
-
-[UnityConnectServicesConfig] config is NOT valid, switching to default
-Created GICache directory at C:/Users/Hidano/AppData/LocalLow/Unity/Caches/GiCache. Took: 0.004s, timestamps: [7.534 - 7.538]
-Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 2 unused Assets / (1.4 KB). Loaded Objects now: 1829.
-Memory consumption went from 89.5 MB to 89.5 MB.
-Total: 3.831300 ms (FindLiveObjects: 0.062100 ms CreateObjectMapping: 0.015100 ms MarkObjects: 3.740200 ms  DeleteObjects: 0.013300 ms)
-
-Framerate of 0 or less is not allowed
-UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
-UnityEngine.StackTraceUtility:ExtractStackTrace ()
-UnityEngine.AnimationClip:set_frameRate (single)
-AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests:ConvertMuscleCurvesToRotation_フレームレートが0のクリップ_例外が発生しない () (at ./Packages/AnimationMergeToolForTimeline/Tests/Editor/HumanoidToGenericConverterTests.cs:377)
-System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
-System.Reflection.MethodBase:Invoke (object,object[])
-NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
-NUnit.Framework.Internal.MethodWrapper:Invoke (object,object[])
-NUnit.Framework.Internal.Commands.TestMethodCommand:RunNonAsyncTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
-NUnit.Framework.Internal.Commands.TestMethodCommand:RunTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
-NUnit.Framework.Internal.Commands.TestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext)
-UnityEngine.TestTools.UnityTestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/UnityTestMethodCommand.cs:19)
-UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand/<>c__DisplayClass2_0:<Execute>b__0 () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:24)
-UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand:CaptureException (NUnit.Framework.Internal.TestResult,System.Action) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:72)
-UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand:ExecuteAndCheckLog (UnityEngine.TestTools.Logging.LogScope,NUnit.Framework.Internal.TestResult,System.Action) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:83)
-UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:24)
-UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand/<ExecuteEnumerable>d__3:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:35)
-UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__16<NUnit.Framework.ITestAction>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:212)
-UnityEngine.TestTools.ImmediateEnumerableCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/ImmediateEnumerableCommand.cs:18)
-UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__16<System.Reflection.MethodInfo>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:219)
-UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__16<System.Reflection.MethodInfo>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:212)
-UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__16<UnityEngine.TestTools.IOuterUnityTestAction>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:212)
-UnityEngine.TestTools.RetryCommand/<ExecuteEnumerable>d__2:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/RetryCommand.cs:37)
-UnityEngine.TestTools.RepeatCommand/<ExecuteEnumerable>d__2:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/RepeatCommand.cs:36)
-UnityEngine.TestTools.IgnoreTestCommand/<ExecuteEnumerable>d__3:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/IgnoreTestCommand.cs:42)
-UnityEngine.TestTools.StrictCheckCommand/<ExecuteEnumerable>d__2:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Commands/StrictCheckCommand.cs:29)
-UnityEngine.TestRunner.NUnitExtensions.Runner.DefaultTestWorkItem/<PerformWork>d__2:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/DefaultTestWorkItem.cs:50)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__17:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:207)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__13:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:82)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__17:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:207)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__13:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:82)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__17:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:207)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__13:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:82)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__17:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:207)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__13:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:82)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__17:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:207)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__13:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:82)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__17:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:207)
-UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__13:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:82)
-UnityEditor.TestTools.TestRunner.EditModeRunner:MoveNextAndUpdateYieldObject () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/TestRunner/EditModeRunner.cs:167)
-UnityEditor.TestTools.TestRunner.EditModeRunner:TestConsumer (UnityEditor.TestTools.TestRunner.TestRunnerStateSerializer) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/TestRunner/EditModeRunner.cs:200)
-UnityEditor.TestTools.TestRunner.TestRun.Tasks.EditModeRunTask/<Execute>d__1:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/TestRun/Tasks/EditModeRunTask.cs:48)
-UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteStep () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:173)
-UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteCallback () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:108)
-UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
-
-[./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/TestRunner/EditModeRunner.cs line 167]
-
-Saving results to: D:\Personal\Repositries\AnimationMergeToolForTimeline\TestResults.xml
-Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 0 unused Assets / (0 B). Loaded Objects now: 1830.
-Memory consumption went from 89.4 MB to 89.4 MB.
-Total: 3.585300 ms (FindLiveObjects: 0.054600 ms CreateObjectMapping: 0.015200 ms MarkObjects: 3.512200 ms  DeleteObjects: 0.002800 ms)
-
-DisplayProgressbar: Undo
-Test run completed. Exiting with code 0 (Ok). Run completed.
-UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
-UnityEngine.StackTraceUtility:ExtractStackTrace ()
-UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
-UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
-UnityEngine.Logger:Log (UnityEngine.LogType,object)
-UnityEngine.Debug:Log (object)
-UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:ExitApplication (UnityEditor.TestTools.TestRunner.CommandLineTest.Executer/ReturnCodes,string) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs:81)
-UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:ExitIfRunIsCompleted () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs:74)
-UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
-
-(Filename: ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 81)
-
+Batchmode quit successfully invoked - shutting down!
 [Physics::Module] Cleanup current backned.
 [Physics::Module] Id: 0xf2b8ea05
 Input System module state changed to: ShutdownInProgress.
@@ -447,17 +327,15 @@ Input System module state changed to: Shutdown.
 [Licensing::IpcConnector] LicenseClient-Hidano channel disconnected successfully.
 AcceleratorClientConnectionCallback - disconnected - :0
 Cleanup mono
-03:32:26.259 |V| RiderPlugin                    | :1                             | AppDomain.CurrentDomain.DomainUnload lifetimeDefinition.Terminate
-abort_threads: Failed aborting id: 0000000000085F6C, mono_thread_manage will ignore it
+03:45:28.201 |V| RiderPlugin                    | :1                             | AppDomain.CurrentDomain.DomainUnload lifetimeDefinition.Terminate
+abort_threads: Failed aborting id: 0000000000083B68, mono_thread_manage will ignore it
 
-abort_threads: Failed aborting id: 0000000000085F58, mono_thread_manage will ignore it
+abort_threads: Failed aborting id: 00000000000843A8, mono_thread_manage will ignore it
 
-abort_threads: Failed aborting id: 0000000000085F6C, mono_thread_manage will ignore it
+abort_threads: Failed aborting id: 00000000000843A8, mono_thread_manage will ignore it
 
-abort_threads: Failed aborting id: 0000000000085F58, mono_thread_manage will ignore it
+abort_threads: Failed aborting id: 0000000000083B68, mono_thread_manage will ignore it
 
-debugger-agent: Unable to listen on 3836
-Checking for leaked weakptr:
-  Found no leaked weakptrs.
-[Package Manager] Server process was shutdown
-##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1769452346308,"processId":545916,"allocatedMemory":10408741,"memoryLabels":[{"Default":14269},{"Permanent":15356},{"NewDelete":70345},{"Thread":4230344},{"Manager":37754},{"VertexData":8},{"Geometry":816},{"VFX":-104},{"Texture":296},{"Shader":78795},{"Material":24},{"GfxDevice":55176},{"Animation":392},{"Audio":4040},{"FontEngine":256},{"Physics":2081},{"Serialization":880},{"Input":14824},{"JobScheduler":33024},{"TextLib":160},{"Mono":32},{"ScriptingNativeRuntime":155060},{"BaseObject":1620112},{"Resource":1304},{"Renderer":2928},{"Transform":4646},{"File":1016},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":9644},{"DynamicArray":87302},{"HashMap":77238},{"Utility":2662798},{"Curl":48},{"PoolAlloc":1768},{"AI":104},{"TypeTree":5005},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7888},{"Director":8240},{"WebRequest":808},{"VR":45969},{"SceneManager":496},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":1},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":256},{"Hierarchy":272},{"Gui":80},{"EditorUtility":54031},{"VersionControl":4},{"Undo":947},{"AssetDatabase":700519},{"EditorGi":328},{"UnityConnect":24208},{"Upm":2036},{"DrivenProperties":72},{"LocalIPC":212},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2604},{"Licensing":664},{"AssetReference":32},{"IPCStream":32}]}
+debugger-agent: Unable to listen on 4496
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0
