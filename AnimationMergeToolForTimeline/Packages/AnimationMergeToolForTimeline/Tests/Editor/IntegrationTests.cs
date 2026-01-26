@@ -1668,6 +1668,448 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region Phase 11 BlendShape対応 統合テスト（P11-008）
+
+        /// <summary>
+        /// P11-008: BlendShapeカーブを含むTimelineの統合テスト
+        /// BlendShapeアニメーションカーブの検出・マージ・Override処理が正しく動作することを検証
+        /// </summary>
+        [Test]
+        public void Phase11統合_BlendShapeカーブを含むTimelineのマージ処理()
+        {
+            // Arrange: BlendShapeカーブを含むTimelineを作成
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "BlendShapeIntegrationTest";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "BlendShapeTrack");
+
+            var animClip = new AnimationClip();
+            animClip.name = "BlendShapeClip";
+
+            // BlendShapeカーブを追加（SkinnedMeshRenderer用）
+            var bindingSmile = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            var curveSmile = AnimationCurve.Linear(0, 0, 1, 100);
+            AnimationUtility.SetEditorCurve(animClip, bindingSmile, curveSmile);
+
+            var bindingBlink = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.eyeBlink_L");
+            var curveBlink = new AnimationCurve(
+                new Keyframe(0, 0),
+                new Keyframe(0.5f, 100),
+                new Keyframe(1, 0)
+            );
+            AnimationUtility.SetEditorCurve(animClip, bindingBlink, curveBlink);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "BlendShapeカーブを含むTimeline処理が成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // BlendShapeカーブが正しく含まれていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+                Assert.AreEqual(2, bindings.Length, "2つのBlendShapeカーブが含まれるべき");
+
+                // BlendShapeプロパティが含まれていることを確認
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "blendShape.Smile"), "blendShape.Smileカーブが含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "blendShape.eyeBlink_L"), "blendShape.eyeBlink_Lカーブが含まれるべき");
+
+                // 型がSkinnedMeshRendererであることを確認
+                Assert.IsTrue(bindings.All(b => b.type == typeof(SkinnedMeshRenderer)), "全てのバインディングがSkinnedMeshRenderer型であるべき");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// P11-008: BlendShapeカーブと通常のTransformカーブが混在するTimelineの統合テスト
+        /// </summary>
+        [Test]
+        public void Phase11統合_BlendShapeとTransformカーブが混在するTimelineのマージ処理()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "MixedCurvesIntegrationTest";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "MixedTrack");
+
+            var animClip = new AnimationClip();
+            animClip.name = "MixedClip";
+
+            // BlendShapeカーブを追加
+            var bindingSmile = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            var curveSmile = AnimationCurve.Linear(0, 0, 2, 100);
+            AnimationUtility.SetEditorCurve(animClip, bindingSmile, curveSmile);
+
+            // 通常のTransformカーブを追加
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 2, 10));
+            animClip.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 2, 5));
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 2;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "混在カーブのTimeline処理が成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+
+                // BlendShapeカーブとTransformカーブの両方が含まれていることを確認
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "blendShape.Smile"), "BlendShapeカーブが含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "m_LocalPosition.x"), "Transformカーブ(x)が含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "m_LocalPosition.y"), "Transformカーブ(y)が含まれるべき");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// P11-008: 複数トラックのBlendShapeカーブのOverride処理統合テスト
+        /// 同一BlendShapeプロパティが複数トラックに存在する場合、優先順位に基づいてOverrideされることを検証
+        /// </summary>
+        [Test]
+        public void Phase11統合_複数トラックのBlendShapeカーブのOverride処理()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "BlendShapeOverrideTest";
+
+            // 低優先順位トラック（上の段）
+            var lowerTrack = timeline.CreateTrack<AnimationTrack>(null, "LowerPriorityTrack");
+            var lowerClip = new AnimationClip { name = "LowerClip" };
+
+            // Smile: 0→50 (0-2秒)
+            var lowerBindingSmile = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            var lowerCurveSmile = AnimationCurve.Linear(0, 0, 2, 50);
+            AnimationUtility.SetEditorCurve(lowerClip, lowerBindingSmile, lowerCurveSmile);
+
+            var lowerTimelineClip = lowerTrack.CreateClip<AnimationPlayableAsset>();
+            lowerTimelineClip.start = 0;
+            lowerTimelineClip.duration = 2;
+            (lowerTimelineClip.asset as AnimationPlayableAsset).clip = lowerClip;
+
+            // 高優先順位トラック（下の段）
+            var higherTrack = timeline.CreateTrack<AnimationTrack>(null, "HigherPriorityTrack");
+            var higherClip = new AnimationClip { name = "HigherClip" };
+
+            // Smile: 100→100 (0.5-1.5秒、完全に上書き)
+            var higherBindingSmile = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            var higherCurveSmile = AnimationCurve.Linear(0, 100, 1, 100);
+            AnimationUtility.SetEditorCurve(higherClip, higherBindingSmile, higherCurveSmile);
+
+            var higherTimelineClip = higherTrack.CreateClip<AnimationPlayableAsset>();
+            higherTimelineClip.start = 0.5;
+            higherTimelineClip.duration = 1;
+            (higherTimelineClip.asset as AnimationPlayableAsset).clip = higherClip;
+
+            try
+            {
+                // Act
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "BlendShapeカーブのOverride処理が成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // BlendShapeカーブが1つだけ含まれていることを確認（マージ後）
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+                var smileBindings = bindings.Where(b => b.propertyName == "blendShape.Smile").ToArray();
+                Assert.AreEqual(1, smileBindings.Length, "Smileカーブは1つにマージされるべき");
+
+                // 高優先順位区間（0.5-1.5秒）で高優先順位の値（100）が採用されていることを確認
+                var smileCurve = AnimationUtility.GetEditorCurve(results[0].GeneratedClip, smileBindings[0]);
+                Assert.AreEqual(100f, smileCurve.Evaluate(0.75f), 1f, "高優先順位区間では高優先順位の値が採用されるべき");
+                Assert.AreEqual(100f, smileCurve.Evaluate(1.25f), 1f, "高優先順位区間では高優先順位の値が採用されるべき");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(lowerClip);
+                Object.DestroyImmediate(higherClip);
+            }
+        }
+
+        /// <summary>
+        /// P11-008: 複数の異なるBlendShapeプロパティが複数トラックに分散している場合の統合テスト
+        /// </summary>
+        [Test]
+        public void Phase11統合_複数トラックの異なるBlendShapeプロパティのマージ処理()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("TestAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "MultiBlendShapePropertiesTest";
+
+            // トラック1: Smile
+            var track1 = timeline.CreateTrack<AnimationTrack>(null, "SmileTrack");
+            var clip1 = new AnimationClip { name = "SmileClip" };
+            var binding1 = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip1, binding1, AnimationCurve.Linear(0, 0, 1, 100));
+            var tc1 = track1.CreateClip<AnimationPlayableAsset>();
+            tc1.start = 0;
+            tc1.duration = 1;
+            (tc1.asset as AnimationPlayableAsset).clip = clip1;
+
+            // トラック2: eyeBlink_L
+            var track2 = timeline.CreateTrack<AnimationTrack>(null, "BlinkTrack");
+            var clip2 = new AnimationClip { name = "BlinkClip" };
+            var binding2 = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.eyeBlink_L");
+            AnimationUtility.SetEditorCurve(clip2, binding2, new AnimationCurve(
+                new Keyframe(0, 0),
+                new Keyframe(0.25f, 100),
+                new Keyframe(0.5f, 0)
+            ));
+            var tc2 = track2.CreateClip<AnimationPlayableAsset>();
+            tc2.start = 0.25;
+            tc2.duration = 0.5;
+            (tc2.asset as AnimationPlayableAsset).clip = clip2;
+
+            // トラック3: MouthOpen
+            var track3 = timeline.CreateTrack<AnimationTrack>(null, "MouthTrack");
+            var clip3 = new AnimationClip { name = "MouthClip" };
+            var binding3 = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.MouthOpen");
+            AnimationUtility.SetEditorCurve(clip3, binding3, AnimationCurve.Linear(0, 50, 0.75f, 100));
+            var tc3 = track3.CreateClip<AnimationPlayableAsset>();
+            tc3.start = 0;
+            tc3.duration = 0.75;
+            (tc3.asset as AnimationPlayableAsset).clip = clip3;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track1, animator);
+            director.SetGenericBinding(track2, animator);
+            director.SetGenericBinding(track3, animator);
+
+            try
+            {
+                // Act
+                var service = new AnimationMergeService();
+                var results = service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "複数BlendShapeプロパティのマージが成功すべき");
+                Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
+
+                // 3つの異なるBlendShapeプロパティが含まれていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "blendShape.Smile"), "Smileが含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "blendShape.eyeBlink_L"), "eyeBlink_Lが含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "blendShape.MouthOpen"), "MouthOpenが含まれるべき");
+
+                // 全てSkinnedMeshRenderer型であることを確認
+                var blendShapeBindings = bindings.Where(b => b.propertyName.StartsWith("blendShape.")).ToArray();
+                Assert.AreEqual(3, blendShapeBindings.Length, "3つのBlendShapeカーブが含まれるべき");
+                Assert.IsTrue(blendShapeBindings.All(b => b.type == typeof(SkinnedMeshRenderer)), "全てSkinnedMeshRenderer型であるべき");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(clip1);
+                Object.DestroyImmediate(clip2);
+                Object.DestroyImmediate(clip3);
+            }
+        }
+
+        /// <summary>
+        /// P11-008: BlendShapeカーブの0-100範囲の値が正しく保持されることを確認する統合テスト
+        /// </summary>
+        [Test]
+        public void Phase11統合_BlendShapeカーブの値範囲が正しく保持される()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "BlendShapeValueRangeTest";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "ValueRangeTrack");
+
+            var animClip = new AnimationClip { name = "ValueRangeClip" };
+
+            // 0→100の範囲で変化するBlendShapeカーブを追加
+            var binding = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.TestShape");
+            var curve = new AnimationCurve(
+                new Keyframe(0, 0),
+                new Keyframe(0.25f, 25),
+                new Keyframe(0.5f, 50),
+                new Keyframe(0.75f, 75),
+                new Keyframe(1, 100)
+            );
+            AnimationUtility.SetEditorCurve(animClip, binding, curve);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act
+                var service = new AnimationMergeService();
+                var results = service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.AreEqual(1, results.Count, "結果が1つ返されるべき");
+                Assert.IsTrue(results[0].IsSuccess, "処理が成功すべき");
+
+                var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+                var testShapeBinding = bindings.FirstOrDefault(b => b.propertyName == "blendShape.TestShape");
+                Assert.IsTrue(testShapeBinding.propertyName == "blendShape.TestShape", "TestShapeバインディングが存在すべき");
+
+                var resultCurve = AnimationUtility.GetEditorCurve(results[0].GeneratedClip, testShapeBinding);
+
+                // 各時点での値が正しく保持されていることを確認
+                Assert.AreEqual(0f, resultCurve.Evaluate(0f), 1f, "0秒での値が正しいべき");
+                Assert.AreEqual(25f, resultCurve.Evaluate(0.25f), 1f, "0.25秒での値が正しいべき");
+                Assert.AreEqual(50f, resultCurve.Evaluate(0.5f), 1f, "0.5秒での値が正しいべき");
+                Assert.AreEqual(75f, resultCurve.Evaluate(0.75f), 1f, "0.75秒での値が正しいべき");
+                Assert.AreEqual(100f, resultCurve.Evaluate(1f), 1f, "1秒での値が正しいべき");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(results[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// P11-008: BlendShapeカーブを含むE2Eテスト（PlayableDirectorからアセット生成まで）
+        /// </summary>
+        [Test]
+        public void Phase11統合_BlendShapeカーブを含むE2E処理()
+        {
+            // Arrange
+            var directorGo = new GameObject("BlendShape_E2E_Director");
+            var director = directorGo.AddComponent<PlayableDirector>();
+            var characterGo = new GameObject("BlendShape_E2E_Character");
+            var animator = characterGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "BlendShape_E2E_Timeline";
+
+            // 表情アニメーショントラック
+            var faceTrack = timeline.CreateTrack<AnimationTrack>(null, "FaceExpressions");
+            var faceClip = new AnimationClip { name = "FaceExpressionClip" };
+
+            // 複数の表情BlendShapeを追加
+            var smileBinding = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(faceClip, smileBinding, new AnimationCurve(
+                new Keyframe(0, 0),
+                new Keyframe(1, 80),
+                new Keyframe(2, 0)
+            ));
+
+            var angryBinding = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.Angry");
+            AnimationUtility.SetEditorCurve(faceClip, angryBinding, new AnimationCurve(
+                new Keyframe(0, 0),
+                new Keyframe(0.5f, 50),
+                new Keyframe(1, 0)
+            ));
+
+            var faceTimelineClip = faceTrack.CreateClip<AnimationPlayableAsset>();
+            faceTimelineClip.start = 0;
+            faceTimelineClip.duration = 2;
+            (faceTimelineClip.asset as AnimationPlayableAsset).clip = faceClip;
+
+            // 体のトランスフォームアニメーショントラック
+            var bodyTrack = timeline.CreateTrack<AnimationTrack>(null, "BodyMovement");
+            var bodyClip = new AnimationClip { name = "BodyMovementClip" };
+            bodyClip.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.EaseInOut(0, 0, 2, 1));
+            var bodyTimelineClip = bodyTrack.CreateClip<AnimationPlayableAsset>();
+            bodyTimelineClip.start = 0;
+            bodyTimelineClip.duration = 2;
+            (bodyTimelineClip.asset as AnimationPlayableAsset).clip = bodyClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(faceTrack, animator);
+            director.SetGenericBinding(bodyTrack, animator);
+
+            try
+            {
+                // Act
+                var success = ContextMenuHandler.ExecuteForPlayableDirectors(new[] { director });
+
+                // Assert
+                Assert.IsTrue(success, "BlendShape E2E処理が成功すべき");
+
+                // 生成されたアセットを確認
+                var expectedPath = "Assets/BlendShape_E2E_Timeline_BlendShape_E2E_Character_Merged.anim";
+                AssetDatabase.Refresh();
+                var generatedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(expectedPath);
+                if (generatedClip == null)
+                {
+                    generatedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/BlendShape_E2E_Timeline_BlendShape_E2E_Character_Merged(1).anim");
+                }
+
+                Assert.IsNotNull(generatedClip, "AnimationClipアセットが生成されるべき");
+
+                // BlendShapeカーブとTransformカーブの両方が含まれていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(generatedClip);
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "blendShape.Smile"), "Smileカーブが含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "blendShape.Angry"), "Angryカーブが含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "m_LocalPosition.y"), "localPosition.yカーブが含まれるべき");
+
+                // クリーンアップ用にパスを記録
+                _createdAssetPaths.Add(expectedPath);
+                _createdAssetPaths.Add("Assets/BlendShape_E2E_Timeline_BlendShape_E2E_Character_Merged(1).anim");
+            }
+            finally
+            {
+                Object.DestroyImmediate(directorGo);
+                Object.DestroyImmediate(characterGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(faceClip);
+                Object.DestroyImmediate(bodyClip);
+            }
+        }
+
+        #endregion
+
         #region ヘルパーメソッド
 
         /// <summary>
