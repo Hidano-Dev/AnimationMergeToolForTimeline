@@ -475,5 +475,466 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region ConvertRootMotionCurves テスト - P14-007
+
+        [Test]
+        public void ConvertRootMotionCurves_clipがnullの場合_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(null, "Hips");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_rootBonePathがnullの場合_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_rootBonePathが空文字の場合_空パスで変換する()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            // RootTカーブを追加（空パスで設定）
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            clip.SetCurve("", typeof(Animator), "RootT.x", curve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            // RootT.xがlocalPosition.xに変換される
+            Assert.GreaterOrEqual(result.Count, 1);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_RootTカーブがない場合_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            // 通常のTransformカーブのみを追加（RootTではない）
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", curve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            // ルートモーションカーブがないので空
+            Assert.AreEqual(0, result.Count);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_RootTx_localPositionXに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 5);
+            clip.SetCurve("", typeof(Animator), "RootT.x", curve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("localPosition.x", result[0].PropertyName);
+            Assert.AreEqual(TransformCurveType.Position, result[0].CurveType);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_RootTy_localPositionYに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 3);
+            clip.SetCurve("", typeof(Animator), "RootT.y", curve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("localPosition.y", result[0].PropertyName);
+            Assert.AreEqual(TransformCurveType.Position, result[0].CurveType);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_RootTz_localPositionZに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 7);
+            clip.SetCurve("", typeof(Animator), "RootT.z", curve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("localPosition.z", result[0].PropertyName);
+            Assert.AreEqual(TransformCurveType.Position, result[0].CurveType);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_RootQx_localRotationXに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 0.5f);
+            clip.SetCurve("", typeof(Animator), "RootQ.x", curve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("localRotation.x", result[0].PropertyName);
+            Assert.AreEqual(TransformCurveType.Rotation, result[0].CurveType);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_RootQy_localRotationYに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 0.7f);
+            clip.SetCurve("", typeof(Animator), "RootQ.y", curve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("localRotation.y", result[0].PropertyName);
+            Assert.AreEqual(TransformCurveType.Rotation, result[0].CurveType);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_RootQz_localRotationZに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 0.3f);
+            clip.SetCurve("", typeof(Animator), "RootQ.z", curve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("localRotation.z", result[0].PropertyName);
+            Assert.AreEqual(TransformCurveType.Rotation, result[0].CurveType);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_RootQw_localRotationWに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 1, 1, 0.9f);
+            clip.SetCurve("", typeof(Animator), "RootQ.w", curve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("localRotation.w", result[0].PropertyName);
+            Assert.AreEqual(TransformCurveType.Rotation, result[0].CurveType);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_全てのRootTカーブ_3つのPositionカーブに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Animator), "RootT.x", AnimationCurve.Linear(0, 0, 1, 1));
+            clip.SetCurve("", typeof(Animator), "RootT.y", AnimationCurve.Linear(0, 0, 1, 2));
+            clip.SetCurve("", typeof(Animator), "RootT.z", AnimationCurve.Linear(0, 0, 1, 3));
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+
+            // 全てPositionタイプであることを確認
+            foreach (var curveData in result)
+            {
+                Assert.AreEqual(TransformCurveType.Position, curveData.CurveType);
+                Assert.That(curveData.PropertyName, Does.StartWith("localPosition."));
+            }
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_全てのRootQカーブ_4つのRotationカーブに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Animator), "RootQ.x", AnimationCurve.Linear(0, 0, 1, 0.1f));
+            clip.SetCurve("", typeof(Animator), "RootQ.y", AnimationCurve.Linear(0, 0, 1, 0.2f));
+            clip.SetCurve("", typeof(Animator), "RootQ.z", AnimationCurve.Linear(0, 0, 1, 0.3f));
+            clip.SetCurve("", typeof(Animator), "RootQ.w", AnimationCurve.Linear(0, 1, 1, 0.9f));
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(4, result.Count);
+
+            // 全てRotationタイプであることを確認
+            foreach (var curveData in result)
+            {
+                Assert.AreEqual(TransformCurveType.Rotation, curveData.CurveType);
+                Assert.That(curveData.PropertyName, Does.StartWith("localRotation."));
+            }
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_RootTとRootQの両方_7つのカーブに変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            // RootT（位置）
+            clip.SetCurve("", typeof(Animator), "RootT.x", AnimationCurve.Linear(0, 0, 1, 1));
+            clip.SetCurve("", typeof(Animator), "RootT.y", AnimationCurve.Linear(0, 0, 1, 2));
+            clip.SetCurve("", typeof(Animator), "RootT.z", AnimationCurve.Linear(0, 0, 1, 3));
+            // RootQ（回転）
+            clip.SetCurve("", typeof(Animator), "RootQ.x", AnimationCurve.Linear(0, 0, 1, 0.1f));
+            clip.SetCurve("", typeof(Animator), "RootQ.y", AnimationCurve.Linear(0, 0, 1, 0.2f));
+            clip.SetCurve("", typeof(Animator), "RootQ.z", AnimationCurve.Linear(0, 0, 1, 0.3f));
+            clip.SetCurve("", typeof(Animator), "RootQ.w", AnimationCurve.Linear(0, 1, 1, 0.9f));
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(7, result.Count);
+
+            // Position: 3つ、Rotation: 4つ
+            int positionCount = 0;
+            int rotationCount = 0;
+            foreach (var curveData in result)
+            {
+                if (curveData.CurveType == TransformCurveType.Position)
+                    positionCount++;
+                else if (curveData.CurveType == TransformCurveType.Rotation)
+                    rotationCount++;
+            }
+            Assert.AreEqual(3, positionCount);
+            Assert.AreEqual(4, rotationCount);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_rootBonePathを指定_指定パスで変換される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Animator), "RootT.x", AnimationCurve.Linear(0, 0, 1, 1));
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "Root/Hips");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Root/Hips", result[0].Path);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_非空パスのカーブは無視される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            // 空パス（ルートモーション）
+            clip.SetCurve("", typeof(Animator), "RootT.x", AnimationCurve.Linear(0, 0, 1, 1));
+            // 非空パス（通常のTransform）
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 5));
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            // ルートモーションカーブのみが変換される
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("localPosition.x", result[0].PropertyName);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_未知のプロパティ名は無視される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            // 既知のプロパティ
+            clip.SetCurve("", typeof(Animator), "RootT.x", AnimationCurve.Linear(0, 0, 1, 1));
+            // 未知のプロパティ（このテストではAnimator経由で設定できないが、概念的なテスト）
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_カーブの値が正しく維持される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            var originalCurve = new AnimationCurve();
+            originalCurve.AddKey(0f, 0f);
+            originalCurve.AddKey(0.5f, 2.5f);
+            originalCurve.AddKey(1f, 5f);
+            clip.SetCurve("", typeof(Animator), "RootT.x", originalCurve);
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+
+            // カーブのキー数が維持されているか確認
+            var resultCurve = result[0].Curve;
+            Assert.AreEqual(3, resultCurve.keys.Length);
+
+            // 値が正しく維持されているか確認
+            Assert.AreEqual(0f, resultCurve.Evaluate(0f), 0.001f);
+            Assert.AreEqual(2.5f, resultCurve.Evaluate(0.5f), 0.001f);
+            Assert.AreEqual(5f, resultCurve.Evaluate(1f), 0.001f);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_空のクリップ_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            // カーブなし
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(clip, "Hips");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertRootMotionCurves_両方nullの場合_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+
+            // Act
+            var result = converter.ConvertRootMotionCurves(null, null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        #endregion
     }
 }

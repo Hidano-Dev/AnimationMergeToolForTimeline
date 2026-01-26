@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AnimationMergeTool.Editor.Domain.Models;
+using UnityEditor;
 using UnityEngine;
 
 namespace AnimationMergeTool.Editor.Infrastructure
@@ -193,6 +194,82 @@ namespace AnimationMergeTool.Editor.Infrastructure
                     new TransformCurveData(path, "localRotation.z", Z, TransformCurveType.Rotation),
                     new TransformCurveData(path, "localRotation.w", W, TransformCurveType.Rotation)
                 };
+            }
+        }
+
+        /// <summary>
+        /// ルートモーションカーブをTransformカーブに変換する
+        /// タスク P14-007: ルートモーション変換のテスト作成 / P14-008: ルートモーション変換の実装
+        /// </summary>
+        /// <param name="humanoidClip">変換元のAnimationClip</param>
+        /// <param name="rootBonePath">ルートボーンのパス</param>
+        /// <returns>変換されたルートモーションカーブのリスト</returns>
+        public List<TransformCurveData> ConvertRootMotionCurves(
+            AnimationClip humanoidClip,
+            string rootBonePath)
+        {
+            var result = new List<TransformCurveData>();
+
+            // nullチェック
+            if (humanoidClip == null || rootBonePath == null)
+            {
+                return result;
+            }
+
+            var bindings = AnimationUtility.GetCurveBindings(humanoidClip);
+
+            foreach (var binding in bindings)
+            {
+                // ルートモーションのパスは空文字
+                if (!string.IsNullOrEmpty(binding.path))
+                {
+                    continue;
+                }
+
+                var curve = AnimationUtility.GetEditorCurve(humanoidClip, binding);
+                if (curve == null)
+                {
+                    continue;
+                }
+
+                // プロパティ名の変換
+                string newPropertyName = ConvertRootMotionPropertyName(binding.propertyName);
+                if (newPropertyName == null)
+                {
+                    continue;
+                }
+
+                var curveType = newPropertyName.StartsWith("localPosition")
+                    ? TransformCurveType.Position
+                    : TransformCurveType.Rotation;
+
+                result.Add(new TransformCurveData(
+                    rootBonePath,
+                    newPropertyName,
+                    curve,
+                    curveType));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// ルートモーションプロパティ名をTransformプロパティ名に変換する
+        /// </summary>
+        /// <param name="propertyName">ルートモーションプロパティ名</param>
+        /// <returns>変換後のプロパティ名（変換できない場合はnull）</returns>
+        private string ConvertRootMotionPropertyName(string propertyName)
+        {
+            switch (propertyName)
+            {
+                case "RootT.x": return "localPosition.x";
+                case "RootT.y": return "localPosition.y";
+                case "RootT.z": return "localPosition.z";
+                case "RootQ.x": return "localRotation.x";
+                case "RootQ.y": return "localRotation.y";
+                case "RootQ.z": return "localRotation.z";
+                case "RootQ.w": return "localRotation.w";
+                default: return null;
             }
         }
 
