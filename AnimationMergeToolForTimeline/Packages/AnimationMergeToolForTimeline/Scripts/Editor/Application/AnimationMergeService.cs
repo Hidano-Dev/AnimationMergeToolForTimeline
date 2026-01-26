@@ -140,7 +140,8 @@ namespace AnimationMergeTool.Editor.Application
 
             foreach (var trackInfo in tracksWithPriority)
             {
-                if (trackInfo.IsMuted)
+                // Muteされたトラックはスキップ（track.mutedプロパティを直接チェック）
+                if (trackInfo.Track != null && trackInfo.Track.muted)
                 {
                     continue;
                 }
