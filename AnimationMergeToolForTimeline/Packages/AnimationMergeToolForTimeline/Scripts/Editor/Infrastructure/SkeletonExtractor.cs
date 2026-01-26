@@ -221,5 +221,34 @@ namespace AnimationMergeTool.Editor.Infrastructure
             }
             return false;
         }
+
+        /// <summary>
+        /// スケルトン以外のTransformを取得する（プロップ等）
+        /// タスク P13-005で実装予定
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="skeleton">スケルトン情報（除外対象）</param>
+        /// <returns>非スケルトンTransformのリスト</returns>
+        public List<Transform> ExtractNonSkeletonTransforms(Animator animator, SkeletonData skeleton)
+        {
+            // P13-005で実装予定
+            // 現在は空のリストを返すスタブ実装
+            return new List<Transform>();
+        }
+
+        /// <summary>
+        /// スケルトン以外のTransformを取得する（AnimationClipでフィルタリング）
+        /// タスク P13-005で実装予定
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="skeleton">スケルトン情報（除外対象）</param>
+        /// <param name="clip">フィルタリング用AnimationClip（アニメートされているパスのみ取得）</param>
+        /// <returns>非スケルトンTransformのリスト</returns>
+        public List<Transform> ExtractNonSkeletonTransforms(Animator animator, SkeletonData skeleton, AnimationClip clip)
+        {
+            // P13-005で実装予定
+            // 現在は空のリストを返すスタブ実装
+            return new List<Transform>();
+        }
     }
 }
