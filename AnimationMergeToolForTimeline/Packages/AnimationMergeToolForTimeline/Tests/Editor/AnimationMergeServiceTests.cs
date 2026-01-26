@@ -988,6 +988,9 @@ namespace AnimationMergeTool.Editor.Tests
             var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
             timeline.name = "CompletelyEmptyTimeline";
 
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 有効なAnimationTrackが見つかりません。");
+
             try
             {
                 // Act
@@ -1083,6 +1086,9 @@ namespace AnimationMergeTool.Editor.Tests
 
             // GroupTrackを追加（AnimationTrackではない）
             timeline.CreateTrack<GroupTrack>(null, "EmptyGroup");
+
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 有効なAnimationTrackが見つかりません。");
 
             try
             {
