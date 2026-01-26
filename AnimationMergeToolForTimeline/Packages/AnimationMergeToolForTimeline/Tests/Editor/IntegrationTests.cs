@@ -1153,8 +1153,8 @@ namespace AnimationMergeTool.Editor.Tests
             // 複数のAnimationTrackを持つTimelineを構築
             var idleTrack = timeline.CreateTrack<AnimationTrack>(null, "IdleLayer");
             var idleClip = new AnimationClip { name = "E2E_IdleAnimation" };
-            var idleCurve = AnimationCurve.Linear(0, 0, 2, 0); // 静止状態
-            idleClip.SetCurve("", typeof(Transform), "localPosition.y", idleCurve);
+            var idleCurve = AnimationCurve.Linear(0, 0, 2, 10); // X方向に移動
+            idleClip.SetCurve("", typeof(Transform), "localPosition.x", idleCurve);
             var idleTimelineClip = idleTrack.CreateClip<AnimationPlayableAsset>();
             idleTimelineClip.start = 0;
             idleTimelineClip.duration = 3;
