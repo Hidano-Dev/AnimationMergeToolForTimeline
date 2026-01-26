@@ -1294,8 +1294,9 @@ namespace AnimationMergeTool.Editor.Tests
 
                 // 生成されたクリップに正しいカーブが含まれていることを確認
                 var bindings = AnimationUtility.GetCurveBindings(result.GeneratedClip);
-                Assert.AreEqual(1, bindings.Length, "1つのカーブが含まれるべき");
-                Assert.AreEqual("localPosition.x", bindings[0].propertyName, "localPosition.xカーブが含まれるべき");
+                // SetCurveを使用すると、Unityは内部的に全てのコンポーネント（x,y,z）を生成する
+                Assert.AreEqual(3, bindings.Length, "3つのカーブが含まれるべき（x,y,z）");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "localPosition.x"), "localPosition.xカーブが含まれるべき");
 
                 // ログに空トラックの情報が含まれていることを確認
                 Assert.IsTrue(
