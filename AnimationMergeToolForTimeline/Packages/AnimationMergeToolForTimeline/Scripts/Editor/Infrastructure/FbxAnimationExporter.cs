@@ -190,6 +190,9 @@ namespace AnimationMergeTool.Editor.Infrastructure
                     isTemporaryObject = true;
                 }
 
+                // BlendShapeカーブを含む統合AnimationClipを作成
+                AnimationClip exportClip = CreateExportAnimationClip(exportData);
+
                 try
                 {
                     // FBXエクスポート実行
@@ -214,6 +217,12 @@ namespace AnimationMergeTool.Editor.Infrastructure
                     {
                         Object.DestroyImmediate(exportTarget);
                     }
+
+                    // 一時的に作成したAnimationClipを削除
+                    if (exportClip != null && exportClip != exportData.MergedClip)
+                    {
+                        Object.DestroyImmediate(exportClip);
+                    }
                 }
             }
             catch (System.Exception ex)
@@ -225,6 +234,66 @@ namespace AnimationMergeTool.Editor.Infrastructure
             Debug.LogError("FBX Exporterパッケージがインストールされていません。");
             return false;
 #endif
+        }
+
+        /// <summary>
+        /// エクスポート用のAnimationClipを作成する
+        /// TransformカーブとBlendShapeカーブの両方を含むAnimationClipを生成する
+        /// </summary>
+        /// <param name="exportData">エクスポートデータ</param>
+        /// <returns>エクスポート用AnimationClip</returns>
+        private AnimationClip CreateExportAnimationClip(FbxExportData exportData)
+        {
+            // MergedClipが存在し、追加するカーブがない場合はそのまま使用
+            if (exportData.MergedClip != null &&
+                (exportData.TransformCurves == null || exportData.TransformCurves.Count == 0) &&
+                (exportData.BlendShapeCurves == null || exportData.BlendShapeCurves.Count == 0))
+            {
+                return exportData.MergedClip;
+            }
+
+            // 新しいAnimationClipを作成
+            var clip = new AnimationClip();
+            clip.name = exportData.MergedClip != null ? exportData.MergedClip.name + "_Export" : "ExportedAnimation";
+
+            // Transformカーブを設定
+            if (exportData.TransformCurves != null)
+            {
+                foreach (var curveData in exportData.TransformCurves)
+                {
+                    if (curveData.Curve == null)
+                    {
+                        continue;
+                    }
+
+                    clip.SetCurve(
+                        curveData.Path,
+                        typeof(Transform),
+                        curveData.PropertyName,
+                        curveData.Curve);
+                }
+            }
+
+            // BlendShapeカーブを設定
+            if (exportData.BlendShapeCurves != null)
+            {
+                foreach (var curveData in exportData.BlendShapeCurves)
+                {
+                    if (curveData.Curve == null)
+                    {
+                        continue;
+                    }
+
+                    // BlendShapeカーブをAnimationClipに設定
+                    var binding = EditorCurveBinding.FloatCurve(
+                        curveData.Path,
+                        typeof(SkinnedMeshRenderer),
+                        $"blendShape.{curveData.BlendShapeName}");
+                    AnimationUtility.SetEditorCurve(clip, binding, curveData.Curve);
+                }
+            }
+
+            return clip;
         }
 
         /// <summary>
