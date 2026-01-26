@@ -2533,6 +2533,357 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region Phase 14 統合テスト: Humanoid→Generic変換 (P14-010)
+
+        /// <summary>
+        /// Phase 14 統合テスト: HumanoidToGenericConverterとFbxAnimationExporterの統合確認
+        /// </summary>
+        [Test]
+        public void Phase14統合_FbxAnimationExporterにHumanoidConverterが統合されている()
+        {
+            // Arrange
+            var skeletonExtractor = new Infrastructure.SkeletonExtractor();
+            var humanoidConverter = new Infrastructure.HumanoidToGenericConverter();
+            var exporter = new Infrastructure.FbxAnimationExporter(skeletonExtractor, humanoidConverter);
+
+            // Act & Assert
+            Assert.IsNotNull(exporter, "FbxAnimationExporterが生成されるべき");
+        }
+
+        /// <summary>
+        /// Phase 14 統合テスト: IsHumanoidAnimator/IsHumanoidClipメソッドの動作確認
+        /// </summary>
+        [Test]
+        public void Phase14統合_IsHumanoid判定メソッドが動作する()
+        {
+            // Arrange
+            var root = new GameObject("TestCharacter");
+            var animator = root.AddComponent<Animator>();
+            var clip = new AnimationClip();
+
+            try
+            {
+                var exporter = new Infrastructure.FbxAnimationExporter();
+
+                // Act
+                bool isHumanoidAnimator = exporter.IsHumanoidAnimator(animator);
+                bool isHumanoidClip = exporter.IsHumanoidClip(clip);
+
+                // Assert
+                // Genericリグなのでfalse
+                Assert.IsFalse(isHumanoidAnimator, "GenericリグはHumanoidではないと判定されるべき");
+                Assert.IsFalse(isHumanoidClip, "空のクリップはHumanoidではないと判定されるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// Phase 14 統合テスト: ConvertHumanoidToGenericCurvesがGenericリグでも例外を投げない
+        /// </summary>
+        [Test]
+        public void Phase14統合_ConvertHumanoidToGenericCurves_Genericリグでも安全()
+        {
+            // Arrange
+            var root = new GameObject("GenericCharacter");
+            var animator = root.AddComponent<Animator>();
+            var clip = new AnimationClip();
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+
+            try
+            {
+                var exporter = new Infrastructure.FbxAnimationExporter();
+
+                // Act
+                var result = exporter.ConvertHumanoidToGenericCurves(animator, clip);
+
+                // Assert
+                Assert.IsNotNull(result, "結果はnullではなく空のリストを返すべき");
+                Assert.AreEqual(0, result.Count, "Genericリグでは変換カーブは生成されないべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// Phase 14 統合テスト: PrepareHumanoidForExportがGenericリグで動作する
+        /// </summary>
+        [Test]
+        public void Phase14統合_PrepareHumanoidForExport_Genericリグで動作()
+        {
+            // Arrange
+            var root = new GameObject("GenericCharacter");
+            var animator = root.AddComponent<Animator>();
+            var clip = new AnimationClip();
+            clip.name = "GenericAnimation";
+            clip.SetCurve("Bone1", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            clip.SetCurve("Bone1", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
+
+            try
+            {
+                var exporter = new Infrastructure.FbxAnimationExporter();
+
+                // Act
+                var exportData = exporter.PrepareHumanoidForExport(animator, clip);
+
+                // Assert
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
+                Assert.AreSame(animator, exportData.SourceAnimator, "Animatorが正しく設定されるべき");
+                Assert.AreSame(clip, exportData.MergedClip, "AnimationClipが正しく設定されるべき");
+                Assert.IsFalse(exportData.IsHumanoid, "GenericリグはHumanoidではないと判定されるべき");
+                // GenericリグではTransformカーブが抽出される
+                Assert.GreaterOrEqual(exportData.TransformCurves.Count, 0, "TransformCurvesリストが初期化されているべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// Phase 14 統合テスト: null引数でも例外を投げない
+        /// </summary>
+        [Test]
+        public void Phase14統合_null引数での安全性()
+        {
+            // Arrange
+            var exporter = new Infrastructure.FbxAnimationExporter();
+
+            // Act & Assert - IsHumanoidAnimator
+            Assert.DoesNotThrow(() =>
+            {
+                var result = exporter.IsHumanoidAnimator(null);
+                Assert.IsFalse(result, "nullはHumanoidではないと判定されるべき");
+            }, "IsHumanoidAnimator(null)で例外が発生しない");
+
+            // Act & Assert - IsHumanoidClip
+            Assert.DoesNotThrow(() =>
+            {
+                var result = exporter.IsHumanoidClip(null);
+                Assert.IsFalse(result, "nullはHumanoidクリップではないと判定されるべき");
+            }, "IsHumanoidClip(null)で例外が発生しない");
+
+            // Act & Assert - ConvertHumanoidToGenericCurves
+            Assert.DoesNotThrow(() =>
+            {
+                var result = exporter.ConvertHumanoidToGenericCurves(null, null);
+                Assert.IsNotNull(result, "nullでも空のリストを返すべき");
+                Assert.AreEqual(0, result.Count, "nullでは空のリストを返すべき");
+            }, "ConvertHumanoidToGenericCurves(null, null)で例外が発生しない");
+
+            // Act & Assert - PrepareHumanoidForExport
+            Assert.DoesNotThrow(() =>
+            {
+                var result = exporter.PrepareHumanoidForExport(null, null);
+                Assert.IsNotNull(result, "nullでもFbxExportDataを返すべき");
+            }, "PrepareHumanoidForExport(null, null)で例外が発生しない");
+        }
+
+        /// <summary>
+        /// Phase 14 統合テスト: ExportHumanoidAnimationがnullチェックを行う
+        /// </summary>
+        [Test]
+        public void Phase14統合_ExportHumanoidAnimation_nullチェック()
+        {
+            // Arrange
+            var exporter = new Infrastructure.FbxAnimationExporter();
+            var root = new GameObject("TestCharacter");
+            var animator = root.AddComponent<Animator>();
+            var clip = new AnimationClip();
+
+            try
+            {
+                // Act & Assert - Animatorがnull
+                LogAssert.Expect(LogType.Error, "Animatorがnullです。");
+                var result1 = exporter.ExportHumanoidAnimation(null, clip, "test.fbx");
+                Assert.IsFalse(result1, "Animatorがnullの場合falseを返すべき");
+
+                // Act & Assert - AnimationClipがnull
+                LogAssert.Expect(LogType.Error, "AnimationClipがnullです。");
+                var result2 = exporter.ExportHumanoidAnimation(animator, null, "test.fbx");
+                Assert.IsFalse(result2, "AnimationClipがnullの場合falseを返すべき");
+
+                // Act & Assert - outputPathがnull
+                LogAssert.Expect(LogType.Error, "出力パスが指定されていません。");
+                var result3 = exporter.ExportHumanoidAnimation(animator, clip, null);
+                Assert.IsFalse(result3, "outputPathがnullの場合falseを返すべき");
+
+                // Act & Assert - outputPathが空文字
+                LogAssert.Expect(LogType.Error, "出力パスが指定されていません。");
+                var result4 = exporter.ExportHumanoidAnimation(animator, clip, "");
+                Assert.IsFalse(result4, "outputPathが空の場合falseを返すべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// Phase 14 統合テスト: HumanoidToGenericConverterの各メソッドが統合後も正常に動作
+        /// </summary>
+        [Test]
+        public void Phase14統合_HumanoidToGenericConverter_全メソッド動作確認()
+        {
+            // Arrange
+            var converter = new Infrastructure.HumanoidToGenericConverter();
+            var root = new GameObject("TestCharacter");
+            var animator = root.AddComponent<Animator>();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Animator), "RootT.x", AnimationCurve.Linear(0, 0, 1, 1));
+
+            try
+            {
+                // Act & Assert - GetTransformPath
+                var path = converter.GetTransformPath(animator, HumanBodyBones.Hips);
+                // Genericリグなのでnull
+                Assert.IsNull(path, "Genericリグではnullを返すべき");
+
+                // Act & Assert - IsHumanoidClip
+                var isHumanoid = converter.IsHumanoidClip(clip);
+                Assert.IsFalse(isHumanoid, "GenericクリップはHumanoidではないと判定されるべき");
+
+                // Act & Assert - ConvertMuscleCurvesToRotation
+                var muscleCurves = converter.ConvertMuscleCurvesToRotation(animator, clip);
+                Assert.IsNotNull(muscleCurves, "結果はnullではなく空リストを返すべき");
+
+                // Act & Assert - ConvertRootMotionCurves
+                var rootMotionCurves = converter.ConvertRootMotionCurves(clip, "Hips");
+                Assert.IsNotNull(rootMotionCurves, "結果はnullではなく空リストを返すべき");
+                // RootT.xカーブが設定されているので変換される
+                Assert.GreaterOrEqual(rootMotionCurves.Count, 1, "RootT.xカーブが変換されるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// Phase 14 統合テスト: ルートモーションカーブの変換結果が正しいプロパティを持つ
+        /// </summary>
+        [Test]
+        public void Phase14統合_ルートモーションカーブ変換結果の検証()
+        {
+            // Arrange
+            var converter = new Infrastructure.HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Animator), "RootT.x", AnimationCurve.Linear(0, 0, 1, 5));
+            clip.SetCurve("", typeof(Animator), "RootT.y", AnimationCurve.Linear(0, 0, 1, 3));
+            clip.SetCurve("", typeof(Animator), "RootT.z", AnimationCurve.Linear(0, 0, 1, 1));
+            clip.SetCurve("", typeof(Animator), "RootQ.x", AnimationCurve.Linear(0, 0, 1, 0.1f));
+            clip.SetCurve("", typeof(Animator), "RootQ.y", AnimationCurve.Linear(0, 0, 1, 0.2f));
+            clip.SetCurve("", typeof(Animator), "RootQ.z", AnimationCurve.Linear(0, 0, 1, 0.3f));
+            clip.SetCurve("", typeof(Animator), "RootQ.w", AnimationCurve.Linear(0, 1, 1, 0.9f));
+
+            try
+            {
+                // Act
+                var result = converter.ConvertRootMotionCurves(clip, "Root/Hips");
+
+                // Assert
+                Assert.AreEqual(7, result.Count, "7つのカーブが変換されるべき");
+
+                // パスの検証
+                foreach (var curveData in result)
+                {
+                    Assert.AreEqual("Root/Hips", curveData.Path, "パスがRoot/Hipsに設定されるべき");
+                }
+
+                // プロパティ名の検証
+                var propertyNames = new List<string>();
+                foreach (var curveData in result)
+                {
+                    propertyNames.Add(curveData.PropertyName);
+                }
+
+                Assert.Contains("localPosition.x", propertyNames);
+                Assert.Contains("localPosition.y", propertyNames);
+                Assert.Contains("localPosition.z", propertyNames);
+                Assert.Contains("localRotation.x", propertyNames);
+                Assert.Contains("localRotation.y", propertyNames);
+                Assert.Contains("localRotation.z", propertyNames);
+                Assert.Contains("localRotation.w", propertyNames);
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// Phase 14 統合テスト: GenericリグでのTransformカーブ抽出との連携
+        /// </summary>
+        [Test]
+        public void Phase14統合_Genericリグでの通常Transformカーブ抽出()
+        {
+            // Arrange
+            var root = new GameObject("GenericCharacter");
+            var animator = root.AddComponent<Animator>();
+
+            var hips = new GameObject("Hips");
+            hips.transform.SetParent(root.transform);
+            var spine = new GameObject("Spine");
+            spine.transform.SetParent(hips.transform);
+
+            var clip = new AnimationClip();
+            clip.name = "GenericAnimation";
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.z", AnimationCurve.Linear(0, 0, 1, 3));
+            clip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0.1f));
+            clip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 1, 0.2f));
+            clip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.z", AnimationCurve.Linear(0, 0, 1, 0.3f));
+            clip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.w", AnimationCurve.Linear(0, 1, 1, 0.9f));
+
+            try
+            {
+                var exporter = new Infrastructure.FbxAnimationExporter();
+
+                // Act
+                var exportData = exporter.PrepareHumanoidForExport(animator, clip);
+
+                // Assert
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
+                Assert.IsFalse(exportData.IsHumanoid, "GenericリグはHumanoidではないと判定されるべき");
+                // Genericリグでは通常のTransformカーブ抽出が行われる
+                Assert.AreEqual(7, exportData.TransformCurves.Count, "7つのTransformカーブが抽出されるべき");
+
+                // カーブのパスを検証
+                var hipsPositionCount = 0;
+                var spineRotationCount = 0;
+                foreach (var curveData in exportData.TransformCurves)
+                {
+                    if (curveData.Path == "Hips" && curveData.PropertyName.StartsWith("localPosition"))
+                    {
+                        hipsPositionCount++;
+                    }
+                    else if (curveData.Path == "Hips/Spine" && curveData.PropertyName.StartsWith("localRotation"))
+                    {
+                        spineRotationCount++;
+                    }
+                }
+                Assert.AreEqual(3, hipsPositionCount, "Hipsのポジションカーブは3つ");
+                Assert.AreEqual(4, spineRotationCount, "Spineのローテーションカーブは4つ");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        #endregion
+
         #region ヘルパーメソッド
 
         /// <summary>
