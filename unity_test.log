@@ -2,22 +2,22 @@
 Built from '6000.0/respin/6000.0.64f1-d4299b69b02d' branch; Version is '6000.0.64f1 (5360b7cd7953) revision 5464247'; Using compiler version '193933523'; Build Type 'Release'
 OS: 'Windows 11  (10.0.26100) 64bit Professional' Language: 'ja' Physical Memory: 65249 MB
 BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
-Date: 2026-01-26T17:57:47Z
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano" at "2026-01-26T17:57:47.1566435Z"
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano" at "2026-01-26T18:25:11.7437016Z"
+Date: 2026-01-26T18:25:11Z
 
 COMMAND LINE ARGUMENTS:
 C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Unity.exe
 -batchmode
 -projectPath
-D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
+D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline
 -runTests
 -testPlatform
 EditMode
 -testResults
-D:/Personal/Repositries/AnimationMergeToolForTimeline/TestResults.xml
+D:\Personal\Repositries\AnimationMergeToolForTimeline\TestResults.xml
 -logFile
-D:/Personal/Repositries/AnimationMergeToolForTimeline/unity_test.log
-Successfully changed project path to: D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
+D:\Personal\Repositries\AnimationMergeToolForTimeline\unity_test.log
+Successfully changed project path to: D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline
 D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
 [UnityMemory] Configuration Parameters - Can be set up in boot.config
     "memorysetup-bucket-allocator-granularity=16"
@@ -54,18 +54,18 @@ D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimel
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gfx=262144"
-Player connection [547256]  Target information:
+Player connection [545324]  Target information:
 
-Player connection [547256]  * "[IP] 192.168.0.112 [Port] 55505 [Flags] 2 [Guid] 3120403885 [EditorId] 3120403885 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-794D179) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [545324]  * "[IP] 192.168.0.112 [Port] 55505 [Flags] 2 [Guid] 1688648376 [EditorId] 1688648376 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-794D179) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [547256] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [547256] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Player connection [545324] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [545324] Host joined alternative multi-casting on [225.0.0.222:34997]...
 Input System module state changed to: Initialized.
 [Physics::Module] Initialized fallback backend.
 [Physics::Module] Id: 0xdecafbad
-[Package Manager] Connected to IPC stream "Upm-548148" after 0.2 seconds.
+[Package Manager] Connected to IPC stream "Upm-12424" after 0.2 seconds.
 Library Redirect Path: Library/
-[Physics::Module] Selected backend.
+Cannot upgrade database Library/SourceAssetDB. Will delete the database and recreate content in the new format instead.[Physics::Module] Selected backend.
 [Physics::Module] Name: PhysX
 [Physics::Module] Id: 0xf2b8ea05
 [Physics::Module] SDK Version: 4.1.2
@@ -83,24 +83,15 @@ Direct3D:
     Vendor:   NVIDIA
     VRAM:     16063 MB
     Driver:   32.0.15.6094
-Initialize mono
-Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed'
-Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
-Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56148
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.17.4+4293ba1
-  Session Id:              a73a0c5858114a1694f087927cdced4f
+  Session Id:              d2a299ce128d4289bc2573ad7304f9ec
   Correlation Id:          b2cd0e2ca88a776c54a1e2e5ce5fac7d
-  External correlation Id: 5420321414925692283
+  External correlation Id: 3333610415271975899
   Machine Id:              NJnCi2kLka6rUvnOkC/kk5D1Dzo=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-Hidano" (connect: 0.00s, validation: 0.00s, handshake: 0.53s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano-notifications" at "2026-01-26T17:57:47.685116Z"
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-Hidano" (connect: 0.00s, validation: 0.00s, handshake: 0.56s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano-notifications" at "2026-01-26T18:25:12.3078311Z"
 [Licensing::Module] Error: Access token is unavailable; failed to update
-Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
-Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
-ImportWorker Server TCP listen port: 0
-AcceleratorClientConnectionCallback - disconnected - :0
 [Licensing::Client] Successfully resolved entitlement details
 [Licensing::Module] License group:
   Id: 20066142772267-UnityPersXXXX
@@ -108,42 +99,51 @@ AcceleratorClientConnectionCallback - disconnected - :0
   Type: Assigned
   Expiration: Unlimited
 [Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
-[Licensing::Module] Licensing Background thread has ended after 0.53s
+[Licensing::Module] Licensing Background thread has ended after 0.57s
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56424
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
 Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
-Registered in 0.001305 seconds.
-- Loaded All Assemblies, in  0.216 seconds
+Registered in 0.001277 seconds.
+- Loaded All Assemblies, in  0.219 seconds
 Native extension for WindowsStandalone target not found
 Mono: successfully reloaded assembly
 - Finished resetting the current domain, in  0.182 seconds
-Domain Reload Profiling: 397ms
-	BeginReloadAssembly (73ms)
+Domain Reload Profiling: 401ms
+	BeginReloadAssembly (74ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (0ms)
-	RebuildCommonClasses (21ms)
+		CreateAndSetChildDomain (1ms)
+	RebuildCommonClasses (22ms)
 	RebuildNativeTypeToScriptingClass (7ms)
-	initialDomainReloadingComplete (27ms)
+	initialDomainReloadingComplete (28ms)
 	LoadAllAssembliesAndSetupDomain (87ms)
-		LoadAssemblies (72ms)
+		LoadAssemblies (73ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
 		AnalyzeDomain (86ms)
-			TypeCache.Refresh (84ms)
-				TypeCache.ScanAssembly (76ms)
+			TypeCache.Refresh (85ms)
+				TypeCache.ScanAssembly (77ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (182ms)
+	FinalizeReload (183ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (163ms)
+		SetupLoadedEditorAssemblies (164ms)
 			LogAssemblyErrors (0ms)
 			InitializePlatformSupportModulesInManaged (14ms)
 			SetLoadedEditorAssemblies (3ms)
 			BeforeProcessingInitializeOnLoad (34ms)
-			ProcessInitializeOnLoadAttributes (78ms)
+			ProcessInitializeOnLoadAttributes (79ms)
 			ProcessInitializeOnLoadMethodAttributes (33ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
@@ -152,8 +152,9 @@ Domain Reload Profiling: 397ms
 [Licensing::Client] Successfully resolved entitlement details
 Application.AssetDatabase Initial Refresh Start
 Package Manager log level set to [2]
-[Package Manager] Restoring resolved packages state from cache
+[Package Manager] Done resolving packages in 9.77 seconds
 [Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Lock file was modified
 Embedded package [com.hidano.animation-merge-tool] was found in the directory [D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline\Packages\AnimationMergeToolForTimeline]. Please consider changing the directory name to match the package name.
 [Package Manager] Registered 42 packages:
   Packages from [https://packages.unity.com]:
@@ -202,110 +203,190 @@ Embedded package [com.hidano.animation-merge-tool] was found in the directory [D
   Embedded packages:
     com.hidano.animation-merge-tool@file:D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline\Packages\AnimationMergeToolForTimeline (location: D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline\Packages\AnimationMergeToolForTimeline)
 [Subsystems] No new subsystems found in resolved package list.
-[Package Manager] Done registering packages in 0.01 seconds
+[Package Manager] Done registering packages in 0.00 seconds
+[API Updater] Processing imported assemblies took 65 ms (0/0 assembly(ies)).
+Assembly Updater Post Process Assets time: 0.067334s
+[ScriptCompilation] Requested script compilation because: Assembly Definition File(s) changed
+[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:80
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline\
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 25.3497ms
 Starting: C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Data\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aEDbg.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
 WorkingDir: D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
 DisplayProgressbar: Compiling Scripts
-ExitCode: 0 Duration: 0s72ms
-*** Tundra build success (0.05 seconds), 0 items updated, 253 evaluated
-AssetDatabase: script compilation time: 0.332997s
+Starting: C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Data\Tools\netcorerun\netcorerun.exe "C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Data\Tools\BuildPipeline\ScriptCompilationBuildProgram.exe" "Library/Bee/1900b0aEDbg.dag.json" "Library/Bee/1900b0aEDbg-inputdata.json" "Library\Bee\buildprogram0.traceevents"
+WorkingDir: D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
+ExitCode: 4 Duration: 0s89ms
+[218/253    0s] CopyFiles Library/ScriptAssemblies/UnityEditor.TestRunner.dll
+[219/253    0s] CopyFiles Library/ScriptAssemblies/UnityEngine.UI.dll
+[220/253    0s] CopyFiles Library/ScriptAssemblies/UnityEngine.UI.pdb
+[221/253    0s] CopyFiles Library/ScriptAssemblies/UnityEngine.TestRunner.dll
+[224/253    0s] CopyFiles Library/ScriptAssemblies/UnityEditor.UI.dll
+[225/253    0s] CopyFiles Library/ScriptAssemblies/UnityEngine.TestRunner.pdb
+[226/253    0s] CopyFiles Library/ScriptAssemblies/UnityEditor.TestRunner.pdb
+[228/253    0s] CopyFiles Library/ScriptAssemblies/UnityEditor.UI.pdb
+[231/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TestTools.CodeCoverage.Editor.OpenCover.Mono.Reflection.pdb
+[232/253    0s] CopyFiles Library/ScriptAssemblies/Unity.Settings.Editor.dll
+[233/253    0s] CopyFiles Library/ScriptAssemblies/Unity.Settings.Editor.pdb
+[234/253    0s] CopyFiles Library/ScriptAssemblies/Unity.Rider.Editor.dll
+[235/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TestTools.CodeCoverage.Editor.OpenCover.Model.dll
+[236/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TestTools.CodeCoverage.Editor.OpenCover.Model.pdb
+[237/253    0s] CopyFiles Library/ScriptAssemblies/Unity.Rider.Editor.pdb
+[238/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TestTools.CodeCoverage.Editor.OpenCover.Mono.Reflection.dll
+[239/253    0s] CopyFiles Library/ScriptAssemblies/Unity.Timeline.pdb
+[240/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TestTools.CodeCoverage.Editor.dll
+[241/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TestTools.CodeCoverage.Editor.pdb
+[242/253    0s] CopyFiles Library/ScriptAssemblies/Unity.Timeline.dll
+[243/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TextMeshPro.pdb
+[244/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TextMeshPro.dll
+[245/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll
+[246/253    0s] CopyFiles Library/ScriptAssemblies/Unity.TextMeshPro.Editor.pdb
+[247/253    0s] CopyFiles Library/ScriptAssemblies/Unity.Timeline.Editor.pdb
+[248/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.dll
+[249/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.pdb
+[250/253    0s] CopyFiles Library/ScriptAssemblies/Unity.Timeline.Editor.dll
+[251/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.dll
+[252/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.pdb
+Rebuilding DAG because FileSignature timestamp changed: Library/Bee/1900b0aEDbg-inputdata.json
+*** Tundra requires additional run (0.07 seconds), 30 items updated, 253 evaluated
+ExitCode: 0 Duration: 0s217ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Data\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aEDbg.dag" --continue-on-failure --dagfilejson="Library\Bee\1900b0aEDbg.dag.json" --profile="Library/Bee/backend2.traceevents" ScriptAssemblies
+WorkingDir: D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
+ExitCode: 0 Duration: 1s649ms
+Finished compiling graph: 256 nodes, 2649 flattened edges (2463 ToBuild, 30 ToUse), maximum node priority 143
+[177/253    0s] WriteText Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.rsp
+[180/253    0s] WriteText Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.rsp
+[247/253    1s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.dll (+2 others)
+[           0s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.dll (+2 others) [CacheWrite 00000000000000000000000000000004]
+[248/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.pdb
+[249/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.dll
+[250/253    0s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.dll (+2 others)
+[           0s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.dll (+2 others) [CacheWrite 00000000000000000000000000000004]
+[251/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.pdb
+[252/253    0s] CopyFiles Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.dll
+*** Tundra build success (1.63 seconds), 8 items updated, 253 evaluated
+AssetDatabase: script compilation time: 2.391489s
 Begin MonoManager ReloadAssembly
-- Loaded All Assemblies, in  0.419 seconds
+- Loaded All Assemblies, in  1.056 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Native extension for WindowsStandalone target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.280 seconds
-Domain Reload Profiling: 698ms
-	BeginReloadAssembly (251ms)
+- Finished resetting the current domain, in  0.288 seconds
+Domain Reload Profiling: 1343ms
+	BeginReloadAssembly (207ms)
 		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (55ms)
+		DisableScriptedObjects (4ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (120ms)
-	RebuildCommonClasses (20ms)
+	RebuildCommonClasses (21ms)
 	RebuildNativeTypeToScriptingClass (7ms)
 	initialDomainReloadingComplete (14ms)
-	LoadAllAssembliesAndSetupDomain (126ms)
-		LoadAssemblies (138ms)
+	LoadAllAssembliesAndSetupDomain (807ms)
+		LoadAssemblies (820ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
 		AnalyzeDomain (44ms)
 			TypeCache.Refresh (36ms)
 				TypeCache.ScanAssembly (32ms)
 			BuildScriptInfoCaches (6ms)
 			ResolveRequiredComponents (1ms)
-	FinalizeReload (280ms)
+	FinalizeReload (288ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (216ms)
+		SetupLoadedEditorAssemblies (223ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (8ms)
+			InitializePlatformSupportModulesInManaged (9ms)
 			SetLoadedEditorAssemblies (2ms)
-			BeforeProcessingInitializeOnLoad (63ms)
-			ProcessInitializeOnLoadAttributes (124ms)
-			ProcessInitializeOnLoadMethodAttributes (16ms)
+			BeforeProcessingInitializeOnLoad (66ms)
+			ProcessInitializeOnLoadAttributes (125ms)
+			ProcessInitializeOnLoadMethodAttributes (18ms)
 			AfterProcessingInitializeOnLoad (2ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
 		AwakeInstancesAfterBackupRestoration (5ms)
-Asset Pipeline Refresh (id=b2d602e8f18f6b54d8377348aa232bb7): Total: 1.195 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+Start importing Packages/com.hidano.animation-merge-tool/Docs/設計メモ_P14-002_HumanoidToGenericConverterクラス設計.md using Guid(812372380a490754c840b3e9e24db374) (TextScriptImporter) -> (artifact id: '94249e283de979432fbb4cb109ce7ba1') in 0.0215474 seconds
+[C:\build\output\unity\unity\Modules\LocalizationEditor\LocalizationDatabase.cpp:807]Packages/com.unity.timeline/Editor/Localization/ja.po
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+Script 'Packages/AnimationMergeToolForTimeline/package.json' will not be compiled because it exists outside the Assets folder and does not to belong to any assembly definition file.
+Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=796d8edda068f1543946cca22738e270): Total: 14.522 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
 	Summary:
-		Imports: total=0 (actual=0, local cache=0, cache server=0)
-		Asset DB Process Time: managed=0 ms, native=399 ms
-		Asset DB Callback time: managed=10 ms, native=15 ms
-		Scripting: domain reloads=1, domain reload time=419 ms, compile time=334 ms, other=16 ms
-		Project Asset Count: scripts=346, non-scripts=264
-		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=2 ms, native=1009 ms
+		Asset DB Callback time: managed=141 ms, native=9834 ms
+		Scripting: domain reloads=1, domain reload time=1056 ms, compile time=2460 ms, other=18 ms
+		Project Asset Count: scripts=346, non-scripts=266
+		Asset File Changes: new=1874, changed=1874, moved=0, deleted=0
 		Scan Filter Count: 0
 	InvokeCustomDependenciesCallbacks: 0.001ms
-	InvokePackagesCallback: 16.296ms
-	ApplyChangesToAssetFolders: 0.322ms
-	Scan: 51.809ms
-	OnSourceAssetsModified: 0.001ms
-	CategorizeAssetsWithTransientArtifact: 5.800ms
-	ProcessAssetsWithTransientArtifactChanges: 8.958ms
-	CategorizeAssets: 2.591ms
-	ImportOutOfDateAssets: 280.761ms (-53.170ms without children)
-		CompileScripts: 333.683ms
+	InvokePackagesCallback: 9786.836ms
+	ApplyChangesToAssetFolders: 0.318ms
+	Scan: 548.165ms
+	OnSourceAssetsModified: 4.095ms
+	CategorizeAssetsWithTransientArtifact: 6.284ms
+	ProcessAssetsWithTransientArtifactChanges: 10.190ms
+	CategorizeAssets: 2.733ms
+	ImportOutOfDateAssets: 315.968ms (-2166.281ms without children)
+		ImportManagerImport: 22.375ms (0.640ms without children)
+			ImportInProcess: 21.720ms
+			UpdateCategorizedAssets: 0.015ms
+		CompileScripts: 2459.601ms
 		ReloadNativeAssets: 0.000ms
-		UnloadImportedAssets: 0.068ms
+		UnloadImportedAssets: 0.092ms
+		ReloadImportedAssets: 0.000ms
 		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.063ms
-		InitializingProgressBar: 0.001ms
+		InitializingProgressBar: 0.004ms
 		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
-		OnDemandSchedulerStart: 0.117ms
-	PostProcessAllAssets: 10.368ms
+		OnDemandSchedulerStart: 0.113ms
+	PostProcessAllAssets: 187.413ms
+	Hotreload: 0.685ms
 	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
-	UnloadStreamsBegin: 0.133ms
-	PersistCurrentRevisions: 0.013ms
-	UnloadStreamsEnd: 0.001ms
-	GenerateScriptTypeHashes: 0.129ms
-	Untracked: 818.090ms
+	UnloadStreamsBegin: 0.149ms
+	PersistCurrentRevisions: 0.060ms
+	UnloadStreamsEnd: 0.017ms
+	GenerateScriptTypeHashes: 0.142ms
+	Untracked: 3658.705ms
 
 Application.AssetDatabase Initial Refresh End
-Scanning for USB devices : 4.173ms
+Scanning for USB devices : 3.955ms
 Initializing Unity extensions:
 Script 'Packages/AnimationMergeToolForTimeline/package.json' will not be compiled because it exists outside the Assets folder and does not to belong to any assembly definition file.
 [MODES] ModeService[none].Initialize
 [MODES] ModeService[none].LoadModes
 [MODES] Loading mode Default (0) for mode-current-id-AnimationMergeToolForTimeline
-Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 1273 unused Assets / (0.9 MB). Loaded Objects now: 1785.
-Memory consumption went from 93.0 MB to 92.2 MB.
-Total: 3.507600 ms (FindLiveObjects: 0.085700 ms CreateObjectMapping: 0.026600 ms MarkObjects: 3.025300 ms  DeleteObjects: 0.369400 ms)
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 1278 unused Assets / (1.8 MB). Loaded Objects now: 1790.
+Memory consumption went from 94.8 MB to 93.0 MB.
+Total: 4.191700 ms (FindLiveObjects: 0.081600 ms CreateObjectMapping: 0.029000 ms MarkObjects: 3.581000 ms  DeleteObjects: 0.499600 ms)
 
-[Project] Loading completed in 5.511 seconds
-	Project init time: 				2.261 seconds
+[Project] Loading completed in 18.797 seconds
+	Project init time: 				15.627 seconds
 		Template init time: 		0.000 seconds
 		Package Manager init time: 		0.220 seconds
-		Asset Database init time: 		0.107 seconds
+		Asset Database init time: 		0.185 seconds
 		Global illumination init time: 	0.002 seconds
-		Assemblies load time: 			0.408 seconds
-		Unity extensions init time: 	0.004 seconds
-		Asset Database refresh time: 	1.195 seconds
-	Scene opening time: 			3.127 seconds
-##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1769450272580,"processId":548148,"projectLoad":5.5110927,"projectInit":2.2612963,"templateInit":0.0,"packageManagerInit":0.2200922,"assetDatabaseInit":0.106581,"globalIlluminationInit":0.0019421,"assembliesLoad":0.4080176,"unityExtensionsInit":0.0037667,"assetDatabaseRefresh":1.1952461,"sceneOpening":3.1273182}
-##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1769450272581,"processId":548148,"editorVersion":"6000.0.64f1 (5360b7cd7953)","branch":"6000.0/respin/6000.0.64f1-d4299b69b02d","buildType":"Release","platform":"Windows"}
-Asset Pipeline Refresh (id=df8b04baf290fa946915b909909c2f75): Total: 0.007 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
-Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+		Assemblies load time: 			0.412 seconds
+		Unity extensions init time: 	0.001 seconds
+		Asset Database refresh time: 	14.522 seconds
+	Scene opening time: 			3.080 seconds
+##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1769451930487,"processId":12424,"projectLoad":18.797396199999999,"projectInit":15.6267409,"templateInit":0.0,"packageManagerInit":0.2201032,"assetDatabaseInit":0.1845582,"globalIlluminationInit":0.0020822,"assembliesLoad":0.4120872,"unityExtensionsInit":0.0011552,"assetDatabaseRefresh":14.5217017,"sceneOpening":3.0804608}
+##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1769451930487,"processId":12424,"editorVersion":"6000.0.64f1 (5360b7cd7953)","branch":"6000.0/respin/6000.0.64f1-d4299b69b02d","buildType":"Release","platform":"Windows"}
+[MODES] ModeService[default].LoadModes
+Asset Pipeline Refresh (id=c0ded786012fc9f4abf71b6fc49b8a6f): Total: 0.010 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
 Running tests for ExecutionSettings with details:
 targetPlatform = 
 playerHeartbeatTimeout = 600
@@ -333,11 +414,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 (Filename: ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 53)
 
 [UnityConnectServicesConfig] config is NOT valid, switching to default
-Created GICache directory at C:/Users/Hidano/AppData/LocalLow/Unity/Caches/GiCache. Took: 0.004s, timestamps: [5.520 - 5.524]
-Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 2 unused Assets / (1.4 KB). Loaded Objects now: 1826.
-Memory consumption went from 90.0 MB to 90.0 MB.
-Total: 3.375800 ms (FindLiveObjects: 0.063500 ms CreateObjectMapping: 0.015300 ms MarkObjects: 3.280200 ms  DeleteObjects: 0.016300 ms)
+Created GICache directory at C:/Users/Hidano/AppData/LocalLow/Unity/Caches/GiCache. Took: 0.006s, timestamps: [18.805 - 18.811]
+Unloading 1 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 2 unused Assets / (1.3 KB). Loaded Objects now: 1830.
+Memory consumption went from 91.0 MB to 91.0 MB.
+Total: 3.560000 ms (FindLiveObjects: 0.066800 ms CreateObjectMapping: 0.015800 ms MarkObjects: 3.461000 ms  DeleteObjects: 0.015600 ms)
 
 MergeResultがnullです。
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
@@ -498,11 +579,20 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 104)
 
-Start importing Assets/TestTimeline_367a6447_TestAnimator_Merged.anim using Guid(a90c8d8d8c0ba2d4a83153ac0e0ce8b2) (NativeFormatImporter) -> (artifact id: '212c2b7eeeb3c70ef9bd249659c20ae6') in 0.0041548 seconds
+Start importing Assets/TestTimeline_a11d5715_TestAnimator_Merged.anim using Guid(895a1764783f17b48820581ece53f1ad) (NativeFormatImporter) -> (artifact id: 'd6b706bfde8afc984acf3dbad281272b') in 0.0011995 seconds
+Loading style catalogs (8)
+	StyleSheets/Extensions/base/common.uss
+	UIPackageResources/StyleSheets/Default/Variables/Public/common.uss
+	StyleSheets/Northstar/common.uss
+	StyleSheets/Extensions/fonts/inter.uss
+	StyleSheets/Extensions/base/dark.uss
+	UIPackageResources/StyleSheets/Default/Northstar/Palette/dark.uss
+	Packages/com.unity.timeline/Editor/StyleSheets/Extensions/dark.uss
+	Packages/com.unity.timeline/Editor/StyleSheets/Extensions/common.uss
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=2e95bd7399028364cbafca8cf0f020ec): Total: 0.062 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-AnimationClipを保存しました: Assets/TestTimeline_367a6447_TestAnimator_Merged.anim
+Asset Pipeline Refresh (id=1f25aa62bdacc164c8c4aa1fb1a59618): Total: 0.116 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+AnimationClipを保存しました: Assets/TestTimeline_a11d5715_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
 UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
@@ -558,7 +648,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=c61d2dce05d71ec47b3cbaaefdce7537): Total: 0.005 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=406dfe9e00e7eb447866f112e7a1899f): Total: 0.005 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 保存先ディレクトリが存在しません: Assets/NonExistentFolder12345
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -666,11 +756,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 158)
 
-Start importing Assets/TestTimeline_7dde3b77_TestAnimator_Merged.anim using Guid(e65b527e27ec93f4a97a7b1f01917f8a) (NativeFormatImporter) -> (artifact id: '6a6078ea377baf3f990b21718d7f4b47') in 0.0011304 seconds
+Start importing Assets/TestTimeline_12539d8b_TestAnimator_Merged.anim using Guid(0b11523cf130e9c499c8b3359066ee77) (NativeFormatImporter) -> (artifact id: '389f0517e8d968d08e15fefcd9f12a44') in 0.0010403 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=8a3ef6ccd63b10746986c081bd0391da): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-AnimationClipを保存しました: Assets/TestTimeline_7dde3b77_TestAnimator_Merged.anim
+Asset Pipeline Refresh (id=f6d00cefb4448344e9b30e4d87977471): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+AnimationClipを保存しました: Assets/TestTimeline_12539d8b_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
 UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
@@ -725,11 +815,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=ff983986c11f8e643937865645bf8a0e): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/MyTimeline_MyAnimator_Merged.anim using Guid(89f36b5cc858cdc4dbbcd869abba3dfd) (NativeFormatImporter) -> (artifact id: '2c615c152d1505cac9f7a61041ff2b4e') in 0.000978 seconds
+Asset Pipeline Refresh (id=ad3401a5f8edc27439ea31c29fe4f173): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/MyTimeline_MyAnimator_Merged.anim using Guid(23eb60b622e88c24aa3d1e2b6a8e8dda) (NativeFormatImporter) -> (artifact id: '88cbf19a17e0d037aad28727a7f926f8') in 0.0011885 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=4a71050937d8c3946a7eebe0c749db6b): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=a02ca160ac3b1a645a61d6dc8984ce7a): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MyTimeline_MyAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -785,7 +875,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=3453649ac2a475a4cb2ab3e91e1e6744): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=6c3022f045674cc45a5242df82c4e28d): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 保存先ディレクトリが存在しません: Assets/NonExistentFolder12345
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -839,11 +929,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 170)
 
-Start importing Assets/TestTimeline_25415ef5_TestAnimator_Merged.anim using Guid(259c40065daf4db4090d936138081a96) (NativeFormatImporter) -> (artifact id: '0b3f8f89a654c64e8f41b193b9d7cf05') in 0.0010523 seconds
+Start importing Assets/TestTimeline_e44c5ca8_TestAnimator_Merged.anim using Guid(22c346a8d2bb24d47b17ba243ea5d690) (NativeFormatImporter) -> (artifact id: 'b03b1583d4f12018ea8ec1d62177f3af') in 0.0010981 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=2fb98e1d1ae1b124897121a097c16773): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-AnimationClipを保存しました: Assets/TestTimeline_25415ef5_TestAnimator_Merged.anim
+Asset Pipeline Refresh (id=12c2ffb535ac9624eb1621ea8d2c4f5c): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+AnimationClipを保存しました: Assets/TestTimeline_e44c5ca8_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
 UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
@@ -898,11 +988,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=4f0634dd0e3ba27468b0bed0f8ff9556): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/Unknown_TestAnimator_Merged.anim using Guid(a15f90fb6cd5c9444937bdb0e3e89114) (NativeFormatImporter) -> (artifact id: '8b61931b87576d764c87cdb59abcc0a1') in 0.0009792 seconds
+Asset Pipeline Refresh (id=eb6bcc4957fc7da49ac6dd8202eb5ceb): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Unknown_TestAnimator_Merged.anim using Guid(2aeb6cb4f98d5f944943a0ad6b2a224f) (NativeFormatImporter) -> (artifact id: '7be7e50c4231cfe39cb36898b2ab4c5e') in 0.0010139 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=137adab70538cea49b08deb8f3769a5a): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=21f3ad15ba396db48957ecd350982e20): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/Unknown_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -961,7 +1051,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=de9fda7db1555534c9b7a1fbd8f94d90): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=2c305a206f9c56d45b4f01169eb32fbd): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [AnimationMergeTool] PlayableDirectorがnullです。
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -1338,10 +1428,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Application/AnimationMergeService.cs Line: 71)
 
-Start importing Assets/Unknown_TestAnimator_Merged.anim using Guid(a15f90fb6cd5c9444937bdb0e3e89114) (NativeFormatImporter) -> (artifact id: '097941146ebc423dd2644aaab9ef5642') in 0.0011124 seconds
+Start importing Assets/Unknown_TestAnimator_Merged.anim using Guid(2aeb6cb4f98d5f944943a0ad6b2a224f) (NativeFormatImporter) -> (artifact id: 'b359d098ae4239b3ef8fd8ea51dca603') in 0.0009451 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=9b70894c6c51509469f93ad8629437f6): Total: 0.018 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=b902a3c05b76c8041a32fdd91362a0c0): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/Unknown_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -1400,11 +1490,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=253f48a71abe7174082065fb65712b2c): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/Unknown_AnimatorA_Merged.anim using Guid(2cc4349dc67ddb740b504b273cb58848) (NativeFormatImporter) -> (artifact id: 'f583ebe8508c515b8346692855806b1d') in 0.0009882 seconds
+Asset Pipeline Refresh (id=66d629fef555fe5488c66e5c0973834f): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Unknown_AnimatorA_Merged.anim using Guid(805a4fbbc00e99d4496405634c4b0e8d) (NativeFormatImporter) -> (artifact id: '7e3ccd11eed8c06aaba4a0c96ba11e9b') in 0.0009418 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=4bcb0cd0f7d4a8245bda4efd1f756fda): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=4f05c0dcfc0f5154c8ed11df8058945d): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/Unknown_AnimatorA_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -1461,10 +1551,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-Start importing Assets/Unknown_AnimatorB_Merged.anim using Guid(a1443c65f93df6748a48ac15658890a0) (NativeFormatImporter) -> (artifact id: 'd4d53ee9e90383c11116d3f92a66fbc8') in 0.0010723 seconds
+Start importing Assets/Unknown_AnimatorB_Merged.anim using Guid(bcce2f855a7402845b82c1e9caf380e5) (NativeFormatImporter) -> (artifact id: 'e701619d6a96afb4bb421c51ed60de07') in 0.0010899 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=97bb1432ac1c49749b0129ca711f8e07): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=2b517ce193950f64e8face4de078c929): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/Unknown_AnimatorB_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -1523,13 +1613,13 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=93e8a76efc855894d8c94ff28706fbf2): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=fc5a71456d2790c4a8ef64315764c4b9): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=aab0d3a68ecf7a14795b1e5f4e0675a2): Total: 0.006 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=a971fe613533d4543a19f1688e5c8140): Total: 0.006 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=201191649390212489af52056705aeea): Total: 0.007 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=c32ebcfc5f8f3dc4bb55adbc8977edcb): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/Unknown_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -1588,7 +1678,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=35b1b91274dc5b746bcb57b8d83faea7): Total: 0.006 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=0ec9f5848d25b1c42b538c4cd0cc1423): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [AnimationMergeTool] 有効なAnimationTrackが見つかりません。
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -1803,10 +1893,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Application/AnimationMergeService.cs Line: 105)
 
-Start importing Assets/MixedTracksTimeline_NoAnimator_Merged.anim using Guid(9872eb1c65648594db4118d08654a6e1) (NativeFormatImporter) -> (artifact id: 'af05437d6b6ae17c4f34021760c992bf') in 0.0010955 seconds
+Start importing Assets/MixedTracksTimeline_NoAnimator_Merged.anim using Guid(f3e11e987e67b83469d33a5272973767) (NativeFormatImporter) -> (artifact id: 'd69f0457c4aa6a712c9bf70ab9e9adf6') in 0.0012305 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=b34f416d1a5bb0449a0c40b7a1c33eb3): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=9d25eec40d1314140b8b9e33e284ace4): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MixedTracksTimeline_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -1865,7 +1955,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=65aff13030e5bae47943570722eeba03): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=4b438b114bd214c48ae22f39fcd3100d): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [AnimationMergeTool] 有効なAnimationTrackが見つかりません。
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -1973,10 +2063,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Application/AnimationMergeService.cs Line: 117)
 
-Start importing Assets/Unknown_NoAnimator_Merged.anim using Guid(285b2548fa6b3c54ab103b1e97288d83) (NativeFormatImporter) -> (artifact id: '1bd0f12259eaed9e6488d7771e6ee826') in 0.0011059 seconds
+Start importing Assets/Unknown_NoAnimator_Merged.anim using Guid(f1d0a3476a45e8746a023f119e01fd7e) (NativeFormatImporter) -> (artifact id: 'a3b7fc05731ef72e3c2eef9f58e4bd5f') in 0.0010369 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=ec75e86f76df4e344b7a4a85ec5ded5e): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=19889e6e98716b14f95cadd15f99594e): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/Unknown_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -2035,7 +2125,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=a6015b05a8f6eb943a99676d0998219c): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=940fd2bddb5da5e489b63906468bf426): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [AnimationMergeTool] 有効なAnimationTrackが見つかりません。
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -2092,7 +2182,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=409ac86a63f1ba94abd6ec7693378e31): Total: 0.006 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=76013ce013fcb944cb6b9baed1c9ff5e): Total: 0.006 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/Unknown_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -2151,11 +2241,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=1916f954195d2c040bd1d80266d29fc2): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/Unknown_NoAnimator_Merged.anim using Guid(285b2548fa6b3c54ab103b1e97288d83) (NativeFormatImporter) -> (artifact id: 'b9794cc9c7b15d89c5705420b6bde298') in 0.0010074 seconds
+Asset Pipeline Refresh (id=ed52789cd231ab548860b52ea4010022): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Unknown_NoAnimator_Merged.anim using Guid(f1d0a3476a45e8746a023f119e01fd7e) (NativeFormatImporter) -> (artifact id: '576e0ad84ab4524ca3b8da8ad710e4bb') in 0.0010035 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=7d20edebd82f1674abb33649eac1861e): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=c51e42cdc3c18a8449d9ccb95a66500c): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/Unknown_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -2214,11 +2304,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=4d104181739aeea4d81ab727f31e948a): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/Unknown_NoAnimator_Merged.anim using Guid(285b2548fa6b3c54ab103b1e97288d83) (NativeFormatImporter) -> (artifact id: '3b69ad75fe86c40216518ed8af9bced2') in 0.0010185 seconds
+Asset Pipeline Refresh (id=fa91da882cca6fb4ca3d63a7552e42b9): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Unknown_NoAnimator_Merged.anim using Guid(f1d0a3476a45e8746a023f119e01fd7e) (NativeFormatImporter) -> (artifact id: 'f8dbd013b70e2e960ebaddde6ecebd02') in 0.0009624 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=d82a755a8dd131a45b8e7f43612776f2): Total: 0.008 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=b0707534844698341bad581a89e120c2): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/Unknown_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -2277,7 +2367,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=fb783d812cf643d49b45f6f2850dcb16): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=f3383122278fa60468711dae01435576): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [AnimationMergeTool] 処理対象のPlayableDirectorがありません。
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -2967,10 +3057,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/FbxAnimationExporter.cs Line: 98)
 
-Start importing Assets/E2E_GroupedTimeline_NoAnimator_Merged.anim using Guid(f4f8798e59b70e14d8d8d28c3a64e81c) (NativeFormatImporter) -> (artifact id: '0d7e9cf169d8e9fe03d4808e5262609d') in 0.0011087 seconds
+Start importing Assets/E2E_GroupedTimeline_NoAnimator_Merged.anim using Guid(9adb8eb68e3aa534bba5823386dfaaff) (NativeFormatImporter) -> (artifact id: '5c854db3e85c82cee9bd9687bce99077') in 0.0010149 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=6740b34eb1b85844fb58886f3676592c): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=dbb4d18d5cf5b35418b32e5245e56353): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/E2E_GroupedTimeline_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3029,11 +3119,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=6144cb259be8c664b86010228733c355): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/E2E_HierarchyTestTimeline_E2E_HierarchyTest_Animator_Merged.anim using Guid(3788229574834ad4498e2c28a8cb3e2f) (NativeFormatImporter) -> (artifact id: 'def95c57e953a44179d07637ceb9b032') in 0.0010478 seconds
+Asset Pipeline Refresh (id=2e8c378f457b52149812c33297de8db6): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/E2E_HierarchyTestTimeline_E2E_HierarchyTest_Animator_Merged.anim using Guid(b2484011899bf0b4298ceaa355d42a4f) (NativeFormatImporter) -> (artifact id: '50b97433f878b895821ee74c604e68bd') in 0.0009798 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=96e485d9dc3b19c459a1cc5399f77d14): Total: 0.035 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=f7720b830e669544392555031ab0f305): Total: 0.032 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/E2E_HierarchyTestTimeline_E2E_HierarchyTest_Animator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3093,11 +3183,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=5b7fc9094d236784d85fe255c37ffc15): Total: 0.005 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/E2E_TestTimeline_E2E_Character_Merged.anim using Guid(2ae65f9f942dbb1408399e7ad2285fdc) (NativeFormatImporter) -> (artifact id: '10f4c5f33cbe0e12fb62e3537f051e8e') in 0.0010785 seconds
+Asset Pipeline Refresh (id=a4ee0358aa76c4343b0050933808f1ae): Total: 0.005 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/E2E_TestTimeline_E2E_Character_Merged.anim using Guid(b45ae15bb9a17214a9b3bdce89966970) (NativeFormatImporter) -> (artifact id: '65167b1d892c6a30028e40c31f32fe25') in 0.0010265 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=50d4b313437546644ae6b6cc2142fa3b): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=b41ce711f0cbb8f44af50a5dbaf0dee2): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/E2E_TestTimeline_E2E_Character_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3157,11 +3247,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=b809f5b44e634e24683d5a8d41f78f52): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/E2E_ProjectViewTimeline_NoAnimator_Merged.anim using Guid(ee5c341a268965d4883dd92ef8407693) (NativeFormatImporter) -> (artifact id: '4b6c777b4b3619e0cf697cecd67d28f7') in 0.0010209 seconds
+Asset Pipeline Refresh (id=8efbb551450c7fd4a9ad9202f9773935): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/E2E_ProjectViewTimeline_NoAnimator_Merged.anim using Guid(161ad1995b8319f4094360fd981c8ff2) (NativeFormatImporter) -> (artifact id: 'c0f0471e2cab9d864b9f146ebe67109d') in 0.0010741 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=03ff156c0a0c42c4691922e6741e90fa): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=b43db170e0d48914db1f6403fc29a984): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/E2E_ProjectViewTimeline_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3219,14 +3309,14 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-Asset Pipeline Refresh (id=49c4463b2e5cb734dbb30b501da28114): Total: 0.004 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=ecbb9a3dc4b3f264b942d971ffb8a31c): Total: 0.003 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=61edf02fa26d85c4bbae236e6a0c123a): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/E2E_BlendTimeline_NoAnimator_Merged.anim using Guid(e178d03ae15d35d42b5db781cf3e0e91) (NativeFormatImporter) -> (artifact id: 'ae9b980f05af244a99cc17348065c549') in 0.001052 seconds
+Asset Pipeline Refresh (id=d4b558ec74f029c4196aa6fc52ad671d): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/E2E_BlendTimeline_NoAnimator_Merged.anim using Guid(248b9842467f73449b2def9cecc9dbf3) (NativeFormatImporter) -> (artifact id: 'e77e714d325ffa91fae04f6828b2aff9') in 0.0010034 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=7a42d967924d05541b43f4cc752f14dd): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=905630d0ebca527489a520d2cfe406f4): Total: 0.014 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/E2E_BlendTimeline_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3285,11 +3375,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=dfe936bcc9bd7d44eadd688f10bba47d): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/E2E_ComplexTimeline_E2E_ComplexAnimator_Merged.anim using Guid(341d0397fba37454dadda8d35138872f) (NativeFormatImporter) -> (artifact id: '1d47e2171dabd6db6a8a586466c0367f') in 0.00112 seconds
+Asset Pipeline Refresh (id=da69cfd279a7c72409038bb08fd7a56d): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/E2E_ComplexTimeline_E2E_ComplexAnimator_Merged.anim using Guid(963f13761b41bfb4f96c8aad764df1d0) (NativeFormatImporter) -> (artifact id: 'd1022012cea8988887326c36e1d02d31') in 0.0009476 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=a48449eeb226c174dbcf4459e86a8ae0): Total: 0.023 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=ec81646ce9aec5243b09fe401896d3cc): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/E2E_ComplexTimeline_E2E_ComplexAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3348,11 +3438,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=4f57b1110aface94fa34d167834b5a2d): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/E2E_MultiSelect1_E2E_MultiSelect_Animator1_Merged.anim using Guid(8fbcc2debd386a74e8c9da2718663c9b) (NativeFormatImporter) -> (artifact id: '45b70f439917f9b095a7de9777d8c539') in 0.001062 seconds
+Asset Pipeline Refresh (id=a65b3e62269044f4982149a0219f15df): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/E2E_MultiSelect1_E2E_MultiSelect_Animator1_Merged.anim using Guid(741ade394aa025c479a9b41e5809b9b2) (NativeFormatImporter) -> (artifact id: '396bb40a4e3f676f681fbe33455dbc82') in 0.000984 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=42d91bd535a7ae445858638691342968): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=1c99f8d0e9670894ba61a382d0d04152): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/E2E_MultiSelect1_E2E_MultiSelect_Animator1_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3410,10 +3500,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-Start importing Assets/E2E_MultiSelect2_E2E_MultiSelect_Animator2_Merged.anim using Guid(c6fdd3275afcc40409fb578473321992) (NativeFormatImporter) -> (artifact id: '47e586306b88596222baea80872271ea') in 0.0010274 seconds
+Start importing Assets/E2E_MultiSelect2_E2E_MultiSelect_Animator2_Merged.anim using Guid(a2676ec0651c0f448ac3515cd66079f9) (NativeFormatImporter) -> (artifact id: '76c7e3e0500e11e3ffdd6f35caa49359') in 0.0009465 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=b7e0cb8204c74a740997b7b02aef9b73): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=2197171938ab1fd4a92bc1f72f27b475): Total: 0.010 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/E2E_MultiSelect2_E2E_MultiSelect_Animator2_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3471,13 +3561,13 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-Asset Pipeline Refresh (id=0c19cb04b7feabc4aae3d3af4361958c): Total: 0.004 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=2d876265215b3b44585c4b566b698e94): Total: 0.004 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=76c8eed2fbbae0a40a24884fa74002d7): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=f6f126d23c3169e498fb5374bf23bed5): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=d62c0635b5b8a324fa49ad2b0510ae4b): Total: 0.006 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=4ea2e15c25dd36e45ab62a7f99db97d9): Total: 0.005 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [AnimationMergeTool] トラック "UnboundTrack" にAnimatorがバインドされていません。
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3532,10 +3622,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Application/AnimationMergeService.cs Line: 159)
 
-Start importing Assets/ERR001TestTimeline_TestAnimator_Merged.anim using Guid(8925743780dbc014c90ff15f308487b3) (NativeFormatImporter) -> (artifact id: '4858597f2112a6a4c34f8ab3d5c3cdd2') in 0.0010507 seconds
+Start importing Assets/ERR001TestTimeline_TestAnimator_Merged.anim using Guid(b03ba4167994bb94a8a9e7515c9a8b84) (NativeFormatImporter) -> (artifact id: 'ba7c8a26e3be68a335c2ce4c5a493b95') in 0.0010452 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=eaf7d7a9b6c522444981ba9812395841): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=bb91681adcf88114cb6e6535e57639d1): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/ERR001TestTimeline_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3594,11 +3684,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=858b774ba196b824ebe4cbc25350bc78): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/BlendShapeValueRangeTest_NoAnimator_Merged.anim using Guid(55031135f4a3508478ddd163b1b3d1ad) (NativeFormatImporter) -> (artifact id: '4c6a1927133c5eca125e10e9e92a42ba') in 0.0010225 seconds
+Asset Pipeline Refresh (id=a96f6a536336f3a41966ae45a900a008): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/BlendShapeValueRangeTest_NoAnimator_Merged.anim using Guid(2b52dbf0d81cfd541b1e0ac179b7c37a) (NativeFormatImporter) -> (artifact id: '4023e6a546101f3b426f1402219ef411') in 0.0009509 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=a2c0b9f44fcd5074082fd49d29369bd3): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=a8cb7bd8919cbea4390e03600be7d000): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/BlendShapeValueRangeTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3657,11 +3747,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=8b969a51edb90284ab0d80ae013bba2f): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/BlendShape_E2E_Timeline_BlendShape_E2E_Character_Merged.anim using Guid(8fce89942b63c0141b133c876831741a) (NativeFormatImporter) -> (artifact id: 'b138dff3e415b1973984ec542f591f06') in 0.0010434 seconds
+Asset Pipeline Refresh (id=14ed7ad82265d7c49aaf645d196e8ac0): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/BlendShape_E2E_Timeline_BlendShape_E2E_Character_Merged.anim using Guid(c4d1706cc46f5e04bacc4df1f2a0a9b1) (NativeFormatImporter) -> (artifact id: '5273bcbcadcd1c793be6b7d1a5d85403') in 0.001053 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=3ee6f344b4bb6e948a04718b1d50b0fe): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=d912dc2fb9ed3804d9641ef901ff6c6a): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/BlendShape_E2E_Timeline_BlendShape_E2E_Character_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3719,14 +3809,14 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-Asset Pipeline Refresh (id=8968e60120749fb47a021669e2e5349f): Total: 0.004 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=ddffb24fbebe3a04fbf600585c4440cb): Total: 0.003 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=aa55930195f5b374eae99e010df368a7): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/BlendShapeIntegrationTest_NoAnimator_Merged.anim using Guid(47539ba453ee8974bb4c1d8c5f5b2bb1) (NativeFormatImporter) -> (artifact id: '4e05fb166706d5419da0b8b964593c40') in 0.0010788 seconds
+Asset Pipeline Refresh (id=6532d83806c396d4bb09660ea4cc6156): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/BlendShapeIntegrationTest_NoAnimator_Merged.anim using Guid(85b541f36abea3c4bb0e3a30fd5fc9f9) (NativeFormatImporter) -> (artifact id: '41358d42424658d13c499207363354d6') in 0.0009761 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=9bd71edc13f17294b8e25f3d1d010261): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=989076d2639fcaa46b5377ea256e0c8f): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/BlendShapeIntegrationTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3785,11 +3875,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=4818aec6e82973347a673d54e43a22f6): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/MixedCurvesIntegrationTest_NoAnimator_Merged.anim using Guid(e5890625c09a8ed4f8ee5d1e1028d8bb) (NativeFormatImporter) -> (artifact id: '9387100592d1c31265506d6671cb7afd') in 0.0010196 seconds
+Asset Pipeline Refresh (id=a20a0495772cba54fb563d9fa7edb4a0): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/MixedCurvesIntegrationTest_NoAnimator_Merged.anim using Guid(390b1248b81c8f44cb9c6333cd5f31fe) (NativeFormatImporter) -> (artifact id: '69441d6264a49a102dac745868fa8f81') in 0.0010132 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=65bf35083364f2b49a15d85fec6242e9): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=b8476d3c0c6bf4749a7f92447ee79422): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MixedCurvesIntegrationTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3848,11 +3938,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=f74b35602f8555042a31b4d64262ca3f): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/BlendShapeOverrideTest_NoAnimator_Merged.anim using Guid(156610fc22f1ace44ad19c66429edaa8) (NativeFormatImporter) -> (artifact id: 'd833245905819faf93d9f2a262d138a6') in 0.0010829 seconds
+Asset Pipeline Refresh (id=47f2256672a1e2f4cae1cbc9dd192186): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/BlendShapeOverrideTest_NoAnimator_Merged.anim using Guid(4671ae9647799c846ab1de8d23a27a12) (NativeFormatImporter) -> (artifact id: 'cda0272454c4c775f50513c1bb8f129c') in 0.0009646 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=e1dce0dc7fe500548b0826d1f71d64d1): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=a5206f7fce79df44191f57dbdc67fca6): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/BlendShapeOverrideTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3911,11 +4001,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=bc1cf6b9511610943815a32df12ad569): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/MultiBlendShapePropertiesTest_TestAnimator_Merged.anim using Guid(01e0f591e7b77244087a99055f56bad6) (NativeFormatImporter) -> (artifact id: 'c0f82059592c8f9dc7d9ba4c6803d9bb') in 0.0010823 seconds
+Asset Pipeline Refresh (id=642ae948433874546bb9da61033c56b0): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/MultiBlendShapePropertiesTest_TestAnimator_Merged.anim using Guid(c615c5d03bd08b54aac55f7c1c438e5b) (NativeFormatImporter) -> (artifact id: '53c101cad25b42d58e3c0e1a9fa29aec') in 0.0010815 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=cdbdf9927a6b5a34eb3cabc44e092fa0): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=4338da71cb8a54f468fe340b690ef984): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MultiBlendShapePropertiesTest_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -3974,11 +4064,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=8bffce2fed0173a44820f25f26ea2443): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/VeryManyCurvesTest_NoAnimator_Merged.anim using Guid(1b4dc2339c6cdb64e9df1d6244884bb2) (NativeFormatImporter) -> (artifact id: '67f2057e816486b83bb13c04d3c72964') in 0.0019665 seconds
+Asset Pipeline Refresh (id=f0b5ad94b01d32c41a0221a50c264e2e): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/VeryManyCurvesTest_NoAnimator_Merged.anim using Guid(52f1c1c124928ca4f84c294133d3caa4) (NativeFormatImporter) -> (artifact id: 'aea7f745a0db179f3d06bd21e4c6ef4e') in 0.0018528 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=06277b4ab1b6e59418fa5e9b91d7af94): Total: 0.017 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=cfb6941054b660b46abdf4500f80a868): Total: 0.014 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/VeryManyCurvesTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4035,7 +4125,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-極端に多いカーブ（504個）の処理時間: 160ms
+極端に多いカーブ（504個）の処理時間: 151ms
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
 UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
@@ -4089,11 +4179,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=fffbfb714bfd80240b6bf806c41d852e): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/VeryLongTimelineTest_NoAnimator_Merged.anim using Guid(6fcc0a349002b704d8a2928edb1ef8a7) (NativeFormatImporter) -> (artifact id: '22e85019d32f2d04798ddf52cf38dea7') in 0.0010886 seconds
+Asset Pipeline Refresh (id=9a9d50d863ee9c949a670eb55b42b7e6): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/VeryLongTimelineTest_NoAnimator_Merged.anim using Guid(b391f2f0ac6a2dd4f8ef04648a70c801) (NativeFormatImporter) -> (artifact id: '750c85d74647b0e80e549ae77a702574') in 0.0010053 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=03ab576a81fa8af4691be674e839e70a): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=75157e4f24f19d44b92048e4f40d2391): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/VeryLongTimelineTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4204,11 +4294,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=c6c6bc6378d649744ab796c3da7ac292): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/ManyCurvesTest_NoAnimator_Merged.anim using Guid(47b84e2fa98ce704cbf4ff64b3b8e2cf) (NativeFormatImporter) -> (artifact id: 'eff7531958a2caf7b1faa4fbe4e60a20') in 0.0015819 seconds
+Asset Pipeline Refresh (id=9203d3f7b9dc7264a91ce12758ea4f32): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/ManyCurvesTest_NoAnimator_Merged.anim using Guid(b14120bb340de4941b35ed1ef8fc10c9) (NativeFormatImporter) -> (artifact id: '2c61cb0984f14376fbfa6158fca72c24') in 0.0015726 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=2f7c19e7d95ada544a46380bfce80bfa): Total: 0.020 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=66e96e50ea9002a4290fc7a0a17848b9): Total: 0.014 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/ManyCurvesTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4265,7 +4355,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-大量のカーブ（100ボーン=300個のカーブバインディング）の処理時間: 72ms
+大量のカーブ（100ボーン=300個のカーブバインディング）の処理時間: 66ms
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
 UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
@@ -4319,11 +4409,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=0c0cf40b3497e8e408eb7f42929d87b8): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/LongTimelineMultiClipTest_NoAnimator_Merged.anim using Guid(835980c3fac4d814d82f213ff6c6b3d9) (NativeFormatImporter) -> (artifact id: '2118ed40bf4674afca91999064035fa9') in 0.0010705 seconds
+Asset Pipeline Refresh (id=5b3f966b284cfe44bbd6244a47ed466b): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/LongTimelineMultiClipTest_NoAnimator_Merged.anim using Guid(c97478d4fcf89314383aa69ca56998b1) (NativeFormatImporter) -> (artifact id: '2005e15a3d8d3a11733d2fd5a8811ae5') in 0.0010072 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=3dab2dbc150950a4ea46eb8be578f7fa): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=b35faf5597132ff488a466d608922fd7): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/LongTimelineMultiClipTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4380,7 +4470,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-長いタイムライン（100秒・20クリップ）の処理時間: 18ms
+長いタイムライン（100秒・20クリップ）の処理時間: 14ms
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
 UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
@@ -4434,11 +4524,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=1e1e34ea9c3c3f04db80a5de8208e124): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/LongTimelineTest_NoAnimator_Merged.anim using Guid(304b9cf3bc6c9fb44b4c7494bd01d735) (NativeFormatImporter) -> (artifact id: 'd5926bd81b7f6119f431bc450cd474a8') in 0.0012037 seconds
+Asset Pipeline Refresh (id=c0f387ee0f951f14a8090d07d4195ac0): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/LongTimelineTest_NoAnimator_Merged.anim using Guid(a1ce8e38fc4e3e245b31db5f858223d5) (NativeFormatImporter) -> (artifact id: 'a39dd0e372f53dfdf81b5c116b5b465d') in 0.0010935 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=2f6adff52bf13144b9dcb9e2f5a728e0): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=6c6c653c0dc3dc64a8490ff14c874ab7): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/LongTimelineTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4495,7 +4585,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-長いタイムライン（120秒）の処理時間: 16ms
+長いタイムライン（120秒）の処理時間: 17ms
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
 UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
@@ -4549,11 +4639,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=a2a37e4a41bc8074a96f62117f2b8a6c): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/MultiTrackManyCurvesTest_NoAnimator_Merged.anim using Guid(0be610cc13f8e044b854e08728cd9bee) (NativeFormatImporter) -> (artifact id: 'e3da077765e5c773fd31a5dae24d568d') in 0.0025065 seconds
+Asset Pipeline Refresh (id=aebec1e063d82f846b436d6bc118c076): Total: 0.005 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/MultiTrackManyCurvesTest_NoAnimator_Merged.anim using Guid(f7a9e213b3a62444b8656295cbc26485) (NativeFormatImporter) -> (artifact id: '1d2673387fd9877d403819d89003ea99') in 0.0023736 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=5ccc440386f8fb54b82e06be25e1dc56): Total: 0.020 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=81feabb2e82bb82458083ea76757b3aa): Total: 0.018 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MultiTrackManyCurvesTest_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4610,7 +4700,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-複数トラックの大量カーブ（5トラック×50ボーン=750個のカーブバインディング）の処理時間: 239ms
+複数トラックの大量カーブ（5トラック×50ボーン=750個のカーブバインディング）の処理時間: 235ms
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
 UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
@@ -4664,11 +4754,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=10c3922aecb67f947b855a486a6690fe): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/ContextMenuTestTimeline_TestAnimator_Merged.anim using Guid(d7c3ad48403c859498f666c6fe696ae9) (NativeFormatImporter) -> (artifact id: '9b886eb375711ec252fbcde82d15abe5') in 0.0009849 seconds
+Asset Pipeline Refresh (id=de3a7787c73312d4c968ae639ef5977b): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/ContextMenuTestTimeline_TestAnimator_Merged.anim using Guid(7a6b9ed584d13dc4793f04f7b8e32b1f) (NativeFormatImporter) -> (artifact id: '53cb481a538345a8059c252c1aa5316e') in 0.000964 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=ccd71d8153a7fbf44982e97f4c493be1): Total: 0.016 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=6eccfdc158b9f96489610e709f676e95): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/ContextMenuTestTimeline_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4728,11 +4818,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=2b99b7a700c229b4a8218a9dfd6d0c84): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/MuteFilterTestTimeline_TestAnimator_Merged.anim using Guid(79b15b2211d0b91489d083046aad6d1e) (NativeFormatImporter) -> (artifact id: '8e7581a842d30a5022d5998ff3889615') in 0.0009905 seconds
+Asset Pipeline Refresh (id=0ef278d64189acf449e128564c01fd28): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/MuteFilterTestTimeline_TestAnimator_Merged.anim using Guid(bf5bcab92fa5c7343856e4a92f0d5614) (NativeFormatImporter) -> (artifact id: '2d9ac0027f36defb80c896d62e2234a8') in 0.0009624 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=6ecc741b94aaec142bba739b5cfb12bd): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=ce0dd59ab98968a409f959653d160794): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MuteFilterTestTimeline_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4791,11 +4881,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=843c63a7538bb704fa9f6b78c0f9ca7a): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/IntegrationTestTimeline_TestAnimator_Merged.anim using Guid(37708114004fabc4fa82b90cbb466aa8) (NativeFormatImporter) -> (artifact id: 'e4d35b0c67945562e21d29eec6c85780') in 0.0009864 seconds
+Asset Pipeline Refresh (id=025abc2b5f4a42f4a84e5ac1ccd594c9): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/IntegrationTestTimeline_TestAnimator_Merged.anim using Guid(f06f9970492e8644b8aff2445ee5bf2d) (NativeFormatImporter) -> (artifact id: '5a1301cfba077d5cebbcf3a21a274d78') in 0.0009905 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=acc54b74496f80f4f9354affa98b0322): Total: 0.014 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=b1ff43128526ddd43b9ae8ca518b54c3): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/IntegrationTestTimeline_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4854,11 +4944,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=aafaaf10cdb009d469ec43090307bf89): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/TimelineAssetTestTimeline_NoAnimator_Merged.anim using Guid(1596278293c43b54085b73cdc71af102) (NativeFormatImporter) -> (artifact id: 'cad3e0d76577a1edb120190208917697') in 0.0009484 seconds
+Asset Pipeline Refresh (id=4c57967bf1f23ea47ad98ea6c3b1b475): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/TimelineAssetTestTimeline_NoAnimator_Merged.anim using Guid(adbaf2d7e929dd64f9635d67884b4723) (NativeFormatImporter) -> (artifact id: '17b647115ee7388e1fd35bd0194c1437') in 0.0010113 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=eb4e467e88c0de04b8275d1d4be473a6): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=53864f81a1ceb984298ed44cd7aa76a7): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/TimelineAssetTestTimeline_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4917,11 +5007,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=91d9030be6d1a6944aea4baf71a22d4b): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/EmptyTrackTestTimeline_NoAnimator_Merged.anim using Guid(e31ad8feaedb18644b58fc4d7ceb5e97) (NativeFormatImporter) -> (artifact id: 'bf2b78a10dd414cd7e4da4a3d1edb019') in 0.0010514 seconds
+Asset Pipeline Refresh (id=adbb2a0d659b5f24485e2fadf5aefe80): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/EmptyTrackTestTimeline_NoAnimator_Merged.anim using Guid(7b2e93f1341f5464f88a14f9444ff038) (NativeFormatImporter) -> (artifact id: '7b26acdde14fc65881b46c814fa0e6cd') in 0.0009495 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=4dfb9891a4d660b47b3aa282fc8bb10c): Total: 0.019 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=486bcbf901fe00c41ad1404cd013cb2d): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/EmptyTrackTestTimeline_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -4980,7 +5070,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=72c5c9d3d1450d2419b6446961dcc904): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=3c57969bf10fe734fbc7b8926a9df559): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [AnimationMergeTool] トラック "UnboundTrack" にAnimatorがバインドされていません。
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -5088,10 +5178,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Application/AnimationMergeService.cs Line: 71)
 
-Start importing Assets/FrameRateTestTimeline_NoAnimator_Merged.anim using Guid(434ef6171ce3651479d1f48c4dc81bb7) (NativeFormatImporter) -> (artifact id: '6fc6393a5f594673593aa8582dae9294') in 0.0010677 seconds
+Start importing Assets/FrameRateTestTimeline_NoAnimator_Merged.anim using Guid(676a8b864fd5a7843b64235b8d0266a2) (NativeFormatImporter) -> (artifact id: '6ecc9f1c6ab9c6f09a2b6bb1c2ad3faf') in 0.0011476 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=f104b738d27d6cc44a36e9617b059930): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=255932b758f91e745a8c8c9f06c7fab7): Total: 0.014 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/FrameRateTestTimeline_NoAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -5150,7 +5240,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=e8ededecb0b73e642bffb4078a0ed056): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=10bd75d2f0ce3b346ad16aa25a7a5704): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [AnimationMergeTool] 有効なAnimationTrackが見つかりません。
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -5204,10 +5294,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Application/AnimationMergeService.cs Line: 117)
 
-Start importing Assets/MultiAnimatorTestTimeline_AnimatorA_Merged.anim using Guid(4d1c71bfaad34744390d16a07217e921) (NativeFormatImporter) -> (artifact id: 'e50ac888eba7222ea10aabbaa72eedde') in 0.0010139 seconds
+Start importing Assets/MultiAnimatorTestTimeline_AnimatorA_Merged.anim using Guid(baa550a12c529e7428d02d20b3aa45c1) (NativeFormatImporter) -> (artifact id: '1d987d200505c80f53a3a3dbf22e1231') in 0.0010145 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=7f21d25a24ebbc147a2c03e7171f2ddb): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=4d6927875a1a54a4789db0fa2f456500): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MultiAnimatorTestTimeline_AnimatorA_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -5264,10 +5354,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-Start importing Assets/MultiAnimatorTestTimeline_AnimatorB_Merged.anim using Guid(3cc11d8d2833b0b4bbaa78ab8cc62f52) (NativeFormatImporter) -> (artifact id: 'c96c3123f82d4c0c11f2f7495f19accd') in 0.0009847 seconds
+Start importing Assets/MultiAnimatorTestTimeline_AnimatorB_Merged.anim using Guid(cc2d201d35f708c4cbd4566200467cef) (NativeFormatImporter) -> (artifact id: 'f4178f2ff7fa151a7793fb8ec0d82453') in 0.001131 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=389d83222d144464a925ce9bde9fae8d): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=0d873e7c68048e84e8d742bd753ae238): Total: 0.011 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MultiAnimatorTestTimeline_AnimatorB_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -5326,14 +5416,14 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=93cbc61a32b101246b496e2c9c4a2524): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=0b75072684ee7004ea2f9ddb63a08ec0): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=0c2f2bed2738847468af79c1a577b08d): Total: 0.005 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/MultiSelect1_TestAnimator1_Merged.anim using Guid(9b7d8687ffa0bce459d299fcc60e9fad) (NativeFormatImporter) -> (artifact id: 'cdc02f54aa5e30429203b535c865e1da') in 0.0009613 seconds
+Asset Pipeline Refresh (id=8b0fde422cf9f6445bbdb3ee3279d08c): Total: 0.005 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/MultiSelect1_TestAnimator1_Merged.anim using Guid(808cd444484b9a7479f729e78fc799c0) (NativeFormatImporter) -> (artifact id: '31a16a9a61c57ef00875d98f0e5e6ca0') in 0.0010382 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=28ef4ae9affd6af44ab476002f6e3882): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=e44cc87a9391d704b8e8afe03e52479e): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MultiSelect1_TestAnimator1_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -5391,10 +5481,10 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Infrastructure/AnimationClipExporter.cs Line: 191)
 
-Start importing Assets/MultiSelect2_TestAnimator2_Merged.anim using Guid(bb443aedb497c6d40a8f3bb9a00cfc4a) (NativeFormatImporter) -> (artifact id: '805ce3c23e305e5995025c6c85c3b4f0') in 0.0010699 seconds
+Start importing Assets/MultiSelect2_TestAnimator2_Merged.anim using Guid(958f58f8f34b0ae478c1a12c215b3761) (NativeFormatImporter) -> (artifact id: 'd654e73acb92df3b962b180701808fd5') in 0.0009575 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=5689c18234376044e804dbbc5a1a0483): Total: 0.010 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=d6a18ee01e72e294ea19ed1a9f0414fd): Total: 0.010 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/MultiSelect2_TestAnimator2_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -5454,14 +5544,14 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=220b3cc4fb64c4d4fa52a7fe37265d7f): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=ccd5885ca1b77654085494de74ea41b2): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=88f47282df30e0b47aabb065c8bdd8bf): Total: 0.006 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/OverrideTestTimeline_TestAnimator_Merged.anim using Guid(2f6147e039422b640be219c823136915) (NativeFormatImporter) -> (artifact id: '90e44f8f25385313f72cca6789d35967') in 0.0009961 seconds
+Asset Pipeline Refresh (id=905fb99af159f1946b5feebd570c254e): Total: 0.006 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/OverrideTestTimeline_TestAnimator_Merged.anim using Guid(67b3efdde9e32f840997d3202e494926) (NativeFormatImporter) -> (artifact id: '38bd274e1f11b39f710ff1ad70cf25c8') in 0.0010421 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=3792be6e247069c4ca46e2d9b3fadf09): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=2a356898993508e44a6af72b5499dc62): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 AnimationClipを保存しました: Assets/OverrideTestTimeline_TestAnimator_Merged.anim
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -5520,7 +5610,7 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=9636c42f4d25ceb40b1b69749bfb3c9e): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=6f03fb00791cf7a49a07c3c46cfd6af0): Total: 0.004 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 DisplayProgressbar: Animation Merge Tool
 [Animation Merge Tool] 
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
@@ -6264,11 +6354,11 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Packages/AnimationMergeToolForTimeline/Scripts/Editor/Domain/TrackAnalyzer.cs Line: 116)
 
-Saving results to: D:/Personal/Repositries/AnimationMergeToolForTimeline/TestResults.xml
+Saving results to: D:\Personal\Repositries\AnimationMergeToolForTimeline\TestResults.xml
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 1 unused Assets / (0.8 KB). Loaded Objects now: 1828.
+Unloading 3 unused Assets / (1.9 KB). Loaded Objects now: 1838.
 Memory consumption went from 94.6 MB to 94.6 MB.
-Total: 5.066600 ms (FindLiveObjects: 0.049700 ms CreateObjectMapping: 0.014500 ms MarkObjects: 4.989000 ms  DeleteObjects: 0.012900 ms)
+Total: 5.376300 ms (FindLiveObjects: 0.051100 ms CreateObjectMapping: 0.015400 ms MarkObjects: 5.291400 ms  DeleteObjects: 0.017700 ms)
 
 DisplayProgressbar: Undo
 Test run completed. Exiting with code 0 (Ok). Run completed.
@@ -6293,8 +6383,17 @@ Input System module state changed to: Shutdown.
 [Licensing::IpcConnector] LicenseClient-Hidano channel disconnected successfully.
 AcceleratorClientConnectionCallback - disconnected - :0
 Cleanup mono
-02:57:55.675 |V| RiderPlugin                    | :1                             | AppDomain.CurrentDomain.DomainUnload lifetimeDefinition.Terminate
+03:25:33.595 |V| RiderPlugin                    | :1                             | AppDomain.CurrentDomain.DomainUnload lifetimeDefinition.Terminate
+abort_threads: Failed aborting id: 0000000000085DC4, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000085D10, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000085DC4, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000085D10, mono_thread_manage will ignore it
+
+debugger-agent: Unable to listen on 4360
 Checking for leaked weakptr:
   Found no leaked weakptrs.
 [Package Manager] Server process was shutdown
-##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1769450275757,"processId":548148,"allocatedMemory":10413787,"memoryLabels":[{"Default":14269},{"Permanent":15356},{"NewDelete":70561},{"Thread":4230344},{"Manager":37754},{"VertexData":8},{"Geometry":816},{"VFX":-104},{"Texture":296},{"Shader":78795},{"Material":24},{"GfxDevice":55176},{"Animation":392},{"Audio":4040},{"FontEngine":256},{"Physics":2081},{"Serialization":880},{"Input":14824},{"JobScheduler":33024},{"TextLib":160},{"Mono":32},{"ScriptingNativeRuntime":155060},{"BaseObject":1620112},{"Resource":1304},{"Renderer":2928},{"Transform":4646},{"File":1016},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":9709},{"DynamicArray":87226},{"HashMap":81866},{"Utility":2662798},{"Curl":48},{"PoolAlloc":1768},{"AI":104},{"TypeTree":5005},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7888},{"Director":8240},{"WebRequest":808},{"VR":45969},{"SceneManager":496},{"Video":208},{"LazyScriptCache":32},{"Camera":17},{"Secure":1},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":256},{"Hierarchy":272},{"Gui":80},{"EditorUtility":54031},{"VersionControl":4},{"Undo":947},{"AssetDatabase":700599},{"EditorGi":328},{"UnityConnect":24208},{"Upm":2036},{"DrivenProperties":72},{"LocalIPC":212},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2593},{"Licensing":664},{"AssetReference":32},{"IPCStream":32}]}
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1769451933672,"processId":12424,"allocatedMemory":10422030,"memoryLabels":[{"Default":14269},{"Permanent":15356},{"NewDelete":70561},{"Thread":4230344},{"Manager":37778},{"VertexData":8},{"Geometry":816},{"VFX":-104},{"Texture":296},{"Shader":78795},{"Material":24},{"GfxDevice":55176},{"Animation":392},{"Audio":4040},{"FontEngine":256},{"Physics":2081},{"Serialization":880},{"Input":14824},{"JobScheduler":33024},{"TextLib":160},{"Mono":32},{"ScriptingNativeRuntime":155060},{"BaseObject":1620112},{"Resource":1304},{"Renderer":2928},{"Transform":4646},{"File":1016},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":9747},{"DynamicArray":95126},{"HashMap":81866},{"Utility":2662798},{"Curl":48},{"PoolAlloc":1768},{"AI":104},{"TypeTree":5005},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7888},{"Director":8240},{"WebRequest":808},{"VR":45969},{"SceneManager":496},{"Video":208},{"LazyScriptCache":32},{"Camera":17},{"Secure":1},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":256},{"Hierarchy":272},{"Gui":80},{"EditorUtility":54312},{"VersionControl":4},{"Undo":947},{"AssetDatabase":700599},{"EditorGi":328},{"UnityConnect":24208},{"Upm":2036},{"DrivenProperties":72},{"LocalIPC":212},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2593},{"Licensing":664},{"AssetReference":32},{"IPCStream":32}]}

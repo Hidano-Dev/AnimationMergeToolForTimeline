@@ -4,7 +4,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
 {
     /// <summary>
     /// HumanoidアニメーションをGeneric形式に変換するクラス
-    /// タスク P14-003: ボーン名→Transformパス変換のスタブ実装
+    /// タスク P14-004: ボーン名→Transformパス変換の実装
     /// </summary>
     public class HumanoidToGenericConverter
     {
