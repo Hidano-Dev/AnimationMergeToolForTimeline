@@ -417,7 +417,7 @@ namespace AnimationMergeTool.Editor.Domain
 
         /// <summary>
         /// トラックを再帰的に収集する
-        /// GroupTrackの場合は子トラックを再帰的に処理する
+        /// GroupTrackおよびAnimationTrack（OverrideTrack）の子トラックを再帰的に処理する
         /// </summary>
         /// <param name="track">処理するトラック</param>
         /// <param name="result">結果を格納するリスト</param>
@@ -434,13 +434,11 @@ namespace AnimationMergeTool.Editor.Domain
                 result.Add(track);
             }
 
-            // GroupTrackの場合は子トラックを再帰的に処理
-            if (track is GroupTrack groupTrack)
+            // すべてのトラックの子トラックを再帰的に処理
+            // （GroupTrackの子トラック、およびAnimationTrackのOverrideTrackを含む）
+            foreach (var childTrack in track.GetChildTracks())
             {
-                foreach (var childTrack in groupTrack.GetChildTracks())
-                {
-                    CollectTracksRecursively(childTrack, result);
-                }
+                CollectTracksRecursively(childTrack, result);
             }
         }
     }

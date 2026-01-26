@@ -146,8 +146,12 @@ namespace AnimationMergeTool.Editor.Application
                     continue;
                 }
 
+                // バインディング取得対象のトラックを決定
+                // OverrideTrack（親がAnimationTrack）の場合は親トラックからバインディングを取得
+                var bindingSourceTrack = GetBindingSourceTrack(trackInfo.Track);
+
                 // PlayableDirectorからトラックにバインドされているAnimatorを取得
-                var binding = director.GetGenericBinding(trackInfo.Track);
+                var binding = director.GetGenericBinding(bindingSourceTrack);
                 var animator = binding as Animator;
 
                 if (animator == null)
@@ -167,6 +171,29 @@ namespace AnimationMergeTool.Editor.Application
             }
 
             return bindings;
+        }
+
+        /// <summary>
+        /// バインディング取得元のトラックを取得する
+        /// OverrideTrack（親がAnimationTrack）の場合はルートの親AnimationTrackを返す
+        /// </summary>
+        /// <param name="track">対象のトラック</param>
+        /// <returns>バインディング取得元のトラック</returns>
+        private TrackAsset GetBindingSourceTrack(TrackAsset track)
+        {
+            if (track == null)
+            {
+                return null;
+            }
+
+            // 親トラックを辿ってルートのAnimationTrackを探す
+            var current = track;
+            while (current.parent is AnimationTrack parentAnimationTrack)
+            {
+                current = parentAnimationTrack;
+            }
+
+            return current;
         }
 
         /// <summary>
