@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEditor;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
@@ -47,6 +48,9 @@ namespace AnimationMergeTool.Editor.Tests
         [Test]
         public void MergeFromPlayableDirector_PlayableDirectorがnullの場合空のリストを返す()
         {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] PlayableDirectorがnullです。");
+
             // Act
             var results = _service.MergeFromPlayableDirector(null);
 
@@ -62,6 +66,7 @@ namespace AnimationMergeTool.Editor.Tests
             var go = new GameObject("TestDirector");
             var director = go.AddComponent<PlayableDirector>();
             director.playableAsset = null;
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] PlayableDirectorにTimelineAssetが設定されていません。");
 
             try
             {
@@ -88,6 +93,8 @@ namespace AnimationMergeTool.Editor.Tests
             var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
             director.playableAsset = timeline;
             // Animatorをバインドしない
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] トラック \"TestTrack\" にAnimatorがバインドされていません。");
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] バインドされたAnimatorが見つかりません。");
 
             try
             {
@@ -252,6 +259,9 @@ namespace AnimationMergeTool.Editor.Tests
         [Test]
         public void MergeFromTimelineAsset_TimelineAssetがnullの場合空のリストを返す()
         {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] TimelineAssetがnullです。");
+
             // Act
             var results = _service.MergeFromTimelineAsset(null);
 
@@ -265,6 +275,7 @@ namespace AnimationMergeTool.Editor.Tests
         {
             // Arrange
             var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 有効なAnimationTrackが見つかりません。");
 
             try
             {
@@ -349,6 +360,8 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.start = 0;
             timelineClip.duration = 1;
             (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 有効なAnimationTrackが見つかりません。");
 
             try
             {
@@ -792,6 +805,10 @@ namespace AnimationMergeTool.Editor.Tests
             director.playableAsset = timeline;
             // Animatorをバインドしない → 有効なトラックが0件になる
 
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] トラック \"UnboundTrack\" にAnimatorがバインドされていません。");
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] バインドされたAnimatorが見つかりません。");
+
             try
             {
                 // Act
@@ -846,6 +863,9 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.duration = 1;
             (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
 
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 有効なAnimationTrackが見つかりません。");
+
             try
             {
                 // Act
@@ -888,6 +908,9 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
             // AnimationTrackを追加しない（空のTimeline）
+
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 有効なAnimationTrackが見つかりません。");
 
             try
             {
@@ -1009,6 +1032,9 @@ namespace AnimationMergeTool.Editor.Tests
             timeline.name = "EmptyTimelineForDirector";
             director.playableAsset = timeline;
             // トラックが一切ないTimelineAssetをバインド
+
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] バインドされたAnimatorが見つかりません。");
 
             try
             {

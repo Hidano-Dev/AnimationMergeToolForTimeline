@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEditor;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
@@ -654,6 +655,9 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange: トラックのないTimelineAsset
             var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
             timeline.name = "EmptyTimeline";
+
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 有効なAnimationTrackが見つかりません。");
 
             try
             {

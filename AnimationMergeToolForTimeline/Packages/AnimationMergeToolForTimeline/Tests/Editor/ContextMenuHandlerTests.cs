@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using AnimationMergeTool.Editor.UI;
@@ -139,6 +140,9 @@ namespace AnimationMergeTool.Editor.Tests
         [Test]
         public void ExecuteForPlayableDirectors_nullの場合falseを返す()
         {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 処理対象のPlayableDirectorがありません。");
+
             // Act
             var result = ContextMenuHandler.ExecuteForPlayableDirectors(null);
 
@@ -149,6 +153,9 @@ namespace AnimationMergeTool.Editor.Tests
         [Test]
         public void ExecuteForPlayableDirectors_空配列の場合falseを返す()
         {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 処理対象のPlayableDirectorがありません。");
+
             // Act
             var result = ContextMenuHandler.ExecuteForPlayableDirectors(new PlayableDirector[0]);
 
@@ -295,6 +302,9 @@ namespace AnimationMergeTool.Editor.Tests
         [Test]
         public void ExecuteForTimelineAssets_nullの場合falseを返す()
         {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 処理対象のTimelineAssetがありません。");
+
             // Act
             var result = ContextMenuHandler.ExecuteForTimelineAssets(null);
 
@@ -305,6 +315,9 @@ namespace AnimationMergeTool.Editor.Tests
         [Test]
         public void ExecuteForTimelineAssets_空配列の場合falseを返す()
         {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] 処理対象のTimelineAssetがありません。");
+
             // Act
             var result = ContextMenuHandler.ExecuteForTimelineAssets(new TimelineAsset[0]);
 

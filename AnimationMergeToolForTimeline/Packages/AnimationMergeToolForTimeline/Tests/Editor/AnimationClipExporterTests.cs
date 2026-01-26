@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEditor;
 using AnimationMergeTool.Editor.Domain;
 using AnimationMergeTool.Editor.Domain.Models;
@@ -48,6 +49,7 @@ namespace AnimationMergeTool.Editor.Tests
         {
             // Arrange
             var curveBindingPairs = CreateTestCurveBindingPairs();
+            LogAssert.Expect(LogType.Error, "MergeResultがnullです。");
 
             // Act
             var clip = _exporter.CreateAnimationClip(null, curveBindingPairs, 60f);
@@ -261,6 +263,9 @@ namespace AnimationMergeTool.Editor.Tests
         [Test]
         public void CreateAnimationClip_MergeResult不要版_カーブリストがnullの場合nullを返す()
         {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "カーブデータが空のためAnimationClipを生成できません。");
+
             // Act
             var clip = _exporter.CreateAnimationClip((List<CurveBindingPair>)null, 60f);
 
@@ -273,6 +278,7 @@ namespace AnimationMergeTool.Editor.Tests
         {
             // Arrange
             var curveBindingPairs = new List<CurveBindingPair>();
+            LogAssert.Expect(LogType.Error, "カーブデータが空のためAnimationClipを生成できません。");
 
             // Act
             var clip = _exporter.CreateAnimationClip(curveBindingPairs, 60f);
@@ -349,6 +355,9 @@ namespace AnimationMergeTool.Editor.Tests
         [Test]
         public void SaveAsAsset_clipがnullの場合nullを返す()
         {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "保存するAnimationClipがnullです。");
+
             // Act
             var savedPath = _exporter.SaveAsAsset(null, "TestTimeline", "TestAnimator", "Assets");
 
@@ -362,6 +371,7 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             var curveBindingPairs = CreateTestCurveBindingPairs();
             var clip = _exporter.CreateAnimationClip(curveBindingPairs, 60f);
+            LogAssert.Expect(LogType.Error, "保存先ディレクトリが存在しません: Assets/NonExistentFolder12345");
 
             // Act
             var savedPath = _exporter.SaveAsAsset(clip, "TestTimeline", "TestAnimator", "Assets/NonExistentFolder12345");
@@ -480,6 +490,7 @@ namespace AnimationMergeTool.Editor.Tests
             // Arrange
             var mergeResult = new MergeResult(null);
             var curveBindingPairs = CreateTestCurveBindingPairs();
+            LogAssert.Expect(LogType.Error, "保存先ディレクトリが存在しません: Assets/NonExistentFolder12345");
 
             // Act
             var savedPath = _exporter.ExportToAsset(mergeResult, curveBindingPairs, "TestTimeline", "TestAnimator", 60f, "Assets/NonExistentFolder12345");

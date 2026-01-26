@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.Timeline;
 using AnimationMergeTool.Editor.Domain;
 using AnimationMergeTool.Editor.Domain.Models;
@@ -380,6 +381,10 @@ namespace AnimationMergeTool.Editor.Tests
 
             var analyzer = new TrackAnalyzer(_timelineAsset);
 
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] トラック \"Track 1\" にAnimatorがバインドされていません。");
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] トラック \"Track 2\" にAnimatorがバインドされていません。");
+
             // Act
             var result = analyzer.DetectUnboundTracks(tracks);
 
@@ -405,6 +410,9 @@ namespace AnimationMergeTool.Editor.Tests
             };
 
             var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] トラック \"Track 2\" にAnimatorがバインドされていません。");
 
             // Act
             var result = analyzer.DetectUnboundTracks(tracks);
@@ -459,6 +467,9 @@ namespace AnimationMergeTool.Editor.Tests
             };
 
             var analyzer = new TrackAnalyzer(_timelineAsset);
+
+            // エラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] トラック \"Track 1\" にAnimatorがバインドされていません。");
 
             // Act
             var result = analyzer.DetectUnboundTracks(tracks);
