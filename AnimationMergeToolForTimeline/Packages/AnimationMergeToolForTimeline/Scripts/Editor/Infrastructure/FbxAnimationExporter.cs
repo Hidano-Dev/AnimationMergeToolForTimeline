@@ -15,6 +15,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
     public class FbxAnimationExporter
     {
         private readonly SkeletonExtractor _skeletonExtractor;
+        private readonly HumanoidToGenericConverter _humanoidConverter;
 
         /// <summary>
         /// デフォルトコンストラクタ
@@ -22,6 +23,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
         public FbxAnimationExporter()
         {
             _skeletonExtractor = new SkeletonExtractor();
+            _humanoidConverter = new HumanoidToGenericConverter();
         }
 
         /// <summary>
@@ -31,6 +33,18 @@ namespace AnimationMergeTool.Editor.Infrastructure
         public FbxAnimationExporter(SkeletonExtractor skeletonExtractor)
         {
             _skeletonExtractor = skeletonExtractor ?? new SkeletonExtractor();
+            _humanoidConverter = new HumanoidToGenericConverter();
+        }
+
+        /// <summary>
+        /// SkeletonExtractorとHumanoidToGenericConverterを指定するコンストラクタ（テスト用）
+        /// </summary>
+        /// <param name="skeletonExtractor">スケルトン抽出器</param>
+        /// <param name="humanoidConverter">Humanoid→Generic変換器</param>
+        public FbxAnimationExporter(SkeletonExtractor skeletonExtractor, HumanoidToGenericConverter humanoidConverter)
+        {
+            _skeletonExtractor = skeletonExtractor ?? new SkeletonExtractor();
+            _humanoidConverter = humanoidConverter ?? new HumanoidToGenericConverter();
         }
 
         /// <summary>
@@ -485,6 +499,178 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 transformCurves ?? new List<TransformCurveData>(),
                 new List<BlendShapeCurveData>(),
                 isHumanoid);
+        }
+
+        #endregion
+
+        #region Humanoid→Generic変換統合 (P14-009)
+
+        /// <summary>
+        /// HumanoidアニメーションをGeneric形式に変換してFBXエクスポート用データを準備する
+        /// タスク P14-009: FbxAnimationExporterとの統合
+        /// </summary>
+        /// <param name="animator">対象のAnimator（Humanoidリグ）</param>
+        /// <param name="humanoidClip">変換元のHumanoidアニメーションクリップ</param>
+        /// <returns>エクスポート用に変換されたFbxExportData</returns>
+        public FbxExportData PrepareHumanoidForExport(Animator animator, AnimationClip humanoidClip)
+        {
+            if (animator == null || humanoidClip == null)
+            {
+                return new FbxExportData(
+                    animator,
+                    humanoidClip,
+                    null,
+                    new List<TransformCurveData>(),
+                    new List<BlendShapeCurveData>(),
+                    false);
+            }
+
+            // スケルトンを抽出
+            var skeleton = ExtractSkeleton(animator);
+            bool isHumanoid = animator.isHuman;
+
+            // Transformカーブのリストを準備
+            var transformCurves = new List<TransformCurveData>();
+
+            // Humanoidアニメーションの場合、マッスルカーブをRotationカーブに変換
+            if (isHumanoid && _humanoidConverter.IsHumanoidClip(humanoidClip))
+            {
+                // マッスルカーブを変換
+                var muscleCurves = _humanoidConverter.ConvertMuscleCurvesToRotation(animator, humanoidClip);
+                transformCurves.AddRange(muscleCurves);
+
+                // ルートモーションカーブを変換
+                string rootBonePath = GetRootBonePath(animator);
+                var rootMotionCurves = _humanoidConverter.ConvertRootMotionCurves(humanoidClip, rootBonePath);
+                transformCurves.AddRange(rootMotionCurves);
+            }
+            else
+            {
+                // 非Humanoidの場合は通常のTransformカーブ抽出
+                transformCurves = ExtractTransformCurves(humanoidClip, animator);
+            }
+
+            return new FbxExportData(
+                animator,
+                humanoidClip,
+                skeleton,
+                transformCurves,
+                new List<BlendShapeCurveData>(),
+                isHumanoid);
+        }
+
+        /// <summary>
+        /// AnimatorがHumanoidリグかどうかを確認する
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <returns>Humanoidリグの場合true</returns>
+        public bool IsHumanoidAnimator(Animator animator)
+        {
+            return animator != null && animator.isHuman;
+        }
+
+        /// <summary>
+        /// AnimationClipがHumanoid形式かどうかを確認する
+        /// </summary>
+        /// <param name="clip">対象のAnimationClip</param>
+        /// <returns>Humanoid形式の場合true</returns>
+        public bool IsHumanoidClip(AnimationClip clip)
+        {
+            return _humanoidConverter.IsHumanoidClip(clip);
+        }
+
+        /// <summary>
+        /// HumanoidアニメーションをGenericカーブに変換する
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="humanoidClip">変換元のAnimationClip</param>
+        /// <returns>変換されたTransformカーブのリスト</returns>
+        public List<TransformCurveData> ConvertHumanoidToGenericCurves(Animator animator, AnimationClip humanoidClip)
+        {
+            var result = new List<TransformCurveData>();
+
+            if (animator == null || humanoidClip == null)
+            {
+                return result;
+            }
+
+            if (!animator.isHuman)
+            {
+                return result;
+            }
+
+            // マッスルカーブを変換
+            var muscleCurves = _humanoidConverter.ConvertMuscleCurvesToRotation(animator, humanoidClip);
+            result.AddRange(muscleCurves);
+
+            // ルートモーションカーブを変換
+            string rootBonePath = GetRootBonePath(animator);
+            var rootMotionCurves = _humanoidConverter.ConvertRootMotionCurves(humanoidClip, rootBonePath);
+            result.AddRange(rootMotionCurves);
+
+            return result;
+        }
+
+        /// <summary>
+        /// HumanoidアニメーションをFBXにエクスポートする
+        /// </summary>
+        /// <param name="animator">対象のAnimator（Humanoidリグ）</param>
+        /// <param name="humanoidClip">エクスポートするHumanoidアニメーションクリップ</param>
+        /// <param name="outputPath">出力先パス</param>
+        /// <returns>エクスポートが成功した場合true</returns>
+        public bool ExportHumanoidAnimation(Animator animator, AnimationClip humanoidClip, string outputPath)
+        {
+            if (animator == null)
+            {
+                Debug.LogError("Animatorがnullです。");
+                return false;
+            }
+
+            if (humanoidClip == null)
+            {
+                Debug.LogError("AnimationClipがnullです。");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                Debug.LogError("出力パスが指定されていません。");
+                return false;
+            }
+
+            // Humanoid用のエクスポートデータを準備
+            var exportData = PrepareHumanoidForExport(animator, humanoidClip);
+
+            if (!exportData.HasExportableData)
+            {
+                Debug.LogError("エクスポート可能なデータがありません。");
+                return false;
+            }
+
+            // 通常のエクスポート処理を実行
+            return Export(exportData, outputPath);
+        }
+
+        /// <summary>
+        /// ルートボーンのパスを取得する
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <returns>ルートボーンのパス（取得できない場合は空文字）</returns>
+        private string GetRootBonePath(Animator animator)
+        {
+            if (animator == null || !animator.isHuman)
+            {
+                return string.Empty;
+            }
+
+            // Hipsボーンをルートとして使用
+            var hipsTransform = animator.GetBoneTransform(HumanBodyBones.Hips);
+            if (hipsTransform == null)
+            {
+                return string.Empty;
+            }
+
+            return GetBonePath(animator, hipsTransform);
         }
 
         #endregion
