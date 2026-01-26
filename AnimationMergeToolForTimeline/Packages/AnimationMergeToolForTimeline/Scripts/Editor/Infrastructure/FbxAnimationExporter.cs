@@ -262,6 +262,113 @@ namespace AnimationMergeTool.Editor.Infrastructure
         #region Transformカーブ出力機能 (P13-006, P13-007)
 
         /// <summary>
+        /// TransformカーブをFBXにエクスポートする
+        /// タスク P13-007で実装
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="clip">対象のAnimationClip</param>
+        /// <param name="outputPath">出力先パス</param>
+        /// <returns>エクスポートが成功した場合はtrue</returns>
+        public bool ExportTransformCurvesToFbx(Animator animator, AnimationClip clip, string outputPath)
+        {
+            if (clip == null)
+            {
+                Debug.LogError("AnimationClipがnullです。");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                Debug.LogError("出力パスが指定されていません。");
+                return false;
+            }
+
+            // Transformカーブを抽出
+            var transformCurves = ExtractTransformCurves(clip, animator);
+
+            if (transformCurves.Count == 0)
+            {
+                Debug.LogError("エクスポート可能なTransformカーブがありません。");
+                return false;
+            }
+
+            // FbxExportDataを準備
+            var exportData = PrepareTransformCurvesForExport(animator, clip, transformCurves);
+
+            // エクスポート実行
+            return Export(exportData, outputPath);
+        }
+
+        /// <summary>
+        /// TransformカーブデータからAnimationClipを生成する
+        /// タスク P13-007で実装
+        /// </summary>
+        /// <param name="transformCurves">Transformカーブ情報のリスト</param>
+        /// <param name="clipName">生成するAnimationClipの名前</param>
+        /// <returns>生成されたAnimationClip</returns>
+        public AnimationClip CreateAnimationClipFromTransformCurves(
+            List<TransformCurveData> transformCurves,
+            string clipName = "ExportedAnimation")
+        {
+            if (transformCurves == null || transformCurves.Count == 0)
+            {
+                return null;
+            }
+
+            var clip = new AnimationClip();
+            clip.name = clipName;
+
+            foreach (var curveData in transformCurves)
+            {
+                if (curveData.Curve == null)
+                {
+                    continue;
+                }
+
+                // カーブをAnimationClipに設定
+                clip.SetCurve(
+                    curveData.Path,
+                    typeof(Transform),
+                    curveData.PropertyName,
+                    curveData.Curve);
+            }
+
+            return clip;
+        }
+
+        /// <summary>
+        /// TransformカーブデータをFbxExportDataに適用してエクスポートを実行する
+        /// タスク P13-007で実装
+        /// </summary>
+        /// <param name="exportData">エクスポートデータ</param>
+        /// <param name="outputPath">出力先パス</param>
+        /// <returns>エクスポートが成功した場合はtrue</returns>
+        public bool ExportWithTransformCurves(FbxExportData exportData, string outputPath)
+        {
+            if (exportData == null)
+            {
+                Debug.LogError("FbxExportDataがnullです。");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                Debug.LogError("出力パスが指定されていません。");
+                return false;
+            }
+
+            // Transformカーブが存在するか確認
+            if (exportData.TransformCurves == null || exportData.TransformCurves.Count == 0)
+            {
+                Debug.LogError("エクスポート可能なTransformカーブがありません。");
+                return false;
+            }
+
+            // 通常のエクスポート処理を実行
+            return Export(exportData, outputPath);
+        }
+
+        /// <summary>
         /// AnimationClipからTransformカーブを抽出する
         /// タスク P13-006で実装
         /// </summary>
