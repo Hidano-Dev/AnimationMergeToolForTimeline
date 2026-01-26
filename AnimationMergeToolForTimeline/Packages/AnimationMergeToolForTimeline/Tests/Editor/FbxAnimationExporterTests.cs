@@ -611,5 +611,410 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region ExtractTransformCurves テスト (P13-006)
+
+        [Test]
+        public void ExtractTransformCurves_AnimationClipがnullの場合_空のリストを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // Act
+            var result = exporter.ExtractTransformCurves(null, _testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void ExtractTransformCurves_Animatorがnullの場合_空のリストを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // Act
+            var result = exporter.ExtractTransformCurves(_testClip, null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void ExtractTransformCurves_Positionカーブを抽出できる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            clip.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
+            clip.SetCurve("", typeof(Transform), "localPosition.z", AnimationCurve.Linear(0, 0, 1, 3));
+
+            // Act
+            var result = exporter.ExtractTransformCurves(clip, _testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            foreach (var curveData in result)
+            {
+                Assert.AreEqual(TransformCurveType.Position, curveData.CurveType);
+            }
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ExtractTransformCurves_Rotationカーブを抽出できる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0));
+            clip.SetCurve("", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 1, 0));
+            clip.SetCurve("", typeof(Transform), "localRotation.z", AnimationCurve.Linear(0, 0, 1, 0));
+            clip.SetCurve("", typeof(Transform), "localRotation.w", AnimationCurve.Linear(0, 1, 1, 1));
+
+            // Act
+            var result = exporter.ExtractTransformCurves(clip, _testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(4, result.Count);
+            foreach (var curveData in result)
+            {
+                Assert.AreEqual(TransformCurveType.Rotation, curveData.CurveType);
+            }
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ExtractTransformCurves_Scaleカーブを抽出できる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Transform), "localScale.x", AnimationCurve.Linear(0, 1, 1, 2));
+            clip.SetCurve("", typeof(Transform), "localScale.y", AnimationCurve.Linear(0, 1, 1, 2));
+            clip.SetCurve("", typeof(Transform), "localScale.z", AnimationCurve.Linear(0, 1, 1, 2));
+
+            // Act
+            var result = exporter.ExtractTransformCurves(clip, _testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            foreach (var curveData in result)
+            {
+                Assert.AreEqual(TransformCurveType.Scale, curveData.CurveType);
+            }
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ExtractTransformCurves_EulerAnglesカーブを抽出できる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Transform), "localEulerAngles.x", AnimationCurve.Linear(0, 0, 1, 90));
+            clip.SetCurve("", typeof(Transform), "localEulerAngles.y", AnimationCurve.Linear(0, 0, 1, 180));
+            clip.SetCurve("", typeof(Transform), "localEulerAngles.z", AnimationCurve.Linear(0, 0, 1, 270));
+
+            // Act
+            var result = exporter.ExtractTransformCurves(clip, _testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            foreach (var curveData in result)
+            {
+                Assert.AreEqual(TransformCurveType.EulerAngles, curveData.CurveType);
+            }
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ExtractTransformCurves_子オブジェクトのパスを正しく取得できる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var child = new GameObject("Child");
+            child.transform.SetParent(_testGameObject.transform);
+            var grandChild = new GameObject("GrandChild");
+            grandChild.transform.SetParent(child.transform);
+
+            var clip = new AnimationClip();
+            clip.SetCurve("Child/GrandChild", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+
+            // Act
+            var result = exporter.ExtractTransformCurves(clip, _testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Child/GrandChild", result[0].Path);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ExtractTransformCurves_複数のTransformのカーブを抽出できる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var child1 = new GameObject("Bone1");
+            child1.transform.SetParent(_testGameObject.transform);
+            var child2 = new GameObject("Bone2");
+            child2.transform.SetParent(_testGameObject.transform);
+
+            var clip = new AnimationClip();
+            // ルートのPositionカーブ
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            // Bone1のRotationカーブ
+            clip.SetCurve("Bone1", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0));
+            clip.SetCurve("Bone1", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 1, 0));
+            clip.SetCurve("Bone1", typeof(Transform), "localRotation.z", AnimationCurve.Linear(0, 0, 1, 0));
+            clip.SetCurve("Bone1", typeof(Transform), "localRotation.w", AnimationCurve.Linear(0, 1, 1, 1));
+            // Bone2のScaleカーブ
+            clip.SetCurve("Bone2", typeof(Transform), "localScale.x", AnimationCurve.Linear(0, 1, 1, 2));
+
+            // Act
+            var result = exporter.ExtractTransformCurves(clip, _testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(6, result.Count);
+
+            // 各パスのカーブ数を確認
+            int rootCurves = 0;
+            int bone1Curves = 0;
+            int bone2Curves = 0;
+            foreach (var curveData in result)
+            {
+                if (curveData.Path == "") rootCurves++;
+                else if (curveData.Path == "Bone1") bone1Curves++;
+                else if (curveData.Path == "Bone2") bone2Curves++;
+            }
+            Assert.AreEqual(1, rootCurves);
+            Assert.AreEqual(4, bone1Curves);
+            Assert.AreEqual(1, bone2Curves);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ExtractTransformCurves_Transform以外のカーブは含まれない()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            // Transformカーブ
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            // BlendShapeカーブ（除外されるべき）
+            clip.SetCurve("", typeof(SkinnedMeshRenderer), "blendShape.smile", AnimationCurve.Linear(0, 0, 1, 100));
+            // マテリアルカーブ（除外されるべき）
+            clip.SetCurve("", typeof(MeshRenderer), "material._Color.r", AnimationCurve.Linear(0, 0, 1, 1));
+
+            // Act
+            var result = exporter.ExtractTransformCurves(clip, _testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("localPosition.x", result[0].PropertyName);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ExtractTransformCurves_カーブの値が正しく抽出される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            var expectedCurve = new AnimationCurve(
+                new Keyframe(0f, 0f),
+                new Keyframe(0.5f, 5f),
+                new Keyframe(1f, 10f));
+            clip.SetCurve("", typeof(Transform), "localPosition.x", expectedCurve);
+
+            // Act
+            var result = exporter.ExtractTransformCurves(clip, _testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+
+            var extractedCurve = result[0].Curve;
+            Assert.IsNotNull(extractedCurve);
+            Assert.AreEqual(3, extractedCurve.length);
+            Assert.AreEqual(0f, extractedCurve.Evaluate(0f), 0.001f);
+            Assert.AreEqual(5f, extractedCurve.Evaluate(0.5f), 0.001f);
+            Assert.AreEqual(10f, extractedCurve.Evaluate(1f), 0.001f);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        #endregion
+
+        #region PrepareTransformCurvesForExport テスト (P13-006)
+
+        [Test]
+        public void PrepareTransformCurvesForExport_TransformCurveDataリストからFbxExportDataを作成できる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var transformCurves = new List<TransformCurveData>
+            {
+                new TransformCurveData("", "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1), TransformCurveType.Position),
+                new TransformCurveData("", "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2), TransformCurveType.Position),
+                new TransformCurveData("", "localPosition.z", AnimationCurve.Linear(0, 0, 1, 3), TransformCurveType.Position)
+            };
+
+            // Act
+            var exportData = exporter.PrepareTransformCurvesForExport(
+                _testAnimator,
+                _testClip,
+                transformCurves);
+
+            // Assert
+            Assert.IsNotNull(exportData);
+            Assert.AreEqual(_testAnimator, exportData.SourceAnimator);
+            Assert.AreEqual(_testClip, exportData.MergedClip);
+            Assert.AreEqual(3, exportData.TransformCurves.Count);
+            Assert.IsTrue(exportData.HasExportableData);
+        }
+
+        [Test]
+        public void PrepareTransformCurvesForExport_空のリストでもFbxExportDataを作成できる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var transformCurves = new List<TransformCurveData>();
+
+            // Act
+            var exportData = exporter.PrepareTransformCurvesForExport(
+                _testAnimator,
+                _testClip,
+                transformCurves);
+
+            // Assert
+            Assert.IsNotNull(exportData);
+            Assert.AreEqual(0, exportData.TransformCurves.Count);
+            Assert.IsFalse(exportData.HasExportableData);
+        }
+
+        [Test]
+        public void PrepareTransformCurvesForExport_Animatorがnullでも動作する()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var transformCurves = new List<TransformCurveData>
+            {
+                new TransformCurveData("", "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1), TransformCurveType.Position)
+            };
+
+            // Act
+            var exportData = exporter.PrepareTransformCurvesForExport(
+                null,
+                _testClip,
+                transformCurves);
+
+            // Assert
+            Assert.IsNotNull(exportData);
+            Assert.IsNull(exportData.SourceAnimator);
+            Assert.AreEqual(1, exportData.TransformCurves.Count);
+        }
+
+        #endregion
+
+        #region ExportTransformCurves テスト (P13-006)
+
+        [Test]
+        public void ExportTransformCurves_有効なデータでエクスポート処理を呼び出せる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            clip.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
+            clip.SetCurve("", typeof(Transform), "localPosition.z", AnimationCurve.Linear(0, 0, 1, 3));
+
+            // Act
+            var transformCurves = exporter.ExtractTransformCurves(clip, _testAnimator);
+            var exportData = exporter.PrepareTransformCurvesForExport(_testAnimator, clip, transformCurves);
+
+            // Assert
+            Assert.IsTrue(exportData.HasExportableData);
+            Assert.AreEqual(3, exportData.TransformCurves.Count);
+            Assert.IsTrue(exporter.CanExport(exportData));
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ExportTransformCurves_Position_Rotation_Scale複合でエクスポートできる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            // Position
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
+            clip.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
+            clip.SetCurve("", typeof(Transform), "localPosition.z", AnimationCurve.Linear(0, 0, 1, 3));
+            // Rotation
+            clip.SetCurve("", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0));
+            clip.SetCurve("", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 1, 0));
+            clip.SetCurve("", typeof(Transform), "localRotation.z", AnimationCurve.Linear(0, 0, 1, 0));
+            clip.SetCurve("", typeof(Transform), "localRotation.w", AnimationCurve.Linear(0, 1, 1, 1));
+            // Scale
+            clip.SetCurve("", typeof(Transform), "localScale.x", AnimationCurve.Linear(0, 1, 1, 2));
+            clip.SetCurve("", typeof(Transform), "localScale.y", AnimationCurve.Linear(0, 1, 1, 2));
+            clip.SetCurve("", typeof(Transform), "localScale.z", AnimationCurve.Linear(0, 1, 1, 2));
+
+            // Act
+            var transformCurves = exporter.ExtractTransformCurves(clip, _testAnimator);
+            var exportData = exporter.PrepareTransformCurvesForExport(_testAnimator, clip, transformCurves);
+
+            // Assert
+            Assert.AreEqual(10, exportData.TransformCurves.Count);
+
+            // カーブタイプごとの数を確認
+            int positionCount = 0;
+            int rotationCount = 0;
+            int scaleCount = 0;
+            foreach (var curveData in exportData.TransformCurves)
+            {
+                switch (curveData.CurveType)
+                {
+                    case TransformCurveType.Position: positionCount++; break;
+                    case TransformCurveType.Rotation: rotationCount++; break;
+                    case TransformCurveType.Scale: scaleCount++; break;
+                }
+            }
+            Assert.AreEqual(3, positionCount);
+            Assert.AreEqual(4, rotationCount);
+            Assert.AreEqual(3, scaleCount);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        #endregion
     }
 }

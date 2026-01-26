@@ -258,5 +258,128 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
             return tempObject;
         }
+
+        #region Transformカーブ出力機能 (P13-006, P13-007)
+
+        /// <summary>
+        /// AnimationClipからTransformカーブを抽出する
+        /// タスク P13-006で実装
+        /// </summary>
+        /// <param name="clip">対象のAnimationClip</param>
+        /// <param name="animator">対象のAnimator</param>
+        /// <returns>Transformカーブ情報のリスト</returns>
+        public List<TransformCurveData> ExtractTransformCurves(AnimationClip clip, Animator animator)
+        {
+            var result = new List<TransformCurveData>();
+
+            if (clip == null || animator == null)
+            {
+                return result;
+            }
+
+            // AnimationClipからカーブバインディングを取得
+            var bindings = AnimationUtility.GetCurveBindings(clip);
+
+            foreach (var binding in bindings)
+            {
+                // Transform型のカーブのみを抽出
+                if (binding.type != typeof(Transform))
+                {
+                    continue;
+                }
+
+                // カーブを取得
+                var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                if (curve == null)
+                {
+                    continue;
+                }
+
+                // カーブタイプを判定
+                var curveType = DetermineTransformCurveType(binding.propertyName);
+
+                // TransformCurveDataを作成
+                var curveData = new TransformCurveData(
+                    binding.path,
+                    binding.propertyName,
+                    curve,
+                    curveType);
+
+                result.Add(curveData);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// プロパティ名からTransformカーブタイプを判定する
+        /// </summary>
+        /// <param name="propertyName">プロパティ名</param>
+        /// <returns>TransformCurveType</returns>
+        private TransformCurveType DetermineTransformCurveType(string propertyName)
+        {
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                return TransformCurveType.Position;
+            }
+
+            if (propertyName.StartsWith("localPosition") || propertyName.StartsWith("m_LocalPosition"))
+            {
+                return TransformCurveType.Position;
+            }
+
+            if (propertyName.StartsWith("localRotation") || propertyName.StartsWith("m_LocalRotation"))
+            {
+                return TransformCurveType.Rotation;
+            }
+
+            if (propertyName.StartsWith("localScale") || propertyName.StartsWith("m_LocalScale"))
+            {
+                return TransformCurveType.Scale;
+            }
+
+            if (propertyName.StartsWith("localEulerAngles") || propertyName.StartsWith("m_LocalEulerAngles"))
+            {
+                return TransformCurveType.EulerAngles;
+            }
+
+            // デフォルトはPosition
+            return TransformCurveType.Position;
+        }
+
+        /// <summary>
+        /// Transformカーブ情報からFbxExportDataを準備する
+        /// タスク P13-006で実装
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="clip">対象のAnimationClip</param>
+        /// <param name="transformCurves">Transformカーブ情報のリスト</param>
+        /// <returns>FbxExportData</returns>
+        public FbxExportData PrepareTransformCurvesForExport(
+            Animator animator,
+            AnimationClip clip,
+            List<TransformCurveData> transformCurves)
+        {
+            // スケルトンを抽出（Animatorがある場合）
+            SkeletonData skeleton = null;
+            bool isHumanoid = false;
+
+            if (animator != null)
+            {
+                skeleton = ExtractSkeleton(animator);
+                isHumanoid = animator.isHuman;
+            }
+
+            // FbxExportDataを作成
+            return new FbxExportData(
+                animator,
+                clip,
+                skeleton,
+                transformCurves ?? new List<TransformCurveData>(),
+                new List<BlendShapeCurveData>(),
+                isHumanoid);
+        }
+
+        #endregion
     }
 }
