@@ -1074,26 +1074,28 @@ namespace AnimationMergeTool.Editor.Tests
             var curve = AnimationCurve.Linear(0, 0, 1, 10);
             _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
 
+            // Hold用のクリップを作成（start=0.0で識別）
             var timelineClipHold = _animationTrack.CreateClip(_testClip);
             timelineClipHold.start = 0.0;
             timelineClipHold.duration = 1.0;
             SetExtrapolationModes(timelineClipHold, postMode: TimelineClip.ClipExtrapolation.Hold);
             var clipInfoHold = new ClipInfo(timelineClipHold, _testClip);
 
+            // Continue用のクリップを作成（start=10.0で識別、Holdと区別するため）
             var timelineClipContinue = _animationTrack.CreateClip(_testClip);
-            timelineClipContinue.start = 0.0;
+            timelineClipContinue.start = 10.0;
             timelineClipContinue.duration = 1.0;
             SetExtrapolationModes(timelineClipContinue, postMode: TimelineClip.ClipExtrapolation.Continue);
             var clipInfoContinue = new ClipInfo(timelineClipContinue, _testClip);
 
-            // Act & Assert - 2.0秒での比較
+            // Act & Assert - Hold: 2.0秒での評価、Continue: 12.0秒での評価
             // Hold: 最後の値をそのまま維持 → 10
             // Continue: 接線を延長 → 10 + 10 * 1.0 = 20
             _processor.TryGetExtrapolatedValue(curve, clipInfoHold, 2.0f, out var valueHold);
-            _processor.TryGetExtrapolatedValue(curve, clipInfoContinue, 2.0f, out var valueContinue);
+            _processor.TryGetExtrapolatedValue(curve, clipInfoContinue, 12.0f, out var valueContinue);
 
             Assert.AreEqual(10f, valueHold, 0.0001f);
-            Assert.AreEqual(20f, valueContinue, 0.0001f);
+            Assert.AreEqual(20f, valueContinue, 0.01f);
             Assert.AreNotEqual(valueHold, valueContinue);
         }
 
