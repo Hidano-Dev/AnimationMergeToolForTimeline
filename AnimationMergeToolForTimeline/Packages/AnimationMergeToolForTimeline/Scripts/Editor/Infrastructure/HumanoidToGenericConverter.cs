@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using AnimationMergeTool.Editor.Domain.Models;
 using UnityEngine;
@@ -65,12 +66,11 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
         /// <summary>
         /// マッスルカーブをRotationカーブに変換する
-        /// タスク P14-005: テスト作成のためのスタブメソッド
-        /// タスク P14-006: 実装予定
+        /// タスク P14-006: マッスルカーブ→Rotation変換の実装
         /// </summary>
         /// <param name="animator">対象のAnimator</param>
         /// <param name="humanoidClip">変換元のAnimationClip</param>
-        /// <returns>変換されたRotationカーブのリスト（現在は空のリスト）</returns>
+        /// <returns>変換されたRotationカーブのリスト</returns>
         public List<TransformCurveData> ConvertMuscleCurvesToRotation(
             Animator animator,
             AnimationClip humanoidClip)
@@ -89,12 +89,111 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 return result;
             }
 
-            // P14-006で実装予定：
-            // - 各フレームをサンプリング
-            // - 各ボーンの回転を取得
-            // - Rotationカーブを生成
+            // フレームレートを取得（0以下の場合はデフォルト60fps）
+            float frameRate = humanoidClip.frameRate;
+            if (frameRate <= 0)
+            {
+                frameRate = 60f;
+            }
+
+            float duration = humanoidClip.length;
+            float sampleInterval = 1.0f / frameRate;
+
+            // 非常に短いクリップの場合
+            if (duration <= 0)
+            {
+                return result;
+            }
+
+            // 各ボーンのカーブを準備
+            var boneRotationCurves = new Dictionary<HumanBodyBones, RotationCurveSet>();
+
+            // 有効なボーンを列挙
+            foreach (HumanBodyBones bone in Enum.GetValues(typeof(HumanBodyBones)))
+            {
+                if (bone == HumanBodyBones.LastBone)
+                {
+                    continue;
+                }
+
+                Transform boneTransform = animator.GetBoneTransform(bone);
+                if (boneTransform == null)
+                {
+                    continue;
+                }
+
+                boneRotationCurves[bone] = new RotationCurveSet();
+            }
+
+            // 各フレームをサンプリング
+            for (float time = 0; time <= duration + sampleInterval * 0.5f; time += sampleInterval)
+            {
+                // 最終フレームを超えないようにクランプ
+                float sampleTime = Mathf.Min(time, duration);
+
+                // クリップをサンプリング
+                humanoidClip.SampleAnimation(animator.gameObject, sampleTime);
+
+                // 各ボーンの回転を記録
+                foreach (var kvp in boneRotationCurves)
+                {
+                    Transform boneTransform = animator.GetBoneTransform(kvp.Key);
+                    if (boneTransform == null)
+                    {
+                        continue;
+                    }
+
+                    Quaternion rotation = boneTransform.localRotation;
+                    kvp.Value.AddKey(sampleTime, rotation);
+                }
+            }
+
+            // カーブをTransformCurveDataに変換
+            foreach (var kvp in boneRotationCurves)
+            {
+                string path = GetTransformPath(animator, kvp.Key);
+                if (string.IsNullOrEmpty(path) && kvp.Key != HumanBodyBones.Hips)
+                {
+                    // Hips以外でパスが空の場合はスキップ
+                    // Hipsはルート直下の場合があり空パスになり得る
+                    continue;
+                }
+
+                var curves = kvp.Value.ToTransformCurveDataList(path ?? string.Empty);
+                result.AddRange(curves);
+            }
 
             return result;
+        }
+
+        /// <summary>
+        /// Quaternionカーブを管理する内部クラス
+        /// </summary>
+        private class RotationCurveSet
+        {
+            public AnimationCurve X { get; } = new AnimationCurve();
+            public AnimationCurve Y { get; } = new AnimationCurve();
+            public AnimationCurve Z { get; } = new AnimationCurve();
+            public AnimationCurve W { get; } = new AnimationCurve();
+
+            public void AddKey(float time, Quaternion rotation)
+            {
+                X.AddKey(time, rotation.x);
+                Y.AddKey(time, rotation.y);
+                Z.AddKey(time, rotation.z);
+                W.AddKey(time, rotation.w);
+            }
+
+            public List<TransformCurveData> ToTransformCurveDataList(string path)
+            {
+                return new List<TransformCurveData>
+                {
+                    new TransformCurveData(path, "localRotation.x", X, TransformCurveType.Rotation),
+                    new TransformCurveData(path, "localRotation.y", Y, TransformCurveType.Rotation),
+                    new TransformCurveData(path, "localRotation.z", Z, TransformCurveType.Rotation),
+                    new TransformCurveData(path, "localRotation.w", W, TransformCurveType.Rotation)
+                };
+            }
         }
 
         /// <summary>
