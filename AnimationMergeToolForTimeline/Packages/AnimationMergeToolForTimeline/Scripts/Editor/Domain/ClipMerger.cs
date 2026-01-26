@@ -305,7 +305,26 @@ namespace AnimationMergeTool.Editor.Domain
                 return null;
             }
 
-            return AnimationUtility.GetEditorCurve(clip, binding);
+            // まず直接取得を試みる
+            var curve = AnimationUtility.GetEditorCurve(clip, binding);
+            if (curve != null)
+            {
+                return curve;
+            }
+
+            // 直接取得できない場合は、すべてのバインディングを取得してパス・プロパティ名・型で比較
+            var curveBindings = AnimationUtility.GetCurveBindings(clip);
+            foreach (var existingBinding in curveBindings)
+            {
+                if (existingBinding.path == binding.path &&
+                    existingBinding.propertyName == binding.propertyName &&
+                    existingBinding.type == binding.type)
+                {
+                    return AnimationUtility.GetEditorCurve(clip, existingBinding);
+                }
+            }
+
+            return null;
         }
     }
 
