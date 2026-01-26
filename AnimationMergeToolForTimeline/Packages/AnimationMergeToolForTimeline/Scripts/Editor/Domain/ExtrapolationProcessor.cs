@@ -311,12 +311,13 @@ namespace AnimationMergeTool.Editor.Domain
         {
             if (curve.keys.Length == 0) return 0f;
 
-            // 最初のキーフレームを取得
-            var firstKey = curve.keys[0];
             var firstKeyValue = curve.Evaluate(clipIn);
 
-            // 接線を取得（inTangent を使用）
-            var tangent = firstKey.inTangent;
+            // 接線を数値微分で計算（カーブのinTangentが正しく設定されていない場合に対応）
+            const float epsilon = 0.0001f;
+            var nextTime = clipIn + epsilon;
+            var nextValue = curve.Evaluate(nextTime);
+            var tangent = (nextValue - firstKeyValue) / epsilon;
 
             // 時間差を計算してExtrapolate
             var timeDelta = time - startTime;
@@ -335,12 +336,13 @@ namespace AnimationMergeTool.Editor.Domain
         {
             if (curve.keys.Length == 0) return 0f;
 
-            // 最後のキーフレームを取得
-            var lastKey = curve.keys[curve.keys.Length - 1];
             var lastKeyValue = curve.Evaluate(lastKeyTime);
 
-            // 接線を取得（outTangent を使用。クリップ終了後は出力方向の接線で延長する）
-            var tangent = lastKey.outTangent;
+            // 接線を数値微分で計算（カーブのoutTangentが正しく設定されていない場合に対応）
+            const float epsilon = 0.0001f;
+            var prevTime = lastKeyTime - epsilon;
+            var prevValue = curve.Evaluate(prevTime);
+            var tangent = (lastKeyValue - prevValue) / epsilon;
 
             // 時間差を計算してExtrapolate
             var timeDelta = time - endTime;
