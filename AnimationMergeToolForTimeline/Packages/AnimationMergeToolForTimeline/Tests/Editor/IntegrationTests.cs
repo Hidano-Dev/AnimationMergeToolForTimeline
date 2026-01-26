@@ -343,9 +343,11 @@ namespace AnimationMergeTool.Editor.Tests
                 Assert.IsNotNull(results[0].GeneratedClip);
 
                 // localPosition.xのカーブが存在することを確認
+                // 両トラックが同一プロパティ(localPosition.x)を持つため、
+                // 優先順位に基づくOverride処理により1つのマージされたカーブのみが生成されるべき
                 var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
-                Assert.AreEqual(1, bindings.Length);
-                Assert.AreEqual("localPosition.x", bindings[0].propertyName);
+                Assert.AreEqual(1, bindings.Length, "同一プロパティへのOverride処理により1つのカーブのみが含まれるべき");
+                Assert.AreEqual("localPosition.x", bindings[0].propertyName, "localPosition.xプロパティのカーブが含まれるべき");
 
                 // 生成されたファイルパスを記録
                 RecordCreatedAssetPaths(results[0].Logs);

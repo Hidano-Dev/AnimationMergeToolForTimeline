@@ -841,3 +841,1086 @@ foreach (var binding in bindings)
 最終的に、このタスクは「再確認」タスクであり、TASK-005〜007の修正後に確認するタスクです。コードレビューでは問題が特定できなかったため、「変更なし」としてFAILを報告します。
 
 FAIL
+OK
+これらのテストを見ると、GroupTrack関連のAssignPrioritiesテストは「Track1 < Track2 < Track3」という順序を期待していますが、TASK-010で指摘されている問題は`Expected: True, But was: False`というエラーです。これは優先順位の計算が正しく行われていないことを示しています。
+
+しかし、TASK-023は「E2E_GroupTrackを含む階層構造のTimeline処理」テストで、カーブ数が3つ返ってくる問題です。
+
+テストを確認すると、GroupTrack内に2つのトラックがあり、各トラックには1つのカーブがあります。3つ目のカーブがどこから来るのか...
+
+テストで使用しているコードでは`timeline.CreateTrack<AnimationTrack>(group, ...)`がGroupTrack内にトラックを作成しています。しかし、もし`GetRootTracks()`がGroupTrack内に作成されたトラックも含めて返す場合、またはGroupTrack自体がAnimationTrackとして扱われる場合に問題が発生する可能性があります。
+
+もう一度TrackAnalyzerの`GetFlattenedTracksInHierarchyOrder`を見てみます。`GetRootTracks()`を呼び出し、その後`CollectTracksRecursively`で子トラックを再帰的に収集しています。
+
+しかし、重要なのは`AnimationMergeService.MergeFromTimelineAsset`で`GetAnimationTracksWithPriority`を呼び出しており、これは`GetAnimationTracksWithPriorityIncludingHierarchy`を呼び出しています。
+
+問題点:テストで作成されたトラックがGroupTrack内に作成されている場合、`GetFlattenedTracksInHierarchyOrder`は正しく2つのAnimationTrackのみを返すはずです。
+
+ここで、「3つのカーブが返ってくる」という問題の原因として考えられるのは:
+
+1. テスト側で何らかの追加カーブが生成されている
+2. AnimationMergeServiceの処理で重複が発生している
+3. トラック自体が重複して処理されている
+
+テストをもう一度確認し、何が問題なのかを特定します。テストでは`service.MergeFromTimelineAsset(timeline)`を呼び出しています。
+
+`MergeFromTimelineAsset`を見ると、`GetAnimationTracksWithPriority`を呼び出し、その後`FilterNonMutedTracks`でフィルタリングしています。
+
+問題の根本原因を見つけるために、テストで使用されているセットアップをもう一度確認します。テストのclip1とclip2にそれぞれ1つのカーブが設定されていることは確認しました。
+
+テストの期待値が間違っているのか、それとも実装に問題があるのかを確認する必要があります。修正リクエストによると「TASK-010〜011（TrackAnalyzer）の修正後に再確認」とあるので、TASK-010/011が先行タスクであり、それらを修正した後にこのテストが成功するはずです。
+
+TASK-010の内容を確認すると:
+
+```
+TASK-010: TrackAnalyzer - GroupTrack内優先順位割り当て修正
+
+影響テスト:
+- AssignPrioritiesIncludingHierarchy_GroupTrack内のトラックに正しい優先順位を割り当てる
+- AssignPrioritiesIncludingHierarchy_リスト内の順序に関係なく正しい優先順位が割り当てられる
+
+エラー内容:
+- Expected: True, But was: False
+
+修正方法:
+AssignPrioritiesIncludingHierarchyメソッドでGroupTrack内のネストされたトラックを再帰的に走査し、正しい優先順位を割り当てるロジックを修正する。
+```
+
+TASK-023はTASK-010/011に依存しています。TASK-010/011がまだ修正されていないため、TASK-023を直接修正するのは適切ではありません。
+
+しかし、タスクの要件は「修正リクエスト.mdに従って1タスクだけ実行」なので、TASK-023のみに対応する必要があります。
+
+テストの期待値を確認すると「2つのカーブが含まれるべき」ですが、現状では3つのカーブが返っています。このテストはGroupTrackを使用していますが、テストの構造を見ると:
+
+1. GroupTrack（AnimationGroup）
+2. GroupedTrack1（localPosition.x）
+3. GroupedTrack2（localPosition.y）
+
+「3つのカーブ」というのは、両方のトラックから異なるプロパティのカーブ（`localPosition.x`と`localPosition.y`）の他に、もう1つ何かが追加されていることを示しています。
+
+考えられる原因:
+- テストで作成されたトラックがどこかで重複処理されている
+- 何らかの追加のカーブが自動的に生成されている
+
+テストの実行ログを確認することなくこの問題を解決するのは難しいですが、TASK-023の説明によると、問題はTASK-010/011の修正後に解決されるはずです。
+
+TASK-023が「GroupTrack内トラックの処理を確認」と記載されているため、現在のコードを調査した結果、期待値を2から実際の値に合わせるか、根本原因を修正する必要があります。
+
+もう一度テストを確認すると、実際に「3つのカーブ」が返っている理由は、テスト自体ではなくサービス側の処理にある可能性があります。
+
+AnimationMergeServiceで処理されるトラックを確認するために、`GetAnimationTracksWithPriorityIncludingHierarchy`メソッドを再確認します。
+
+TrackAnalyzerの`CollectTracksRecursively`を見ると:
+
+```csharp
+private void CollectTracksRecursively(TrackAsset track, List<TrackAsset> result)
+{
+    if (track == null)
+    {
+        return;
+    }
+
+    // GroupTrack以外は結果に追加
+    if (!(track is GroupTrack))
+    {
+        result.Add(track);
+    }
+
+    // GroupTrackの場合は子トラックを再帰的に処理
+    if (track is GroupTrack groupTrack)
+    {
+        foreach (var childTrack in groupTrack.GetChildTracks())
+        {
+            CollectTracksRecursively(childTrack, result);
+        }
+    }
+}
+```
+
+このコードは正しく動作しているように見えます。GroupTrack自体は追加されず、その子トラックのみが再帰的に追加されます。
+
+問題は、このテストで3つのカーブが返ってくる具体的な原因がわからないことです。もう一度テストのセットアップを確認して、何が問題なのかを特定します。
+
+テストでは、2つのクリップ（`clip1`と`clip2`）を作成し、各クリップに1つのカーブを設定しています。期待されるカーブ数は2です。
+
+しかし、テストで作成されているのは：
+- `clip1` に `SetCurve("", typeof(Transform), "localPosition.x", ...)` 
+- `clip2` に `SetCurve("", typeof(Transform), "localPosition.y", ...)`
+
+両方のクリップのパスは空文字（""）で、プロパティは異なります。
+
+結果として返ってくるカーブが3つの場合、追加のカーブがどこから来ているかを調べる必要があります。
+
+期待値を修正するのではなく、原因を特定して修正する必要があります。ただし、このテストの依存関係としてTASK-010/011がリストされているため、まずそれらを確認する必要があります。
+
+現時点では、テストの期待値自体は正しいと仮定し、問題は実装側にあると考えられます。
+
+実装の問題を調査するため、AnimationMergeServiceの処理を再確認します。`MergeFromTimelineAsset`でログを出力している部分があります：
+
+```csharp
+result.AddLog($"トラック \"{trackInfo.Track.name}\" を処理しました（優先順位: {trackInfo.Priority}）");
+```
+
+この行が何回呼ばれているかを確認することで、処理されているトラック数を把握できます。
+
+しかし、テストでは3つのカーブが返ってきているので、問題はカーブの数であり、トラックの数ではありません。
+
+`MergeTracksForAnimator`メソッドを見ると、各トラックからカーブを収集し、`allCurveData`辞書に格納しています。最終的に`finalCurves`リストが生成され、その`Count`がカーブ数になります。
+
+問題の可能性：
+1. 同じトラックが複数回処理されている
+2. 各トラックから複数のカーブが取得されている
+3. ClipMergerで追加のカーブが生成されている
+
+テストで使用されているクリップには各1つのカーブしか設定されていないので、2番と3番は考えにくいです。
+
+1番の可能性を調査するために、`GetAnimationTracksWithPriorityIncludingHierarchy`の戻り値を確認します。
+
+---
+
+さらに調査を進めると、問題の根本原因が見えてきました。テストでは以下のようにトラックを作成しています：
+
+```csharp
+var group = timeline.CreateTrack<GroupTrack>(null, "AnimationGroup");
+var track1 = timeline.CreateTrack<AnimationTrack>(group, "GroupedTrack1");
+var track2 = timeline.CreateTrack<AnimationTrack>(group, "GroupedTrack2");
+```
+
+`GetFlattenedTracksInHierarchyOrder`は`_timelineAsset.GetRootTracks()`を呼び出しています。UnityのTimeline APIでは、`GetRootTracks()`はルートレベルのトラックのみを返します。GroupTrack内に作成されたトラックはルートレベルではないため、`GetRootTracks()`には含まれません。
+
+しかし、`CollectTracksRecursively`がGroupTrackの子トラックを再帰的に処理しているので、GroupTrack内のトラックも正しく収集されるはずです。
+
+さらに詳しく調査すると、テストで期待されているカーブが2つ（`localPosition.x`と`localPosition.y`）なのに3つ返ってくるのは、何らかの形でトラックが重複して処理されているか、追加のカーブが生成されている可能性があります。
+
+---
+
+問題の再分析: テストコード1617行目を見ると:
+```csharp
+Assert.AreEqual(2, bindings.Length, "2つのカーブが含まれるべき");
+```
+
+実際には3つ返ってきています。テストのセットアップでは各トラックに1つずつカーブがあるので、2つが正しい期待値です。
+
+つまり、テストの期待値は正しいですが、実装が3つのカーブを返しています。
+
+原因の調査:
+- もしかすると、GroupTrack自体がAnimationTrackとして処理されている可能性があります
+- または、何らかのダミーカーブが生成されている可能性があります
+
+GroupTrackはAnimationTrackではないため、`if (track is AnimationTrack animationTrack)`の条件分岐で除外されるはずです。
+
+---
+
+実際に何が起きているかを把握するのが難しいため、テスト自体を詳しく見直し、可能性のある原因を特定します。
+
+テストでは`MergeFromTimelineAsset`を使用しています。この処理フローを追跡します：
+
+1. `GetAnimationTracksWithPriority()` → `GetAnimationTracksWithPriorityIncludingHierarchy()`
+2. `FilterNonMutedTracks()` でMuteされていないトラックをフィルタリング
+3. `MergeTracksForAnimator()` でトラックを処理
+
+`GetAnimationTracksWithPriorityIncludingHierarchy`内で`GetFlattenedTracksInHierarchyOrder()`を呼び出し、これが`GetRootTracks()`から始まって再帰的にトラックを収集します。
+
+---
+
+問題の特定：
+
+考えられる原因の1つとして、テストで使用している`timeline.CreateTrack`の呼び出し順序が原因かもしれません。
+
+テストでは:
+1. `group = timeline.CreateTrack<GroupTrack>(null, "AnimationGroup")` - ルートレベルにGroupTrack
+2. `track1 = timeline.CreateTrack<AnimationTrack>(group, "GroupedTrack1")` - GroupTrack内にtrack1
+3. `track2 = timeline.CreateTrack<AnimationTrack>(group, "GroupedTrack2")` - GroupTrack内にtrack2
+
+ルートレベルのトラック: `group` (GroupTrack)
+GroupTrack内のトラック: `track1`, `track2` (AnimationTrack)
+
+`GetRootTracks()`は`group`を返し、`CollectTracksRecursively`が`group`を処理して、`group.GetChildTracks()`から`track1`と`track2`を取得します。
+
+この処理は正しく2つのAnimationTrackのみを返すはずです。
+
+---
+
+3つ目のカーブの出所を特定するのは難しいですが、一つの可能性として考えられるのは、タイムラインクリップ（TimelineClip）自体が何らかのデフォルトカーブを持っている可能性です。
+
+または、`MergeTracksForAnimator`内の処理で何か問題が発生している可能性があります。
+
+---
+
+現時点での結論:
+
+TASK-023は「TASK-010〜011（TrackAnalyzer）の修正後に再確認」と記載されており、これは依存タスクです。TASK-010/011を先に修正する必要があります。しかし、今回の要件は「TASK-023を修正する」なので、可能な限りTASK-023のみを修正する必要があります。
+
+テストの期待値が正しいと仮定すると、問題は実装側にあります。ただし、TASK-010/011がまだ修正されていない場合、このテストは依然として失敗する可能性があります。
+
+---
+
+もう一度問題を整理します:
+
+テストの期待: 2つのカーブ（`localPosition.x`, `localPosition.y`）
+実際の結果: 3つのカーブ
+
+3つ目のカーブは何でしょうか？
+
+テストのセットアップを見ると:
+- `clip1`に`localPosition.x`
+- `clip2`に`localPosition.y`
+
+これらのクリップは別々のトラック（`track1`と`track2`）に配置されています。
+
+3つ目のカーブが返ってくるとすれば、以下の可能性があります:
+1. どちらかのトラックまたはクリップが2回処理されている
+2. トラックまたはクリップに元々存在しないカーブが何らかの形で追加されている
+
+---
+
+新しい仮説:
+
+`GetFlattenedTracksInHierarchyOrder`の実装で、トラックが重複して収集される可能性があります。
+
+具体的には、`GetRootTracks()`が返すトラックには`group`が含まれます。`CollectTracksRecursively`は`group`の子トラック（`track1`, `track2`）を収集します。
+
+しかし、もし`GetRootTracks()`が何らかの理由で`track1`や`track2`も返している場合、重複が発生します。
+
+通常、`GetRootTracks()`はルートレベルのトラックのみを返すはずですが、Unityのバージョンや特定の条件によって動作が異なる可能性があります。
+
+---
+
+この仮説を検証するために、`GetFlattenedTracksInHierarchyOrder`にログを追加してデバッグすることができますが、テスト環境では実行できません。
+
+代わりに、コードを確認してみます。
+
+`CollectTracksRecursively`は以下のロジックを持っています:
+1. trackがnullでない場合のみ処理
+2. GroupTrack以外のトラックはresultに追加
+3. GroupTrackの場合は子トラックを再帰的に処理
+
+このロジックは正しいように見えます。
+
+---
+
+実際の問題を特定するために、もう一つの可能性を検討します。
+
+テストで作成されたトラックを`MergeFromTimelineAsset`経由で処理する場合、`MergeTracksForAnimator`が呼ばれます。この関数内で:
+
+```csharp
+foreach (var trackInfo in sortedTracks)
+{
+    var clipInfos = GetClipInfosFromTrack(trackInfo);
+    ...
+}
+```
+
+ここで、各トラックに対して`GetClipInfosFromTrack`が呼ばれ、そのトラック内のTimelineClipsからAnimationPlayableAssetを取得しています。
+
+テストでは、各トラックに1つのTimelineClipがあり、各TimelineClipには1つのAnimationClipがあります。
+
+`ClipMerger.Merge`は、これらのClipInfosを統合し、カーブを収集します。
+
+各AnimationClipには1つのカーブしかないので、各トラックからは1つのカーブのみが取得されるはずです。
+
+---
+
+ここで重要なのは、`mergedCurveBindingPairs`が何を返すかです。
+
+`clipMerger.GetAnimationCurves(mergedTrackClip)`は、マージされたAnimationClipからすべてのカーブを取得します。
+
+もし`mergedTrackClip`に複数のカーブが含まれている場合、複数のバインディングペアが返されます。
+
+テストのセットアップでは、各トラックに1つのクリップしかなく、各クリップには1つのカーブしかないので、各トラックからは1つのカーブのみが返されるはずです。
+
+---
+
+問題の特定がうまくいかないため、別のアプローチを試みます。
+
+テストファイルを確認して、期待値を変更するのではなく、テスト自体に問題がないか確認します。
+
+テストでは:
+```csharp
+var track1 = timeline.CreateTrack<AnimationTrack>(group, "GroupedTrack1");
+var clip1 = new AnimationClip { name = "E2E_GroupedClip1" };
+clip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 5));
+var tc1 = track1.CreateClip<AnimationPlayableAsset>();
+tc1.start = 0;
+tc1.duration = 1;
+(tc1.asset as AnimationPlayableAsset).clip = clip1;
+```
+
+ここで、`track1.CreateClip<AnimationPlayableAsset>()`が呼ばれています。これはTimelineClipを作成し、そのアセットとしてAnimationPlayableAssetを設定します。
+
+`clip1`は手動で作成されたAnimationClipで、`localPosition.x`カーブが設定されています。
+
+同様に、`track2`と`clip2`も作成されています。
+
+テストのセットアップは正しいように見えます。
+
+---
+
+このままでは問題の特定が難しいため、テストの期待値を現在の実装に合わせるか（これは誤りであり、テストの意図に反します）、または実装を修正するかを決定する必要があります。
+
+TASK-023の説明には「TASK-010〜011（TrackAnalyzer）の修正後に再確認」と記載されています。これは、TASK-010/011を先に修正し、その後でこのテストを再確認することを示唆しています。
+
+しかし、現在のタスクはTASK-023のみを修正することなので、別のアプローチが必要です。
+
+---
+
+最終的な分析:
+
+TASK-023は依存タスク（TASK-010, TASK-011）があり、それらが修正されていない状態でTASK-023のみを修正するのは難しいです。
+
+しかし、テストの期待値を確認すると、「2つのカーブ」が期待されており、これは正しい期待値です。テストのセットアップでは2つのトラック（それぞれ1つのカーブを持つ）が作成されています。
+
+3つのカーブが返ってくるのは実装の問題であり、テストの期待値は正しいです。
+
+---
+
+問題の根本原因を特定するため、`GetAnimationTracksWithPriorityIncludingHierarchy`が返すトラック数を確認します。もし3つのトラックが返ってきている場合、問題はTrackAnalyzerにあります。
+
+`GetFlattenedTracksInHierarchyOrder`の実装をもう一度確認します:
+
+```csharp
+private List<TrackAsset> GetFlattenedTracksInHierarchyOrder()
+{
+    var result = new List<TrackAsset>();
+
+    foreach (var rootTrack in _timelineAsset.GetRootTracks())
+    {
+        CollectTracksRecursively(rootTrack, result);
+    }
+
+    return result;
+}
+
+private void CollectTracksRecursively(TrackAsset track, List<TrackAsset> result)
+{
+    if (track == null)
+    {
+        return;
+    }
+
+    // GroupTrack以外は結果に追加
+    if (!(track is GroupTrack))
+    {
+        result.Add(track);
+    }
+
+    // GroupTrackの場合は子トラックを再帰的に処理
+    if (track is GroupTrack groupTrack)
+    {
+        foreach (var childTrack in groupTrack.GetChildTracks())
+        {
+            CollectTracksRecursively(childTrack, result);
+        }
+    }
+}
+```
+
+この実装を見ると、問題があります!
+
+`CollectTracksRecursively`で、`if (!(track is GroupTrack))`の条件でGroupTrack以外のトラックを追加しています。これは正しいです。
+
+しかし、その後、`if (track is GroupTrack groupTrack)`でGroupTrackの子トラックを再帰的に処理しています。
+
+問題は、GroupTrackが渡された場合、GroupTrack自体は追加されませんが、その子トラックは追加されます。
+
+テストのセットアップでは:
+- ルートトラック: `group` (GroupTrack)
+- `group`の子トラック: `track1`, `track2` (AnimationTrack)
+
+`GetFlattenedTracksInHierarchyOrder`の処理:
+1. `GetRootTracks()`から`group`を取得
+2. `CollectTracksRecursively(group, result)`を呼び出し
+3. `group`はGroupTrackなので、resultには追加されない
+4. `group.GetChildTracks()`から`track1`と`track2`を取得
+5. `CollectTracksRecursively(track1, result)`を呼び出し、`track1`をresultに追加
+6. `CollectTracksRecursively(track2, result)`を呼び出し、`track2`をresultに追加
+
+最終的に、resultには`track1`と`track2`の2つのAnimationTrackが含まれるはずです。
+
+これは正しい動作です。
+
+---
+
+では、なぜ3つのカーブが返ってくるのでしょうか？
+
+ここで別の可能性を考慮します。もしかすると、テストのセットアップで何か問題があるかもしれません。
+
+テストの確認:
+
+```csharp
+var track1 = timeline.CreateTrack<AnimationTrack>(group, "GroupedTrack1");
+var clip1 = new AnimationClip { name = "E2E_GroupedClip1" };
+clip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 5));
+var tc1 = track1.CreateClip<AnimationPlayableAsset>();
+tc1.start = 0;
+tc1.duration = 1;
+(tc1.asset as AnimationPlayableAsset).clip = clip1;
+```
+
+`track1.CreateClip<AnimationPlayableAsset>()`は新しいTimelineClipを作成し、そのアセットとしてAnimationPlayableAssetを設定します。そして、`(tc1.asset as AnimationPlayableAsset).clip = clip1`でAnimationClipを設定します。
+
+これは正しいセットアップです。
+
+---
+
+もう一つの可能性: AnimationPlayableAssetがデフォルトで何らかのカーブを持っている可能性があります。しかし、これは通常ありえません。
+
+---
+
+3つ目のカーブの出所を特定するのは困難です。テスト実行時のログやデバッグ情報がないと、確実なことは言えません。
+
+---
+
+最終的なアプローチ:
+
+TASK-023の説明には「TASK-010〜011（TrackAnalyzer）の修正後に再確認。GroupTrack内トラックの処理を確認。」と記載されています。
+
+これは、TASK-023自体に直接的な修正が必要なのではなく、TASK-010/011を修正した後でこのテストが成功するかを確認するという意味です。
+
+しかし、今回の要件は「TASK-023を1タスクだけ実行」なので、何らかのアクションが必要です。
+
+---
+
+タスクの再解釈:
+
+TASK-023の修正方法は「TASK-010〜011（TrackAnalyzer）の修正後に再確認。GroupTrack内トラックの処理を確認。」とあります。
+
+これは、TASK-023が「再確認」タスクであることを示唆しています。つまり、TASK-010/011が修正された後に、このテストが自動的に成功するかどうかを確認するタスクです。
+
+しかし、TASK-010/011がまだ修正されていない場合、TASK-023で何をすべきかは不明確です。
+
+---
+
+アプローチの変更:
+
+もしTASK-010/011がすでに修正されている場合、TASK-023は「確認のみ」のタスクになります。テストを実行して成功するかを確認します。
+
+しかし、テストが失敗している（3つのカーブが返ってくる）ことが問題として報告されているので、何らかの修正が必要です。
+
+---
+
+調査結果に基づく修正案:
+
+問題の根本原因を特定できなかったため、以下の仮説に基づいて修正を試みます。
+
+仮説: `GetFlattenedTracksInHierarchyOrder`がGroupTrack内のトラックを重複して収集している可能性
+
+この仮説を検証するために、コードを確認しましたが、重複が発生するようなロジックは見つかりませんでした。
+
+---
+
+別の仮説:
+
+テストが失敗しているのは、カーブが3つ返ってくるからです。しかし、テストのセットアップでは2つのトラックがあり、各トラックに1つのカーブがあります。
+
+3つ目のカーブがどこから来るかを考えると、以下の可能性があります:
+
+1. AnimationPlayableAssetが追加のカーブを持っている
+2. TimelineClipが何らかのカーブを持っている
+3. トラック自体が追加のカーブを持っている
+
+これらはすべて考えにくいです。
+
+---
+
+最後の仮説:
+
+もしかすると、テストがバッチモードで実行される際に、前のテストで作成されたアセットが残っている可能性があります。しかし、テストの`TearDown`でクリーンアップが行われているはずです。
+
+---
+
+結論:
+
+TASK-023の問題を直接解決するには、テスト環境でデバッグを行う必要があります。現在の情報からは、問題の根本原因を特定することが困難です。
+
+タスクの要件は「TASK-023を修正」ですが、問題の特定が難しいため、変更を行わずに「FAIL」とするか、またはテストの期待値を調整するか（これは正しくありません）、のいずれかになります。
+
+---
+
+ただし、もう一度修正リクエストの内容を確認すると:
+
+「TASK-010〜011（TrackAnalyzer）の修正後に再確認。GroupTrack内トラックの処理を確認。」
+
+これは「再確認」を意味しています。つまり、TASK-023は直接的なコード修正を必要としない可能性があります。TASK-010/011が修正された後、このテストが成功するかを「確認する」タスクです。
+
+しかし、TASK-010/011がすでにコミットされている（TASK-018, TASK-019, TASK-020, TASK-021, TASK-022が既にコミットされている）ことを考えると、TASK-010/011も修正済みの可能性があります。
+
+gitログを確認します:
+
+```
+76803f7 task TASK-022
+8295ade task TASK-020
+8a69e8a task TASK-019
+c1db7e9 task TASK-018
+a752ade task TASK-017
+```
+
+TASK-010/011のコミットは見当たりません。TASK-018より後のタスクのみがコミットされています。
+
+これは、TASK-010/011がまだ修正されていないことを示唆しています。したがって、TASK-023（TASK-010/011に依存）もまだ修正できない可能性があります。
+
+---
+
+しかし、タスクの要件は「TASK-023を修正」なので、何らかのアクションを取る必要があります。
+
+最も合理的なアプローチは、テストの期待値を現在の実装に合わせることではなく、テストが失敗している根本原因を特定し、実装を修正することです。
+
+しかし、根本原因の特定が難しいため、別のアプローチを試みます。
+
+---
+
+テストコードを再確認し、何か見落としがないかを確認します。テストでは2つのトラックを作成し、それぞれに1つのカーブを持つクリップを追加しています。期待値は2つのカーブです。
+
+もし実装が正しく動作している場合、2つのカーブが返ってくるはずです。3つのカーブが返ってくるのは実装の問題です。
+
+---
+
+最終的なアプローチ:
+
+TASK-023の修正方法として「GroupTrack内トラックの処理を確認」と記載されています。これは、GroupTrack内のトラックが正しく処理されているかを確認し、必要に応じて修正することを意味します。
+
+TrackAnalyzerの`GetFlattenedTracksInHierarchyOrder`と`CollectTracksRecursively`は正しく実装されているように見えます。
+
+問題は別の場所にある可能性があります。AnimationMergeServiceの`MergeFromTimelineAsset`を確認します。
+
+---
+
+`MergeFromTimelineAsset`の処理フロー:
+
+1. `GetAnimationTracksWithPriority()` - トラックを取得
+2. `FilterNonMutedTracks()` - Muteされていないトラックをフィルタリング
+3. `MergeTracksForAnimator()` - トラックを処理
+
+`MergeTracksForAnimator`内で、各トラックからカーブを収集します。
+
+---
+
+問題の特定:
+
+`MergeTracksForAnimator`内で、`allCurveData`辞書にカーブを格納しています。最終的に、`finalCurves`リストが生成されます。
+
+```csharp
+foreach (var kvp in allCurveData)
+{
+    // 優先順位の低い順にソート
+    var curvesForBinding = kvp.Value.OrderBy(c => c.Priority).ToList();
+
+    if (curvesForBinding.Count == 1)
+    {
+        // 単一のカーブの場合はそのまま使用
+        finalCurves.Add(new Domain.CurveBindingPair(
+            curvesForBinding[0].Binding,
+            curvesForBinding[0].Curve));
+    }
+    else
+    {
+        // 複数のカーブがある場合はOverride処理を適用
+        var curveWithTimeRanges = curvesForBinding
+            .Select(c => new CurveWithTimeRange(c.Curve, c.StartTime, c.EndTime))
+            .ToList();
+
+        var mergedCurve = curveOverrider.MergeMultipleTracks(curveWithTimeRanges);
+        finalCurves.Add(new Domain.CurveBindingPair(
+            curvesForBinding[0].Binding,
+            mergedCurve));
+    }
+}
+```
+
+`allCurveData`はバインディングキーごとにカーブを格納しています。テストでは2つの異なるプロパティ（`localPosition.x`と`localPosition.y`）があるので、2つのエントリがあるはずです。
+
+もし3つのエントリがある場合、3つ目のバインディングキーが何かを調べる必要があります。
+
+---
+
+ここで、テストで使用されているAnimationClipのカーブをもう一度確認します。
+
+```csharp
+clip1.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 5));
+clip2.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 10));
+```
+
+両方のクリップのパスは空文字（""）で、型はTransform、プロパティは`localPosition.x`と`localPosition.y`です。
+
+バインディングキーは`|System.Type.FullName|propertyName`の形式なので:
+- `|UnityEngine.Transform|localPosition.x`
+- `|UnityEngine.Transform|localPosition.y`
+
+これらは異なるバインディングキーなので、2つのエントリになるはずです。
+
+---
+
+問題の根本原因を特定できなかったため、テスト自体を見直す必要があります。
+
+しかし、テストの期待値は正しいです（2つのカーブ）。問題は実装側にあります。
+
+---
+
+最後のチェック:
+
+もしかすると、テストで使用されている`timeline.CreateTrack<AnimationTrack>(group, ...)`の呼び出しが、GroupTrack内とルートレベルの両方にトラックを作成している可能性があります。
+
+Unityのドキュメントによると、`CreateTrack<T>(TrackAsset parent, string name)`は、指定された親トラックの子としてトラックを作成します。親がnullの場合、ルートレベルにトラックが作成されます。
+
+テストでは、`group`を親として指定しているので、トラックはGroupTrack内に作成されるはずです。
+
+---
+
+これ以上の調査は困難です。テスト環境でデバッグを行う必要があります。
+
+しかし、タスクの要件は「TASK-023を修正」なので、何らかのアクションを取る必要があります。
+
+---
+
+結論:
+
+TASK-023は、TASK-010/011（TrackAnalyzer）に依存しています。TASK-010/011がまだ修正されていない場合、TASK-023を修正することはできません。
+
+gitログを確認すると、TASK-017以降のタスクのみがコミットされており、TASK-010/011は見当たりません。これは、TASK-010/011がまだ修正されていないことを示唆しています。
+
+この状況では、TASK-023を直接修正することは難しいです。しかし、タスクの要件に従って、最善を尽くして修正を試みます。
+
+---
+
+最後のアプローチ:
+
+テストの期待値（2つのカーブ）は正しいと仮定し、実装を確認して問題を特定します。
+
+TrackAnalyzerの`GetFlattenedTracksInHierarchyOrder`と`CollectTracksRecursively`は正しく実装されています。
+
+問題は別の場所にある可能性があります。
+
+---
+
+ここでもう一つの観点から問題を見てみます。テストが実行されている環境で、何らかの追加のトラックが作成されている可能性があります。
+
+例えば、`timeline.CreateTrack<GroupTrack>(null, "AnimationGroup")`を呼び出すと、GroupTrackが作成されます。しかし、GroupTrackはAnimationTrackではないので、`GetAnimationTracksWithPriorityIncludingHierarchy`では処理されないはずです。
+
+---
+
+考えられる問題のもう一つのポイント:
+
+`GetAnimationTracksWithPriorityIncludingHierarchy`の実装を見ると:
+
+```csharp
+for (int i = 0; i < orderedTracks.Count; i++)
+{
+    if (orderedTracks[i] is AnimationTrack animationTrack)
+    {
+        var trackInfo = new TrackInfo(animationTrack, i);
+        result.Add(trackInfo);
+    }
+}
+```
+
+ここで、`orderedTracks`に含まれるAnimationTrackのみが処理されます。GroupTrackは除外されます。
+
+---
+
+問題の特定がうまくいかないため、別の仮説を立てます。
+
+もしかすると、`GetRootTracks()`がGroupTrack内に作成されたトラックも返している可能性があります。これはUnityのバグか、予期しない動作かもしれません。
+
+しかし、これを確認するにはテスト環境でデバッグを行う必要があります。
+
+---
+
+最終的な結論:
+
+TASK-023の根本原因を特定することが困難です。TASK-010/011（TrackAnalyzer）の修正がまだ行われていない可能性があり、それらを修正することでTASK-023も解決される可能性があります。
+
+タスクの要件は「TASK-023を修正」ですが、現時点では問題の根本原因を特定できず、直接的な修正を行うことが難しい状況です。
+
+このため、変更なしで「FAIL」とするのが適切かもしれません。しかし、もう一度コードを確認して、何か見落としがないかを確認します。
+
+---
+
+最後の確認:
+
+`AnimationMergeService.MergeFromTimelineAsset`の処理で、`MergeTracksForAnimator`が呼ばれ、その中で各トラックからカーブが収集されます。
+
+問題は、3つのカーブが返ってくることです。テストでは2つのトラックがあり、各トラックに1つのカーブがあります。
+
+`GetAnimationCurves`メソッドを確認します:
+
+```csharp
+public List<CurveBindingPair> GetAnimationCurves(AnimationClip clip)
+{
+    var result = new List<CurveBindingPair>();
+
+    if (clip == null)
+    {
+        return result;
+    }
+
+    // 通常のカーブ（Transform, Animator等のfloatプロパティ）を取得
+    var curveBindings = AnimationUtility.GetCurveBindings(clip);
+    foreach (var binding in curveBindings)
+    {
+        var curve = AnimationUtility.GetEditorCurve(clip, binding);
+        if (curve != null)
+        {
+            result.Add(new CurveBindingPair(binding, curve));
+        }
+    }
+
+    return result;
+}
+```
+
+このメソッドは、AnimationClipからすべてのEditorCurveBindingsを取得し、それぞれに対応するカーブを返します。
+
+テストで作成されたAnimationClipには、それぞれ1つのカーブしか設定されていないはずです。
+
+---
+
+ここで重要な観点:
+
+`ClipMerger.Merge`が呼ばれると、各ClipInfoからカーブが収集され、統合されます。
+
+```csharp
+var mergedTrackClip = clipMerger.Merge(clipInfos);
+```
+
+このメソッドは、複数のClipInfoを統合して単一のAnimationClipを生成します。
+
+テストの各トラックには1つのClipInfoしかないので、各トラックから返されるAnimationClipには1つのカーブしかないはずです。
+
+---
+
+問題の特定がうまくいかないため、テスト自体の構造を変更するアプローチを検討します。
+
+テストの期待値を変更するのではなく（これは問題を隠すだけで解決にはなりません）、実装を確認して修正します。
+
+---
+
+TASK-010/011の説明を再確認:
+
+TASK-010: `AssignPrioritiesIncludingHierarchy`メソッドでGroupTrack内のネストされたトラックを再帰的に走査し、正しい優先順位を割り当てるロジックを修正する。
+
+TASK-011: TASK-010の修正後に残る問題があれば対応する。
+
+---
+
+TASK-010の修正が必要な場合、`AssignPrioritiesIncludingHierarchy`メソッドを確認します:
+
+```csharp
+public void AssignPrioritiesIncludingHierarchy(List<TrackInfo> tracks)
+{
+    if (tracks == null || _timelineAsset == null)
+    {
+        return;
+    }
+
+    // 階層構造を考慮してフラット化された順序でトラックを取得
+    var orderedTracks = GetFlattenedTracksInHierarchyOrder();
+
+    foreach (var trackInfo in tracks)
+    {
+        if (trackInfo?.Track == null)
+        {
+            continue;
+        }
+
+        var index = orderedTracks.IndexOf(trackInfo.Track);
+        if (index >= 0)
+        {
+            trackInfo.Priority = index;
+        }
+    }
+}
+```
+
+このメソッドは、`GetFlattenedTracksInHierarchyOrder`からトラックの順序を取得し、各トラックに優先順位を割り当てます。
+
+`GetFlattenedTracksInHierarchyOrder`が正しく動作していれば、このメソッドも正しく動作するはずです。
+
+---
+
+TASK-010のテストエラーは「Expected: True, But was: False」です。これは、`trackInfo1.Priority < trackInfo2.Priority`または類似の条件が失敗していることを示しています。
+
+これは、優先順位が正しく設定されていないことを意味します。
+
+---
+
+もしかすると、`GetFlattenedTracksInHierarchyOrder`が返すトラックの順序が期待通りでない可能性があります。
+
+テストの期待:
+- track1 (優先順位0)
+- track2 (GroupTrack内、優先順位1)
+- track3 (優先順位2)
+
+しかし、実際の順序が異なる場合、優先順位も異なります。
+
+---
+
+`GetFlattenedTracksInHierarchyOrder`のロジックを確認:
+
+```csharp
+foreach (var rootTrack in _timelineAsset.GetRootTracks())
+{
+    CollectTracksRecursively(rootTrack, result);
+}
+```
+
+`GetRootTracks()`はルートレベルのトラックのみを返します。これらはTimeline上に作成された順序で返されます。
+
+テストでは:
+1. `track1` = ルートレベルに作成
+2. `group1` = ルートレベルに作成 (GroupTrack)
+3. `track2` = group1内に作成
+4. `track3` = ルートレベルに作成
+
+`GetRootTracks()`は`track1`, `group1`, `track3`を返すはずです（作成順）。
+
+`CollectTracksRecursively`の処理:
+1. `track1`を処理 → resultに追加 (index 0)
+2. `group1`を処理 → resultに追加しない（GroupTrackのため）
+   - `group1.GetChildTracks()`から`track2`を取得
+   - `track2`を処理 → resultに追加 (index 1)
+3. `track3`を処理 → resultに追加 (index 2)
+
+最終的なresult: `[track1, track2, track3]`
+
+これは正しい順序です。
+
+---
+
+しかし、TASK-010のテストが失敗しているということは、実際には異なる順序になっている可能性があります。
+
+---
+
+ここで、`GetRootTracks()`が返すトラックの順序を確認します。
+
+UnityのドキュメントによるとGetRootTracks()は「rootマーカーのトラックを返す」と説明されています。
+
+実際の順序はTimelineAsset内部の実装に依存しますが、通常は追加順序に従います。
+
+---
+
+問題の可能性:
+
+もし`GetRootTracks()`の順序がテストの期待と異なる場合、優先順位も異なります。
+
+これを修正するには、トラックの作成順序を考慮して順序付けを行う必要があります。
+
+---
+
+しかし、この分析はTASK-010の問題であり、TASK-023の問題とは直接関係ありません。
+
+TASK-023の問題は「カーブが3つ返ってくる」ことであり、これはトラックの優先順位とは異なる問題です。
+
+---
+
+最終結論:
+
+TASK-023の根本原因を特定することが困難です。問題はテスト環境でのデバッグが必要であり、現時点では直接的な修正を行うことが難しい状況です。
+
+タスクの要件に従い、変更なしで「FAIL」として報告するのが適切です。
+
+しかし、もう一度タスクの説明を読み直すと、「GroupTrack内トラックの処理を確認」とあります。これは、テストの期待値を確認し、必要に応じて実装またはテストを調整することを意味する可能性があります。
+
+---
+
+ここで、テストを実行して実際に何が起きているかを確認する方法を検討します。
+
+しかし、Unity Editorでのテスト実行はBashからは直接行えません。
+
+---
+
+最終的なアプローチ:
+
+TASK-023の問題を解決するには、テスト環境でデバッグを行うか、または依存タスク（TASK-010/011）を先に修正する必要があります。
+
+現時点では、変更を行わずに「FAIL」として報告します。
+
+---
+
+いや、待ってください。もう一度テストコードを見直します。
+
+テストのセットアップでは、2つのトラック（`track1`と`track2`）がGroupTrack内に作成されています。各トラックには1つのクリップがあり、各クリップには1つのカーブがあります。
+
+期待されるカーブ数は2です。しかし、3つのカーブが返ってきています。
+
+3つ目のカーブがどこから来るのか... 
+
+もう一度AnimationMergeServiceの処理を確認します。特に、`MergeTracksForAnimator`内の`finalCurves`がどのように生成されるかを確認します。
+
+---
+
+`MergeTracksForAnimator`の処理:
+
+1. 各トラックに対してループ
+2. 各トラックからClipInfosを取得
+3. ClipMerger.Mergeで統合
+4. 統合されたクリップからカーブを取得
+5. allCurveDataに追加
+6. 最終的にfinalCurvesを生成
+
+---
+
+ここで重要なのは、`allCurveData`辞書のキーがバインディングキーであることです。
+
+テストでは、2つの異なるプロパティ（`localPosition.x`と`localPosition.y`）があります。これらは異なるバインディングキーを持つため、2つのエントリになります。
+
+もし3つのエントリがある場合、3つ目のバインディングキーが存在するということになります。
+
+---
+
+3つ目のバインディングキーが何かを特定するには、テスト実行時のログやデバッグ情報が必要です。
+
+現時点では、この情報を取得することができません。
+
+---
+
+別のアプローチ:
+
+テストの期待値を確認し、実装が正しく動作しているかを確認するために、テストコードにデバッグログを追加することができます。しかし、これはテストの修正であり、本来の問題を解決することにはなりません。
+
+---
+
+最終判断:
+
+TASK-023の問題は、依存タスク（TASK-010/011）が未修正であることが原因である可能性が高いです。TASK-010/011を修正することで、このテストも成功する可能性があります。
+
+現時点では、変更を行わずに「FAIL」として報告します。
+
+---
+
+しかし、要件をもう一度確認すると「修正リクエスト.mdに従って1タスクだけ実行」とあります。これは、TASK-023を修正することを意味しますが、問題の根本原因を特定できなかったため、変更を行うことができませんでした。
+
+変更がなければ「FAIL」を返す必要があります。
+
+FAIL
+ClipInfoクラスを確認しました。ClipInfoは正しく実装されています。
+
+ここまでの調査結果から、TASK-024（`統合テスト_TimelineAssetからの実行フロー`）のテストは正しく書かれており、テスト自体に問題はありません。問題はClipMergerやAnimationMergeService等の実装側にあり、これらはTASK-004〜007で修正される必要があります。
+
+修正リクエストのタスク依存関係によると、TASK-024はTASK-004〜007の修正後に「再確認」するタスクです。
+
+しかし、テストの実行フローを再度確認すると、テストに明らかな問題を発見しました：
+
+テスト（177-218行目）を見ると、211行目で`RecordCreatedAssetPaths(results[0].Logs);`を呼び出しています。これはログからファイルパスを抽出してクリーンアップリストに追加するヘルパーメソッドですが、テストの正常動作には影響しません。
+
+もう一度、「統合テスト_TimelineAssetからの実行フロー」テストと「E2E_TimelineAsset選択からの実行でAnimationClipが生成保存される」テスト(TASK-020)を比較してみましょう：
+
+**統合テスト_TimelineAssetからの実行フロー** (177-218行目):
+- `service.MergeFromTimelineAsset(timeline)`を直接呼び出し
+- 期待値: `results[0].TargetAnimator`がnull
+
+**E2E_TimelineAsset選択からの実行でAnimationClipが生成保存される** (1227-1283行目):
+- `ContextMenuHandler.ExecuteForTimelineAssets(new[] { timeline })`を呼び出し
+- エラー: `AnimationClipアセットが生成されるべき Expected: not null, But was: null`
+
+TASK-020のエラーはファイルが生成されないことを示しています。TASK-024のテストも同様の問題に直面している可能性があります。
+
+しかし、TASK-024の修正リクエストには具体的なエラー内容が記載されていないため、このタスクはTASK-004〜007の修正後に自動的に解決する可能性があります。
+
+ただし、指示では「変更が無ければFAIL」とあります。TASK-024で明確に修正すべき箇所が見つからない場合、このタスクは依存タスクの完了後に再確認が必要なタスクとして、このまま変更なしとして報告する必要があります。
+
+念のため、もう一度テストファイルを確認して、「統合テスト_TimelineAssetからの実行フロー」テストに潜在的な問題がないか確認します。
+
+テスト（177-218行目）を見ると：
+```csharp
+[Test]
+public void 統合テスト_TimelineAssetからの実行フロー()
+{
+    // Arrange
+    var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+    timeline.name = "TimelineAssetTestTimeline";
+
+    var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+    var animClip = new AnimationClip();
+    var curve = AnimationCurve.Linear(0, 0, 2, 100);
+    animClip.SetCurve("", typeof(Transform), "localScale.x", curve);
+    var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+    timelineClip.start = 0;
+    timelineClip.duration = 2;
+    (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+    try
+    {
+        // Act: TimelineAssetから直接マージ
+        var service = new AnimationMergeService();
+        var results = service.MergeFromTimelineAsset(timeline);
+
+        // Assert
+        Assert.IsNotNull(results);
+        Assert.AreEqual(1, results.Count);
+        Assert.IsTrue(results[0].IsSuccess);
+        Assert.IsNotNull(results[0].GeneratedClip);
+        Assert.IsNull(results[0].TargetAnimator, "TimelineAssetのみからの処理ではAnimatorはnull");
+
+        // カーブを検証
+        var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
+        Assert.AreEqual(1, bindings.Length);
+        Assert.AreEqual("localScale.x", bindings[0].propertyName);
+
+        // 生成されたファイルパスを記録
+        RecordCreatedAssetPaths(results[0].Logs);
+    }
+    finally
+    {
+        Object.DestroyImmediate(timeline);
+        Object.DestroyImmediate(animClip);
+    }
+}
+```
+
+このテストは正しく書かれています。変更する必要はありません。
+
+しかし、もう1つ確認すべきことがあります。TASK-024の説明には「TimelineAssetからの実行フローを確認・修正」と書かれています。これは、テストファイルだけでなく「関連ソースファイル」も含まれる可能性があります。
+
+`AnimationMergeService.MergeFromTimelineAsset`を確認すると、この処理は正しく実装されているように見えます。しかし、この処理はClipMerger等の他のコンポーネントに依存しているため、それらが修正されないと正常に動作しません。
+
+最終的な判断として、TASK-024は依存タスク（TASK-004〜007）の完了後に再確認が必要なタスクであり、このタスク単独での修正は不要と判断します。
+
+ただし、「変更が無ければFAIL」という指示があるため、テストファイルまたは関連ソースファイルに何か変更できる箇所がないか、もう一度確認します。
+
+テストの期待値を詳しく見ると、もしかしたらテストが依存する前提条件に問題があるかもしれません。例えば、`MergeFromTimelineAsset`はAnimatorがない状態でも動作するべきですが、内部処理で問題が発生している可能性があります。
+
+`AnimationMergeService.MergeFromTimelineAsset`（99-128行目）を見ると：
+```csharp
+public List<MergeResult> MergeFromTimelineAsset(TimelineAsset timelineAsset, string outputDirectory = "Assets")
+{
+    var results = new List<MergeResult>();
+
+    if (timelineAsset == null)
+    {
+        Debug.LogError("[AnimationMergeTool] TimelineAssetがnullです。");
+        return results;
+    }
+
+    // TimelineAssetのみからはAnimatorバインディングが取得できないため、
+    // 全トラックを単一のAnimationClipとして出力（Animatorはnull）
+    var analyzer = new TrackAnalyzer(timelineAsset);
+    var allTracks = analyzer.GetAnimationTracksWithPriority();
+    var nonMutedTracks = analyzer.FilterNonMutedTracks(allTracks);
+
+    if (nonMutedTracks.Count == 0)
+    {
+        Debug.LogError("[AnimationMergeTool] 有効なAnimationTrackが見つかりません。");
+        return results;
+    }
+
+    var result = MergeTracksForAnimator(timelineAsset, null, nonMutedTracks, outputDirectory);
+    if (result != null)
+    {
+        results.Add(result);
+    }
+
+    return results;
+}
+```
+
+このコードは正しく実装されています。問題は`MergeTracksForAnimator`内部にある可能性があります。
+
+`MergeTracksForAnimator`（175-319行目）を確認すると、この処理は多くのステップを含んでいます。TASK-004〜007はClipMerger関連の修正であり、これらの修正が`MergeTracksForAnimator`の正常動作に必要です。
+
+TASK-024は修正リクエストに具体的なエラー内容が記載されておらず、「TimelineAssetからの実行フローを確認・修正」とだけ書かれているため、このタスクは依存タスクの完了後に確認するプレースホルダーとして機能していると考えられます。
+
+結論として、TASK-024で単独で修正できる変更はありません。このタスクはTASK-004〜007の修正後に自動的に解決するか、または再確認が必要です。
+
+指示に従い、「変更が無ければFAIL」と報告します。
+
+FAIL
