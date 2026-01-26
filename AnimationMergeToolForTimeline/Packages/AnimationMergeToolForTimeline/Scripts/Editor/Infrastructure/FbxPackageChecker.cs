@@ -67,5 +67,54 @@ namespace AnimationMergeTool.Editor.Infrastructure
         {
             EditorUtility.DisplayDialog(ErrorTitle, ErrorMessage, "OK");
         }
+
+        #region ERR-004: エクスポート可能なデータがない場合のエラー処理
+
+        /// <summary>
+        /// エクスポートデータなしエラーのダイアログタイトル
+        /// </summary>
+        public const string NoExportableDataErrorTitle = "Export Error";
+
+        /// <summary>
+        /// エクスポートデータなしエラーのメッセージ
+        /// </summary>
+        public const string NoExportableDataErrorMessage =
+            "エクスポート可能なアニメーションデータがありません。\n\n" +
+            "以下を確認してください：\n" +
+            "・選択したトラックにAnimationClipが含まれている\n" +
+            "・AnimationClipにTransformまたはBlendShapeカーブが存在する\n" +
+            "・バインドターゲットに対応するコンポーネントが存在する";
+
+        /// <summary>
+        /// エクスポート可能なデータがない場合のエラーダイアログを表示
+        /// 要件 ERR-004: FBXエクスポート時にエクスポート可能なデータがない場合のエラー処理
+        /// </summary>
+        public static void ShowNoExportableDataError()
+        {
+            EditorUtility.DisplayDialog(NoExportableDataErrorTitle, NoExportableDataErrorMessage, "OK");
+        }
+
+        /// <summary>
+        /// エクスポートデータの検証を行い、エクスポート不可の場合はエラーダイアログを表示
+        /// </summary>
+        /// <param name="hasExportableData">エクスポート可能なデータがあるかどうか</param>
+        /// <param name="showDialog">ダイアログを表示するかどうか（テスト用にfalseを指定可能）</param>
+        /// <returns>エクスポート可能な場合はtrue、不可の場合はfalse</returns>
+        public static bool CheckExportableDataAndShowDialogIfEmpty(bool hasExportableData, bool showDialog = true)
+        {
+            if (hasExportableData)
+            {
+                return true;
+            }
+
+            if (showDialog)
+            {
+                ShowNoExportableDataError();
+            }
+
+            return false;
+        }
+
+        #endregion
     }
 }

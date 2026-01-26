@@ -123,5 +123,58 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region ERR-004: エクスポートデータなしエラー処理テスト (P15-007)
+
+        [Test]
+        public void NoExportableDataErrorTitle_正しいエラータイトルが定義されている()
+        {
+            // Assert
+            Assert.AreEqual("Export Error", FbxPackageChecker.NoExportableDataErrorTitle);
+        }
+
+        [Test]
+        public void NoExportableDataErrorMessage_正しいエラーメッセージが定義されている()
+        {
+            // Assert
+            Assert.IsNotNull(FbxPackageChecker.NoExportableDataErrorMessage);
+            Assert.IsTrue(FbxPackageChecker.NoExportableDataErrorMessage.Contains("エクスポート"));
+            Assert.IsTrue(FbxPackageChecker.NoExportableDataErrorMessage.Contains("アニメーションデータ"));
+        }
+
+        [Test]
+        public void NoExportableDataErrorMessage_確認項目が含まれている()
+        {
+            // Assert
+            Assert.IsTrue(FbxPackageChecker.NoExportableDataErrorMessage.Contains("AnimationClip"));
+            Assert.IsTrue(FbxPackageChecker.NoExportableDataErrorMessage.Contains("Transform") ||
+                          FbxPackageChecker.NoExportableDataErrorMessage.Contains("BlendShape"));
+        }
+
+        [Test]
+        public void CheckExportableDataAndShowDialogIfEmpty_エクスポート可能な場合trueを返す()
+        {
+            // Act
+            var result = FbxPackageChecker.CheckExportableDataAndShowDialogIfEmpty(
+                hasExportableData: true,
+                showDialog: false);
+
+            // Assert
+            Assert.IsTrue(result, "エクスポート可能なデータがある場合はtrueを返すべき");
+        }
+
+        [Test]
+        public void CheckExportableDataAndShowDialogIfEmpty_エクスポート不可の場合falseを返す()
+        {
+            // Act
+            var result = FbxPackageChecker.CheckExportableDataAndShowDialogIfEmpty(
+                hasExportableData: false,
+                showDialog: false); // テスト時はダイアログ表示しない
+
+            // Assert
+            Assert.IsFalse(result, "エクスポート可能なデータがない場合はfalseを返すべき");
+        }
+
+        #endregion
     }
 }
