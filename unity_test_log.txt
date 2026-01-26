@@ -1,9 +1,9 @@
 [Licensing::Module] Trying to connect to existing licensing client channel...
 Built from '6000.0/respin/6000.0.64f1-d4299b69b02d' branch; Version is '6000.0.64f1 (5360b7cd7953) revision 5464247'; Using compiler version '193933523'; Build Type 'Release'
 OS: 'Windows 11  (10.0.26100) 64bit Professional' Language: 'ja' Physical Memory: 65249 MB
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano" at "2026-01-26T23:51:27.6263349Z"
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano" at "2026-01-26T23:52:50.2530162Z"
 BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
-Date: 2026-01-26T23:51:27Z
+Date: 2026-01-26T23:52:50Z
 
 COMMAND LINE ARGUMENTS:
 C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Unity.exe
@@ -14,12 +14,12 @@ C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Unity.exe
 -testPlatform
 EditMode
 -testFilter
-FileNameGeneratorTests
+AnimationMergeTool.Editor.Tests.FileNameGeneratorTests
 -testResults
-../TestResults_P16001.xml
+D:\Personal\Repositries\AnimationMergeToolForTimeline\TestResults_P16-002.xml
 -logFile
-../unity_test_log.txt
--quit
+D:\Personal\Repositries\AnimationMergeToolForTimeline\unity_test_log.txt
+-nographics
 Successfully changed project path to: D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
 D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
 [UnityMemory] Configuration Parameters - Can be set up in boot.config
@@ -57,16 +57,16 @@ D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimel
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gfx=262144"
-Player connection [564464]  Target information:
+Player connection [552120]  Target information:
 
-Player connection [564464]  * "[IP] 192.168.0.112 [Port] 55505 [Flags] 2 [Guid] 287479638 [EditorId] 287479638 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-794D179) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [552120]  * "[IP] 192.168.0.112 [Port] 55505 [Flags] 2 [Guid] 4254980880 [EditorId] 4254980880 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-794D179) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [564464] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [564464] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Player connection [552120] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [552120] Host joined alternative multi-casting on [225.0.0.222:34997]...
 Input System module state changed to: Initialized.
 [Physics::Module] Initialized fallback backend.
 [Physics::Module] Id: 0xdecafbad
-[Package Manager] Connected to IPC stream "Upm-567920" after 0.2 seconds.
+[Package Manager] Connected to IPC stream "Upm-568936" after 0.2 seconds.
 Library Redirect Path: Library/
 [Physics::Module] Selected backend.
 [Physics::Module] Name: PhysX
@@ -79,26 +79,33 @@ Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 6000.0.64f1 (5360b7cd7953)
 [Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Resources/UnitySubsystems
 [Subsystems] Discovering subsystems at path D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/Assets
+Forcing GfxDevice: Null
 GfxDevice: creating device client; kGfxThreadingModeNonThreaded
-Direct3D:
-    Version:  Direct3D 11.0 [level 11.1]
-    Renderer: NVIDIA GeForce RTX 4070 Ti SUPER (ID=0x2705)
-    Vendor:   NVIDIA
-    VRAM:     16063 MB
-    Driver:   32.0.15.6094
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
 Initialize mono
 Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed'
 Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
 Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56920
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56936
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001326 seconds.
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.17.4+4293ba1
-  Session Id:              ea040f6161464c7ba8eda0874ae01b91
+  Session Id:              edb1280ad2b14f4bbbe666356c505a38
   Correlation Id:          b2cd0e2ca88a776c54a1e2e5ce5fac7d
-  External correlation Id: 4469193051383149482
+  External correlation Id: 6032091347544151405
   Machine Id:              NJnCi2kLka6rUvnOkC/kk5D1Dzo=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-Hidano" (connect: 0.00s, validation: 0.00s, handshake: 0.52s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano-notifications" at "2026-01-26T23:51:28.1467694Z"
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-Hidano" (connect: 0.00s, validation: 0.00s, handshake: 0.57s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Hidano-notifications" at "2026-01-26T23:52:50.829598Z"
 [Licensing::Module] Error: Access token is unavailable; failed to update
 [Licensing::Client] Successfully resolved entitlement details
 [Licensing::Module] License group:
@@ -107,47 +114,39 @@ Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,susp
   Type: Assigned
   Expiration: Unlimited
 [Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
-[Licensing::Module] Licensing Background thread has ended after 0.52s
-Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
-Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
-ImportWorker Server TCP listen port: 0
-AcceleratorClientConnectionCallback - disconnected - :0
-Begin MonoManager ReloadAssembly
-Registering precompiled unity dll's ...
-Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
-Registered in 0.001414 seconds.
-- Loaded All Assemblies, in  0.220 seconds
+[Licensing::Module] Licensing Background thread has ended after 0.58s
+- Loaded All Assemblies, in  0.224 seconds
 Native extension for WindowsStandalone target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.177 seconds
-Domain Reload Profiling: 395ms
-	BeginReloadAssembly (74ms)
+- Finished resetting the current domain, in  0.192 seconds
+Domain Reload Profiling: 415ms
+	BeginReloadAssembly (75ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (1ms)
-	RebuildCommonClasses (22ms)
+		CreateAndSetChildDomain (0ms)
+	RebuildCommonClasses (21ms)
 	RebuildNativeTypeToScriptingClass (7ms)
-	initialDomainReloadingComplete (28ms)
-	LoadAllAssembliesAndSetupDomain (89ms)
-		LoadAssemblies (72ms)
+	initialDomainReloadingComplete (27ms)
+	LoadAllAssembliesAndSetupDomain (93ms)
+		LoadAssemblies (74ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (87ms)
-			TypeCache.Refresh (86ms)
-				TypeCache.ScanAssembly (77ms)
+		AnalyzeDomain (91ms)
+			TypeCache.Refresh (90ms)
+				TypeCache.ScanAssembly (82ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (177ms)
+	FinalizeReload (192ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (158ms)
+		SetupLoadedEditorAssemblies (172ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (14ms)
+			InitializePlatformSupportModulesInManaged (15ms)
 			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (33ms)
-			ProcessInitializeOnLoadAttributes (76ms)
-			ProcessInitializeOnLoadMethodAttributes (31ms)
+			BeforeProcessingInitializeOnLoad (35ms)
+			ProcessInitializeOnLoadAttributes (83ms)
+			ProcessInitializeOnLoadMethodAttributes (35ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -205,8 +204,7 @@ Embedded package [com.hidano.animation-merge-tool] was found in the directory [D
   Embedded packages:
     com.hidano.animation-merge-tool@file:D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline\Packages\AnimationMergeToolForTimeline (location: D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline\Packages\AnimationMergeToolForTimeline)
 [Subsystems] No new subsystems found in resolved package list.
-[Package Manager] Done registering packages in 0.01 seconds
-[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+[Package Manager] Done registering packages in 0.02 seconds
 info: Microsoft.Hosting.Lifetime[14]
       Now listening on: http://localhost:80
 info: Microsoft.Hosting.Lifetime[0]
@@ -222,501 +220,183 @@ info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 22.4295ms
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 23.3495ms
 Starting: C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Data\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aEDbg.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
 WorkingDir: D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline
 DisplayProgressbar: Compiling Scripts
-ExitCode: 3 Duration: 1s26ms
-[250/253    0s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.dll (+2 others)
-##### CommandLine
-"C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Data\NetCoreRuntime\dotnet.exe" exec "C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/DotNetSdkRoslyn/csc.dll" /nostdlib /noconfig /shared "@Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.rsp" "@Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.rsp2"
-##### Contents of Library\Bee\artifacts\1900b0aEDbg.dag\AnimationMergeTool.Editor.Tests.rsp
--target:library
--out:"Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.dll"
--refout:"Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.ref.dll"
--define:UNITY_6000_0_64
--define:UNITY_6000_0
--define:UNITY_6000
--define:UNITY_5_3_OR_NEWER
--define:UNITY_5_4_OR_NEWER
--define:UNITY_5_5_OR_NEWER
--define:UNITY_5_6_OR_NEWER
--define:UNITY_2017_1_OR_NEWER
--define:UNITY_2017_2_OR_NEWER
--define:UNITY_2017_3_OR_NEWER
--define:UNITY_2017_4_OR_NEWER
--define:UNITY_2018_1_OR_NEWER
--define:UNITY_2018_2_OR_NEWER
--define:UNITY_2018_3_OR_NEWER
--define:UNITY_2018_4_OR_NEWER
--define:UNITY_2019_1_OR_NEWER
--define:UNITY_2019_2_OR_NEWER
--define:UNITY_2019_3_OR_NEWER
--define:UNITY_2019_4_OR_NEWER
--define:UNITY_2020_1_OR_NEWER
--define:UNITY_2020_2_OR_NEWER
--define:UNITY_2020_3_OR_NEWER
--define:UNITY_2021_1_OR_NEWER
--define:UNITY_2021_2_OR_NEWER
--define:UNITY_2021_3_OR_NEWER
--define:UNITY_2022_1_OR_NEWER
--define:UNITY_2022_2_OR_NEWER
--define:UNITY_2022_3_OR_NEWER
--define:UNITY_2023_1_OR_NEWER
--define:UNITY_2023_2_OR_NEWER
--define:UNITY_2023_3_OR_NEWER
--define:UNITY_6000_0_OR_NEWER
--define:PLATFORM_ARCH_64
--define:UNITY_64
--define:UNITY_INCLUDE_TESTS
--define:ENABLE_AR
--define:ENABLE_AUDIO
--define:ENABLE_CACHING
--define:ENABLE_CLOTH
--define:ENABLE_EVENT_QUEUE
--define:ENABLE_MICROPHONE
--define:ENABLE_MULTIPLE_DISPLAYS
--define:ENABLE_PHYSICS
--define:ENABLE_TEXTURE_STREAMING
--define:ENABLE_VIRTUALTEXTURING
--define:ENABLE_LZMA
--define:ENABLE_UNITYEVENTS
--define:ENABLE_VR
--define:ENABLE_WEBCAM
--define:ENABLE_UNITYWEBREQUEST
--define:ENABLE_WWW
--define:ENABLE_CLOUD_SERVICES
--define:ENABLE_CLOUD_SERVICES_ADS
--define:ENABLE_CLOUD_SERVICES_USE_WEBREQUEST
--define:ENABLE_CLOUD_SERVICES_CRASH_REPORTING
--define:ENABLE_CLOUD_SERVICES_PURCHASING
--define:ENABLE_CLOUD_SERVICES_ANALYTICS
--define:ENABLE_CLOUD_SERVICES_BUILD
--define:ENABLE_EDITOR_GAME_SERVICES
--define:ENABLE_UNITY_GAME_SERVICES_ANALYTICS_SUPPORT
--define:ENABLE_CLOUD_LICENSE
--define:ENABLE_EDITOR_HUB_LICENSE
--define:ENABLE_WEBSOCKET_CLIENT
--define:ENABLE_GENERATE_NATIVE_PLUGINS_FOR_ASSEMBLIES_API
--define:ENABLE_DIRECTOR_AUDIO
--define:ENABLE_DIRECTOR_TEXTURE
--define:ENABLE_MANAGED_JOBS
--define:ENABLE_MANAGED_TRANSFORM_JOBS
--define:ENABLE_MANAGED_ANIMATION_JOBS
--define:ENABLE_MANAGED_AUDIO_JOBS
--define:ENABLE_MANAGED_UNITYTLS
--define:INCLUDE_DYNAMIC_GI
--define:ENABLE_SCRIPTING_GC_WBARRIERS
--define:PLATFORM_SUPPORTS_MONO
--define:RENDER_SOFTWARE_CURSOR
--define:ENABLE_MARSHALLING_TESTS
--define:ENABLE_VIDEO
--define:ENABLE_NAVIGATION_OFFMESHLINK_TO_NAVMESHLINK
--define:ENABLE_ACCELERATOR_CLIENT_DEBUGGING
--define:TEXTCORE_1_0_OR_NEWER
--define:EDITOR_ONLY_NAVMESH_BUILDER_DEPRECATED
--define:PLATFORM_STANDALONE_WIN
--define:PLATFORM_STANDALONE
--define:UNITY_STANDALONE_WIN
--define:UNITY_STANDALONE
--define:ENABLE_RUNTIME_GI
--define:ENABLE_MOVIES
--define:ENABLE_NETWORK
--define:ENABLE_NVIDIA
--define:ENABLE_AMD
--define:ENABLE_CRUNCH_TEXTURE_COMPRESSION
--define:ENABLE_OUT_OF_PROCESS_CRASH_HANDLER
--define:ENABLE_CLUSTER_SYNC
--define:ENABLE_CLUSTERINPUT
--define:PLATFORM_UPDATES_TIME_OUTSIDE_OF_PLAYER_LOOP
--define:GFXDEVICE_WAITFOREVENT_MESSAGEPUMP
--define:PLATFORM_USES_EXPLICIT_MEMORY_MANAGER_INITIALIZER
--define:PLATFORM_SUPPORTS_WAIT_FOR_PRESENTATION
--define:PLATFORM_SUPPORTS_SPLIT_GRAPHICS_JOBS
--define:ENABLE_MONO
--define:NET_4_6
--define:NET_UNITY_4_8
--define:ENABLE_PROFILER
--define:DEBUG
--define:TRACE
--define:UNITY_ASSERTIONS
--define:UNITY_EDITOR
--define:UNITY_EDITOR_64
--define:UNITY_EDITOR_WIN
--define:ENABLE_UNITY_COLLECTIONS_CHECKS
--define:ENABLE_BURST_AOT
--define:UNITY_TEAM_LICENSE
--define:ENABLE_CUSTOM_RENDER_TEXTURE
--define:ENABLE_DIRECTOR
--define:ENABLE_LOCALIZATION
--define:ENABLE_SPRITES
--define:ENABLE_TERRAIN
--define:ENABLE_TILEMAP
--define:ENABLE_TIMELINE
--define:ENABLE_LEGACY_INPUT_MANAGER
--define:TEXTCORE_FONT_ENGINE_1_5_OR_NEWER
--define:TEXTCORE_TEXT_ENGINE_1_5_OR_NEWER
--define:CSHARP_7_OR_LATER
--define:CSHARP_7_3_OR_NEWER
--define:UNITY_EDITOR_ONLY_COMPILATION
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEditor.Graphs.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.AccessibilityModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.AdaptivePerformanceModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.BuildProfileModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.CoreBusinessMetricsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.CoreModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.DeviceSimulatorModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.DiagnosticsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.EditorToolbarModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.EmbreeModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.GIModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.GraphicsStateCollectionSerializerModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.GraphViewModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.GridAndSnapModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.GridModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.InAppPurchasingModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.LevelPlayModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.MultiplayerModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.Physics2DModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.PhysicsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.PresetsUIModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.PropertiesModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.QuickSearchModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.SafeModeModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.SceneTemplateModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.SceneViewModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.ShaderFoundryModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.SketchUpModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.SpriteMaskModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.SpriteShapeModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.SubstanceModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.TerrainModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.TextCoreFontEngineModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.TextCoreTextEngineModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.TextRenderingModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.TilemapModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.TreeModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.UIAutomationModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.UIBuilderModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.UIElementsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.UIElementsSamplesModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.UmbraModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.UnityConnectModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.VFXModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.VideoModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEditor.XRModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.AccessibilityModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.AMDModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.AndroidJNIModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.AnimationModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.ARModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.AssetBundleModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.AudioModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.ClothModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.ClusterInputModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.ClusterRendererModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.ContentLoadModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.CrashReportingModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.DirectorModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.DSPGraphModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.GameCenterModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.GIModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.GraphicsStateCollectionSerializerModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.GridModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.HierarchyCoreModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.HotReloadModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.ImageConversionModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.IMGUIModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.InputForUIModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.InputLegacyModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.InputModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.JSONSerializeModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.LocalizationModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.MarshallingModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.MultiplayerModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.NVIDIAModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.ParticleSystemModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.PerformanceReportingModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.Physics2DModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.PhysicsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.PropertiesModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.ScreenCaptureModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.ShaderVariantAnalyticsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.SharedInternalsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.SpriteMaskModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.SpriteShapeModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.StreamingModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.SubstanceModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.SubsystemsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.TerrainModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.TerrainPhysicsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.TextCoreFontEngineModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.TextCoreTextEngineModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.TextRenderingModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.TilemapModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.TLSModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UIElementsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UIModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UmbraModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityAnalyticsCommonModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityAnalyticsModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityConnectModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityCurlModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityTestProtocolModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityWebRequestAssetBundleModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityWebRequestAudioModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityWebRequestModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityWebRequestTextureModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.UnityWebRequestWWWModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.VehiclesModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.VFXModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.VideoModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.VirtualTexturingModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.VRModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.WindModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Managed/UnityEngine/UnityEngine.XRModule.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/Microsoft.Win32.Primitives.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/netstandard.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.AppContext.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Buffers.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Collections.Concurrent.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Collections.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Collections.NonGeneric.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Collections.Specialized.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ComponentModel.Annotations.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ComponentModel.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ComponentModel.EventBasedAsync.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ComponentModel.Primitives.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ComponentModel.TypeConverter.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Console.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Data.Common.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Diagnostics.Contracts.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Diagnostics.Debug.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Diagnostics.FileVersionInfo.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Diagnostics.Process.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Diagnostics.StackTrace.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Diagnostics.TextWriterTraceListener.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Diagnostics.Tools.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Diagnostics.TraceSource.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Drawing.Primitives.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Dynamic.Runtime.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Globalization.Calendars.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Globalization.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Globalization.Extensions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.Compression.ZipFile.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.FileSystem.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.FileSystem.DriveInfo.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.FileSystem.Primitives.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.FileSystem.Watcher.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.IsolatedStorage.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.MemoryMappedFiles.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.Pipes.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.IO.UnmanagedMemoryStream.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Linq.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Linq.Expressions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Linq.Parallel.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Linq.Queryable.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Memory.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.Http.Rtc.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.NameResolution.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.NetworkInformation.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.Ping.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.Primitives.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.Requests.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.Security.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.Sockets.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.WebHeaderCollection.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.WebSockets.Client.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Net.WebSockets.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ObjectModel.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Reflection.DispatchProxy.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Reflection.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Reflection.Emit.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Reflection.Emit.ILGeneration.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Reflection.Emit.Lightweight.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Reflection.Extensions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Reflection.Primitives.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Resources.Reader.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Resources.ResourceManager.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Resources.Writer.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.CompilerServices.VisualC.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.Extensions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.Handles.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.InteropServices.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.InteropServices.RuntimeInformation.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.InteropServices.WindowsRuntime.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.Numerics.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.Serialization.Formatters.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.Serialization.Json.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.Serialization.Primitives.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.Serialization.Xml.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Security.Claims.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Security.Cryptography.Algorithms.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Security.Cryptography.Csp.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Security.Cryptography.Encoding.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Security.Cryptography.Primitives.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Security.Cryptography.X509Certificates.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Security.Principal.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Security.SecureString.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ServiceModel.Duplex.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ServiceModel.Http.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ServiceModel.NetTcp.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ServiceModel.Primitives.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ServiceModel.Security.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Text.Encoding.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Text.Encoding.Extensions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Text.RegularExpressions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Threading.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Threading.Overlapped.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Threading.Tasks.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Threading.Tasks.Extensions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Threading.Tasks.Parallel.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Threading.Thread.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Threading.ThreadPool.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Threading.Timer.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.ValueTuple.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Xml.ReaderWriter.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Xml.XDocument.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Xml.XmlDocument.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Xml.XmlSerializer.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Xml.XPath.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Xml.XPath.XDocument.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/Microsoft.CSharp.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/mscorlib.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.ComponentModel.Composition.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Core.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Data.DataSetExtensions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Data.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Drawing.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.IO.Compression.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.IO.Compression.FileSystem.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Net.Http.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Numerics.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Numerics.Vectors.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Runtime.Serialization.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Transactions.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Xml.dll"
--r:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.Xml.Linq.dll"
--r:"Library/PackageCache/com.unity.ext.nunit@031a54704bff/net40/unity-custom/nunit.framework.dll"
--r:"Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.ref.dll"
--r:"Library/Bee/artifacts/1900b0aEDbg.dag/Unity.Timeline.ref.dll"
--r:"Library/Bee/artifacts/1900b0aEDbg.dag/UnityEditor.TestRunner.ref.dll"
--r:"Library/Bee/artifacts/1900b0aEDbg.dag/UnityEditor.UI.ref.dll"
--r:"Library/Bee/artifacts/1900b0aEDbg.dag/UnityEngine.TestRunner.ref.dll"
--r:"Library/Bee/artifacts/1900b0aEDbg.dag/UnityEngine.UI.ref.dll"
--analyzer:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Tools/Unity.SourceGenerators/Unity.Properties.SourceGenerator.dll"
--analyzer:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Tools/Unity.SourceGenerators/Unity.SourceGenerators.dll"
--analyzer:"C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/Tools/Unity.SourceGenerators/Unity.UIToolkit.SourceGenerator.dll"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/AnimationClipExporterTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/AnimationMergeServiceTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/BlendProcessorTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/BlendShapeDetectorTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/ClipInfoTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/ClipMergerTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/ContextMenuHandlerTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/CurveOverriderTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/ExtrapolationProcessorTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/FbxAnimationExporterTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/FbxPackageCheckerTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/FileNameGeneratorTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/HumanoidToGenericConverterTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/IntegrationTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/MergeResultTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/MuscleDetectorTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/NonSkeletonTransformExtractorTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/ProgressDisplayTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/RootMotionDetectorTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/SkeletonExtractorTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/TrackAnalyzerTests.cs"
-"Packages/AnimationMergeToolForTimeline/Tests/Editor/TrackInfoTests.cs"
--langversion:9.0
-/deterministic
-/optimize-
-/debug:portable
-/nologo
-/RuntimeMetadataVersion:v4.0.30319
-/nowarn:0169
-/nowarn:0649
-/nowarn:0282
-/nowarn:1701
-/nowarn:1702
-/utf8output
-/preferreduilang:en-US
-/additionalfile:"Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.UnityAdditionalFile.txt"
-##### Custom Environment Variables
-DOTNET_MULTILEVEL_LOOKUP=0
-##### ExitCode
-1
-##### Output
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(333,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
+ExitCode: 0 Duration: 0s145ms
+*** Tundra build success (0.02 seconds), 0 items updated, 253 evaluated
+AssetDatabase: script compilation time: 0.453036s
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.400 seconds
+Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
+Native extension for WindowsStandalone target not found
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.281 seconds
+Domain Reload Profiling: 680ms
+	BeginReloadAssembly (235ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (39ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (119ms)
+	RebuildCommonClasses (20ms)
+	RebuildNativeTypeToScriptingClass (7ms)
+	initialDomainReloadingComplete (13ms)
+	LoadAllAssembliesAndSetupDomain (124ms)
+		LoadAssemblies (137ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (43ms)
+			TypeCache.Refresh (35ms)
+				TypeCache.ScanAssembly (31ms)
+			BuildScriptInfoCaches (6ms)
+			ResolveRequiredComponents (1ms)
+	FinalizeReload (281ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (217ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (8ms)
+			SetLoadedEditorAssemblies (2ms)
+			BeforeProcessingInitializeOnLoad (62ms)
+			ProcessInitializeOnLoadAttributes (124ms)
+			ProcessInitializeOnLoadMethodAttributes (19ms)
+			AfterProcessingInitializeOnLoad (2ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (6ms)
+Asset Pipeline Refresh (id=07882b9f0c42add4aa6952af29c709a0): Total: 1.298 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=398 ms
+		Asset DB Callback time: managed=11 ms, native=17 ms
+		Scripting: domain reloads=1, domain reload time=400 ms, compile time=454 ms, other=16 ms
+		Project Asset Count: scripts=346, non-scripts=267
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 18.005ms
+	ApplyChangesToAssetFolders: 0.350ms
+	Scan: 50.263ms
+	OnSourceAssetsModified: 0.001ms
+	CategorizeAssetsWithTransientArtifact: 5.591ms
+	ProcessAssetsWithTransientArtifactChanges: 9.095ms
+	CategorizeAssets: 2.372ms
+	ImportOutOfDateAssets: 282.252ms (-171.794ms without children)
+		CompileScripts: 453.803ms
+		ReloadNativeAssets: 0.000ms
+		UnloadImportedAssets: 0.068ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.063ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.112ms
+	PostProcessAllAssets: 11.802ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
+	UnloadStreamsBegin: 0.138ms
+	PersistCurrentRevisions: 0.014ms
+	UnloadStreamsEnd: 0.001ms
+	GenerateScriptTypeHashes: 0.132ms
+	Untracked: 918.581ms
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(348,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 4.213ms
+Initializing Unity extensions:
+Script 'Packages/AnimationMergeToolForTimeline/package.json' will not be compiled because it exists outside the Assets folder and does not to belong to any assembly definition file.
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-AnimationMergeToolForTimeline
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 1276 unused Assets / (0.8 MB). Loaded Objects now: 1788.
+Memory consumption went from 92.7 MB to 91.9 MB.
+Total: 3.616300 ms (FindLiveObjects: 0.087800 ms CreateObjectMapping: 0.033600 ms MarkObjects: 3.177800 ms  DeleteObjects: 0.313300 ms)
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(363,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
+Microsoft Media Foundation video decoding to texture disabled: graphics device is Null, only Direct3D 11 and Direct3D 12 (only on desktop) are supported for hardware-accelerated video decoding.
+[Project] Loading completed in 5.376 seconds
+	Project init time: 				2.281 seconds
+		Template init time: 		0.000 seconds
+		Package Manager init time: 		0.220 seconds
+		Asset Database init time: 		0.138 seconds
+		Global illumination init time: 	0.002 seconds
+		Assemblies load time: 			0.427 seconds
+		Unity extensions init time: 	0.004 seconds
+		Asset Database refresh time: 	1.299 seconds
+	Scene opening time: 			2.982 seconds
+##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1769471575528,"processId":568936,"projectLoad":5.3764084,"projectInit":2.2811883,"templateInit":0.0,"packageManagerInit":0.2201063,"assetDatabaseInit":0.1383356,"globalIlluminationInit":0.0019666,"assembliesLoad":0.426653,"unityExtensionsInit":0.0039102,"assetDatabaseRefresh":1.2985881,"sceneOpening":2.9817985}
+##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1769471575528,"processId":568936,"editorVersion":"6000.0.64f1 (5360b7cd7953)","branch":"6000.0/respin/6000.0.64f1-d4299b69b02d","buildType":"Release","platform":"Windows"}
+Asset Pipeline Refresh (id=9222127262f597c48a9851be422deb0b): Total: 0.007 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Running tests for ExecutionSettings with details:
+targetPlatform = 
+playerHeartbeatTimeout = 600
+filters[0] = 
+   Filter with settings:
+   testMode = EditMode
+   targetPlatform = 
+   testNames = null
+   groupNames = AnimationMergeTool.Editor.Tests.FileNameGeneratorTests
+   categoryNames = null
+   assemblyNames = null
+ignoreTests = {}
+featureFlags = null
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(378,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:InitializeAndExecuteRun (string[]) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs:53)
+UnityEditor.TestTools.TestRunner.CommandLineTest.TestStarter:InitializeAndExecuteRun () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/TestStarter.cs:64)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(393,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
+(Filename: ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 53)
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(408,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
+[UnityConnectServicesConfig] config is NOT valid, switching to default
+Created GICache directory at C:/Users/Hidano/AppData/LocalLow/Unity/Caches/GiCache. Took: 0.004s, timestamps: [5.384 - 5.388]
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 2 unused Assets / (1.4 KB). Loaded Objects now: 1829.
+Memory consumption went from 89.6 MB to 89.6 MB.
+Total: 3.534200 ms (FindLiveObjects: 0.058100 ms CreateObjectMapping: 0.015900 ms MarkObjects: 3.444000 ms  DeleteObjects: 0.015700 ms)
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(423,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
+Saving results to: D:\Personal\Repositries\AnimationMergeToolForTimeline\TestResults_P16-002.xml
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 0 unused Assets / (0 B). Loaded Objects now: 1830.
+Memory consumption went from 89.5 MB to 89.5 MB.
+Total: 3.582000 ms (FindLiveObjects: 0.054600 ms CreateObjectMapping: 0.014600 ms MarkObjects: 3.508400 ms  DeleteObjects: 0.003700 ms)
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(441,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
+DisplayProgressbar: Undo
+Test run completed. Exiting with code 0 (Ok). Run completed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:ExitApplication (UnityEditor.TestTools.TestRunner.CommandLineTest.Executer/ReturnCodes,string) (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs:81)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:ExitIfRunIsCompleted () (at ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs:74)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(456,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
+(Filename: ./Library/PackageCache/com.unity.test-framework@24afccc4ed24/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 81)
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(472,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
+[Physics::Module] Cleanup current backned.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-Hidano-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-Hidano channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+08:52:56.883 |V| RiderPlugin                    | :1                             | AppDomain.CurrentDomain.DomainUnload lifetimeDefinition.Terminate
+abort_threads: Failed aborting id: 000000000008B3D4, mono_thread_manage will ignore it
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(489,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
+abort_threads: Failed aborting id: 000000000008B3B8, mono_thread_manage will ignore it
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(504,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
+abort_threads: Failed aborting id: 000000000008B3D4, mono_thread_manage will ignore it
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(518,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
+abort_threads: Failed aborting id: 000000000008B3B8, mono_thread_manage will ignore it
 
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(532,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-*** Tundra build failed (1.01 seconds), 1 items updated, 253 evaluated
-## Script Compilation Error for: Csc Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.dll (+2 others)
-## CmdLine: "C:\Program Files\Unity\Hub\Editor\6000.0.64f1\Editor\Data\NetCoreRuntime\dotnet.exe" exec "C:/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Data/DotNetSdkRoslyn/csc.dll" /nostdlib /noconfig /shared "@Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.rsp" "@Library/Bee/artifacts/1900b0aEDbg.dag/AnimationMergeTool.Editor.Tests.rsp2"
-## Output:
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(333,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(348,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(363,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(378,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(393,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(408,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(423,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(441,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(456,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(472,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(489,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(504,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(518,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(532,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(333,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(348,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(363,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(378,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(393,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(408,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(423,45): error CS1501: No overload for method 'GenerateBaseName' takes 3 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(441,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(456,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(472,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(489,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(504,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(518,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-Packages\AnimationMergeToolForTimeline\Tests\Editor\FileNameGeneratorTests.cs(532,36): error CS1501: No overload for method 'GenerateUniqueFilePath' takes 4 arguments
-AssetDatabase: script compilation time: 1.301106s
-Scripts have compiler errors.
-Exiting without the bug reporter. Application will terminate with return code 1
+debugger-agent: Unable to listen on 3856
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+[Package Manager] Server process was shutdown
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1769471576933,"processId":568936,"allocatedMemory":10408741,"memoryLabels":[{"Default":14269},{"Permanent":15356},{"NewDelete":70345},{"Thread":4230344},{"Manager":37754},{"VertexData":8},{"Geometry":816},{"VFX":-104},{"Texture":296},{"Shader":78795},{"Material":24},{"GfxDevice":55176},{"Animation":392},{"Audio":4040},{"FontEngine":256},{"Physics":2081},{"Serialization":880},{"Input":14824},{"JobScheduler":33024},{"TextLib":160},{"Mono":32},{"ScriptingNativeRuntime":155060},{"BaseObject":1620112},{"Resource":1304},{"Renderer":2928},{"Transform":4646},{"File":1016},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":9644},{"DynamicArray":87302},{"HashMap":77238},{"Utility":2662798},{"Curl":48},{"PoolAlloc":1768},{"AI":104},{"TypeTree":5005},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7888},{"Director":8240},{"WebRequest":808},{"VR":45969},{"SceneManager":496},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":1},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":256},{"Hierarchy":272},{"Gui":80},{"EditorUtility":54031},{"VersionControl":4},{"Undo":947},{"AssetDatabase":700519},{"EditorGi":328},{"UnityConnect":24208},{"Upm":2036},{"DrivenProperties":72},{"LocalIPC":212},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2604},{"Licensing":664},{"AssetReference":32},{"IPCStream":32}]}
