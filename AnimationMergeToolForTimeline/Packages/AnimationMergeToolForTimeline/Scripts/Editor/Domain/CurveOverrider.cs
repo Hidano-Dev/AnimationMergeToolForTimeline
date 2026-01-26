@@ -291,11 +291,29 @@ namespace AnimationMergeTool.Editor.Domain
             var lowerStartTime = (float)lowerPriorityClipInfo.StartTime;
             var lowerEndTime = (float)lowerPriorityClipInfo.EndTime;
 
-            // 低優先順位カーブのキーを追加（高優先順位の区間外のみ）
+            // Extrapolationが有効な区間を計算
+            // PreExtrapolationがNone以外の場合、higherStartTimeより前の区間も高優先順位がカバー
+            // PostExtrapolationがNone以外の場合、higherEndTimeより後の区間も高優先順位がカバー
+            var effectiveHigherStartTime = higherStartTime;
+            var effectiveHigherEndTime = higherEndTime;
+
+            if (higherPriorityClipInfo.PreExtrapolation != TimelineClip.ClipExtrapolation.None)
+            {
+                // PreExtrapolationが有効なら、低優先順位クリップの開始時間まで高優先順位がカバー
+                effectiveHigherStartTime = lowerStartTime;
+            }
+
+            if (higherPriorityClipInfo.PostExtrapolation != TimelineClip.ClipExtrapolation.None)
+            {
+                // PostExtrapolationが有効なら、低優先順位クリップの終了時間まで高優先順位がカバー
+                effectiveHigherEndTime = lowerEndTime;
+            }
+
+            // 低優先順位カーブのキーを追加（高優先順位の有効区間外のみ）
             foreach (var key in lowerPriorityCurve.keys)
             {
-                // 高優先順位の区間内のキーはスキップ
-                if (key.time >= higherStartTime && key.time <= higherEndTime)
+                // 高優先順位の有効区間内のキーはスキップ
+                if (key.time >= effectiveHigherStartTime && key.time <= effectiveHigherEndTime)
                 {
                     continue;
                 }
@@ -320,15 +338,30 @@ namespace AnimationMergeTool.Editor.Domain
                 // PreExtrapolationがNone以外の場合のみ処理
                 if (higherPriorityClipInfo.PreExtrapolation != TimelineClip.ClipExtrapolation.None)
                 {
-                    // 高優先順位クリップのPreExtrapolationで低優先順位のキーを上書き
-                    for (var time = lowerStartTime; time < higherStartTime; time += frameInterval)
+                    // Hold処理の場合、高優先順位カーブの最初のキー値を直接使用
+                    var higherKeys = higherPriorityCurve.keys;
+                    var firstKeyValue = higherKeys.Length > 0 ? higherKeys[0].value : 0f;
+
+                    if (higherPriorityClipInfo.PreExtrapolation == TimelineClip.ClipExtrapolation.Hold)
                     {
-                        if (extrapolationProcessor.TryGetExtrapolatedValue(
-                            higherPriorityCurve, higherPriorityClipInfo, time, out var value))
+                        // Hold: 最初のキー値で区間を埋める
+                        for (var time = lowerStartTime; time < higherStartTime; time += frameInterval)
                         {
-                            // 既存のキーを削除して新しい値で置換
                             RemoveKeyAtTime(resultCurve, time);
-                            resultCurve.AddKey(new Keyframe(time, value));
+                            resultCurve.AddKey(new Keyframe(time, firstKeyValue));
+                        }
+                    }
+                    else
+                    {
+                        // その他のExtrapolationモード（Loop, PingPong, Continue）
+                        for (var time = lowerStartTime; time < higherStartTime; time += frameInterval)
+                        {
+                            if (extrapolationProcessor.TryGetExtrapolatedValue(
+                                higherPriorityCurve, higherPriorityClipInfo, time, out var value))
+                            {
+                                RemoveKeyAtTime(resultCurve, time);
+                                resultCurve.AddKey(new Keyframe(time, value));
+                            }
                         }
                     }
                 }
@@ -341,25 +374,43 @@ namespace AnimationMergeTool.Editor.Domain
                 // PostExtrapolationがNone以外の場合のみ処理
                 if (higherPriorityClipInfo.PostExtrapolation != TimelineClip.ClipExtrapolation.None)
                 {
-                    // 高優先順位クリップのPostExtrapolationで低優先順位のキーを上書き
-                    for (var time = higherEndTime + frameInterval; time <= lowerEndTime; time += frameInterval)
-                    {
-                        if (extrapolationProcessor.TryGetExtrapolatedValue(
-                            higherPriorityCurve, higherPriorityClipInfo, time, out var value))
-                        {
-                            // 既存のキーを削除して新しい値で置換
-                            RemoveKeyAtTime(resultCurve, time);
-                            resultCurve.AddKey(new Keyframe(time, value));
-                        }
-                    }
+                    // Hold処理の場合、高優先順位カーブの最後のキー値を直接使用
+                    // ExtrapolationProcessorを経由すると時間座標系の変換で値がずれる可能性がある
+                    var higherKeys = higherPriorityCurve.keys;
+                    var lastKeyValue = higherKeys.Length > 0 ? higherKeys[higherKeys.Length - 1].value : 0f;
 
-                    // 最終時間に近いポイントを追加（精度確保）
-                    var lastTime = lowerEndTime;
-                    if (extrapolationProcessor.TryGetExtrapolatedValue(
-                        higherPriorityCurve, higherPriorityClipInfo, lastTime, out var lastValue))
+                    if (higherPriorityClipInfo.PostExtrapolation == TimelineClip.ClipExtrapolation.Hold)
                     {
-                        RemoveKeyAtTime(resultCurve, lastTime);
-                        resultCurve.AddKey(new Keyframe(lastTime, lastValue));
+                        // Hold: 最後のキー値で区間を埋める
+                        for (var time = higherEndTime + frameInterval; time <= lowerEndTime; time += frameInterval)
+                        {
+                            RemoveKeyAtTime(resultCurve, time);
+                            resultCurve.AddKey(new Keyframe(time, lastKeyValue));
+                        }
+                        // 最終時間のキーを追加
+                        RemoveKeyAtTime(resultCurve, lowerEndTime);
+                        resultCurve.AddKey(new Keyframe(lowerEndTime, lastKeyValue));
+                    }
+                    else
+                    {
+                        // その他のExtrapolationモード（Loop, PingPong, Continue）
+                        for (var time = higherEndTime + frameInterval; time <= lowerEndTime; time += frameInterval)
+                        {
+                            if (extrapolationProcessor.TryGetExtrapolatedValue(
+                                higherPriorityCurve, higherPriorityClipInfo, time, out var value))
+                            {
+                                RemoveKeyAtTime(resultCurve, time);
+                                resultCurve.AddKey(new Keyframe(time, value));
+                            }
+                        }
+
+                        // 最終時間に近いポイントを追加（精度確保）
+                        if (extrapolationProcessor.TryGetExtrapolatedValue(
+                            higherPriorityCurve, higherPriorityClipInfo, lowerEndTime, out var endValue))
+                        {
+                            RemoveKeyAtTime(resultCurve, lowerEndTime);
+                            resultCurve.AddKey(new Keyframe(lowerEndTime, endValue));
+                        }
                     }
                 }
             }

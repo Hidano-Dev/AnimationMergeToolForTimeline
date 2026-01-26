@@ -160,8 +160,10 @@ namespace AnimationMergeTool.Editor.Domain
             if (timeScale <= 0) timeScale = 1f;
 
             // ソースクリップの最初のキーフレームの時間と値
-            var firstKeyTime = clipIn;
-            var firstKeyValue = curve.Evaluate(firstKeyTime);
+            // カーブの実際の最初のキー値を取得（カーブのキーがTimeline時間で設定されている場合に対応）
+            var keys = curve.keys;
+            var firstKeyTime = keys.Length > 0 ? keys[0].time : clipIn;
+            var firstKeyValue = keys.Length > 0 ? keys[0].value : curve.Evaluate(firstKeyTime);
 
             switch (clipInfo.PreExtrapolation)
             {
@@ -213,8 +215,10 @@ namespace AnimationMergeTool.Editor.Domain
             if (timeScale <= 0) timeScale = 1f;
 
             // ソースクリップの最後のキーフレームの時間と値
-            var lastKeyTime = clipIn + clipDuration * timeScale;
-            var lastKeyValue = curve.Evaluate(lastKeyTime);
+            // カーブの実際の最後のキー値を取得（カーブのキーがTimeline時間で設定されている場合に対応）
+            var keys = curve.keys;
+            var lastKeyTime = keys.Length > 0 ? keys[keys.Length - 1].time : clipIn + clipDuration * timeScale;
+            var lastKeyValue = keys.Length > 0 ? keys[keys.Length - 1].value : curve.Evaluate(lastKeyTime);
 
             switch (clipInfo.PostExtrapolation)
             {
