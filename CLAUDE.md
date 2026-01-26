@@ -8,10 +8,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## ドキュメント
 
-プロジェクトの詳細な仕様やテスト要件は以下のドキュメントを参照してください：
+プロジェクトの詳細な仕様は以下のドキュメントを参照してください：
 
 - `AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline/Docs/要件定義書.md` - 正式な要件定義書
-- `AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline/Docs/QAシート.md` - 要件確認シート（参考資料）
+- `AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline/Docs/開発計画書.md` - 開発計画書
 
 **重要**: 開発を開始する前に、必ず要件定義書を確認してください。
 
@@ -36,7 +36,7 @@ AnimationMergeToolForTimeline/
 ├── Packages/
 │   ├── manifest.json         # パッケージ依存関係
 │   └── AnimationMergeToolForTimeline/
-│       └── Docs/             # 要件定義書・QAシート
+│       └── Docs/             # 要件定義書・開発計画書
 ├── ProjectSettings/          # Unity プロジェクト設定
 ├── Assembly-CSharp.csproj    # ランタイムアセンブリ
 └── Assembly-CSharp-Editor.csproj  # エディタ拡張アセンブリ
