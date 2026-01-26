@@ -172,8 +172,8 @@ namespace AnimationMergeTool.Editor.Domain
                     return false;
 
                 case TimelineClip.ClipExtrapolation.Hold:
-                    // 最初のキーの値を維持
-                    value = firstKeyValue;
+                    // ClipInを考慮して、クリップ開始時の値を取得
+                    value = curve.Evaluate(clipIn);
                     return true;
 
                 case TimelineClip.ClipExtrapolation.Loop:
