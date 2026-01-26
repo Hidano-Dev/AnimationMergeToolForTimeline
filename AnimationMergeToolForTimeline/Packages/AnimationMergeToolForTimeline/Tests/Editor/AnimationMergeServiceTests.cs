@@ -751,8 +751,9 @@ namespace AnimationMergeTool.Editor.Tests
                 {
                     propertyNames.Add(binding.propertyName);
                 }
-                Assert.IsTrue(propertyNames.Contains("localPosition.x"), "localPosition.xカーブが含まれるべき");
-                Assert.IsTrue(propertyNames.Contains("localPosition.y"), "localPosition.yカーブが含まれるべき");
+                // Unity APIでは、SetCurveに渡す"localPosition.x"は内部的に"m_LocalPosition.x"として保存される
+                Assert.IsTrue(propertyNames.Contains("m_LocalPosition.x"), "localPosition.xカーブが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("m_LocalPosition.y"), "localPosition.yカーブが含まれるべき");
 
                 // クリーンアップ用にパスを記録
                 foreach (var log in results[0].Logs)

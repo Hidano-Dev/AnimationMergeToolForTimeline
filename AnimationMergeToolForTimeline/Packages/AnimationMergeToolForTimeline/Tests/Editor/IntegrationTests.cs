@@ -103,8 +103,9 @@ namespace AnimationMergeTool.Editor.Tests
                 {
                     propertyNames.Add(binding.propertyName);
                 }
-                Assert.IsTrue(propertyNames.Contains("localPosition.x"), "localPosition.xカーブが含まれるべき");
-                Assert.IsTrue(propertyNames.Contains("localPosition.y"), "localPosition.yカーブが含まれるべき");
+                // Unity APIでは、SetCurveに渡す"localPosition.x"は内部的に"m_LocalPosition.x"として保存される
+                Assert.IsTrue(propertyNames.Contains("m_LocalPosition.x"), "localPosition.xカーブが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("m_LocalPosition.y"), "localPosition.yカーブが含まれるべき");
 
                 // 処理ログを検証
                 var logs = results[0].Logs;
@@ -1415,10 +1416,11 @@ namespace AnimationMergeTool.Editor.Tests
                     propertyNames.Add(binding.propertyName);
                 }
 
-                Assert.IsTrue(propertyNames.Contains("localPosition.x"), "localPosition.xが含まれるべき");
-                Assert.IsTrue(propertyNames.Contains("localPosition.y"), "localPosition.yが含まれるべき");
-                Assert.IsTrue(propertyNames.Contains("localPosition.z"), "localPosition.zが含まれるべき");
-                Assert.IsTrue(propertyNames.Contains("localRotation.y"), "localRotation.yが含まれるべき");
+                // Unity APIでは、SetCurveに渡す"localPosition.x"は内部的に"m_LocalPosition.x"として保存される
+                Assert.IsTrue(propertyNames.Contains("m_LocalPosition.x"), "localPosition.xが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("m_LocalPosition.y"), "localPosition.yが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("m_LocalPosition.z"), "localPosition.zが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("m_LocalRotation.y"), "localRotation.yが含まれるべき");
 
                 // 生成されたクリップの長さが適切であることを確認
                 Assert.GreaterOrEqual(results[0].GeneratedClip.length, 4.5f, "クリップの長さが十分であるべき");
