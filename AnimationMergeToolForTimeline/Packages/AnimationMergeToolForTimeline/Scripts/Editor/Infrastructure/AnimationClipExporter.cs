@@ -226,6 +226,8 @@ namespace AnimationMergeTool.Editor.Infrastructure
             }
             else
             {
+                // 保存に失敗した場合はGeneratedClipをnullに戻してIsSuccessをfalseにする
+                mergeResult.GeneratedClip = null;
                 mergeResult.AddErrorLog("アセットの保存に失敗しました。");
             }
 

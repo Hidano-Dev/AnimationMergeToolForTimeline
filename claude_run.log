@@ -44,3 +44,4 @@ public double ClipIn => TimelineClip?.clipIn ?? 0;
 変更がないのでコミットできません。
 
 FAIL
+OK
