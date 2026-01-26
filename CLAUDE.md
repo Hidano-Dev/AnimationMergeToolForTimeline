@@ -81,3 +81,48 @@ Unity.exe -batchmode -projectPath ./AnimationMergeToolForTimeline -executeMethod
 - タイムライン関連の拡張は `Timeline` 名前空間を使用
 - ランタイムとエディタのコードを明確に分離
 - クリップデータ生成ロジックとアセットファイル作成を分離（要件定義書 NF-002参照）
+
+## テスト方針
+
+### テスト生成物のクリーンアップ
+
+テストでAnimationClipを生成する場合、**必ずTearDownで削除すること**。
+
+```csharp
+[TearDown]
+public void TearDown()
+{
+    // テストで作成したアセットをクリーンアップ
+    foreach (var path in _createdAssetPaths)
+    {
+        if (!string.IsNullOrEmpty(path) && AssetDatabase.LoadAssetAtPath<Object>(path) != null)
+        {
+            AssetDatabase.DeleteAsset(path);
+        }
+    }
+    _createdAssetPaths.Clear();
+}
+```
+
+**理由**: テスト実行時にAssets直下に `*_Merged.anim` ファイルが大量に残り、プロジェクトを汚染するため。
+
+### LogAssertの使用
+
+`Debug.LogError` を出力するメソッドをテストする場合、`LogAssert.Expect` で事前に宣言すること。
+
+```csharp
+using UnityEngine.TestTools;
+
+[Test]
+public void SomeTest()
+{
+    // エラーログを期待
+    LogAssert.Expect(LogType.Error, "期待されるエラーメッセージ");
+
+    // エラーログを出力するメソッドを呼び出す
+    var result = SomeMethod(null);
+    Assert.IsNull(result);
+}
+```
+
+**理由**: Unity Test Frameworkでは、未宣言のエラーログがあるとテストが失敗するため。
