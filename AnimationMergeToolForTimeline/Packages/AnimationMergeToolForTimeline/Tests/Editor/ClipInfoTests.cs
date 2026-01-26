@@ -26,8 +26,11 @@ namespace AnimationMergeTool.Editor.Tests
             _animationTrack = _timelineAsset.CreateTrack<AnimationTrack>(null, "Test Track");
 
             // テスト用のAnimationClipを作成
+            // clipInの設定を有効にするため、十分な長さを持つダミーカーブを追加
             _animationClip = new AnimationClip();
             _animationClip.name = "Test Animation";
+            var dummyCurve = AnimationCurve.Linear(0f, 0f, 5f, 1f);
+            _animationClip.SetCurve("", typeof(Transform), "localPosition.x", dummyCurve);
 
             // TimelineClipを作成
             _timelineClip = _animationTrack.CreateClip(_animationClip);
