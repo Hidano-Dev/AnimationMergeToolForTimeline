@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using AnimationMergeTool.Editor.Domain.Models;
+using AnimationMergeTool.Editor.Infrastructure;
 using NUnit.Framework;
 using UnityEngine;
-using AnimationMergeTool.Editor.Infrastructure;
 
 namespace AnimationMergeTool.Editor.Tests
 {
@@ -262,6 +263,215 @@ namespace AnimationMergeTool.Editor.Tests
                 // Generic Animatorなのでnullを返す
                 Assert.IsNull(result);
             });
+        }
+
+        #endregion
+
+        #region ConvertMuscleCurvesToRotation テスト - P14-005
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_Animatorがnullの場合_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+
+            // Act
+            var result = converter.ConvertMuscleCurvesToRotation(null, clip);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_AnimationClipがnullの場合_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var root = CreateNonHumanoidBoneHierarchy();
+            var animator = root.GetComponent<Animator>();
+
+            // Act
+            var result = converter.ConvertMuscleCurvesToRotation(animator, null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_AnimatorがHumanoidでない場合_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var root = CreateNonHumanoidBoneHierarchy();
+            var animator = root.GetComponent<Animator>();
+            var clip = new AnimationClip();
+
+            // Act
+            var result = converter.ConvertMuscleCurvesToRotation(animator, clip);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_両方nullの場合_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+
+            // Act
+            var result = converter.ConvertMuscleCurvesToRotation(null, null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_GenericAnimatorとGenericClipの場合_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var root = CreateNonHumanoidBoneHierarchy();
+            var animator = root.GetComponent<Animator>();
+
+            // Genericクリップを作成（Humanoidクリップではない）
+            var clip = new AnimationClip();
+            clip.frameRate = 60f;
+
+            // Transformカーブを追加してみる（Genericクリップ）
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", curve);
+
+            // Act
+            var result = converter.ConvertMuscleCurvesToRotation(animator, clip);
+
+            // Assert
+            // GenericリグではHumanoidボーンが取得できないため空のリストを返す
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_フレームレートが0のクリップ_例外が発生しない()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var root = CreateNonHumanoidBoneHierarchy();
+            var animator = root.GetComponent<Animator>();
+            var clip = new AnimationClip();
+            // frameRateを0に設定（エッジケース）
+            clip.frameRate = 0f;
+
+            // Act & Assert
+            Assert.DoesNotThrow(() =>
+            {
+                var result = converter.ConvertMuscleCurvesToRotation(animator, clip);
+                Assert.IsNotNull(result);
+            });
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_空のクリップ_空のリストを返す()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var root = CreateNonHumanoidBoneHierarchy();
+            var animator = root.GetComponent<Animator>();
+            var clip = new AnimationClip();
+            // 空のクリップ（カーブなし）
+
+            // Act
+            var result = converter.ConvertMuscleCurvesToRotation(animator, clip);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_非常に短いクリップ_正常に処理される()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var root = CreateNonHumanoidBoneHierarchy();
+            var animator = root.GetComponent<Animator>();
+            var clip = new AnimationClip();
+            clip.frameRate = 60f;
+            // 1フレームのみの短いクリップ
+            var curve = AnimationCurve.Constant(0, 0.001f, 1);
+            clip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() =>
+            {
+                var result = converter.ConvertMuscleCurvesToRotation(animator, clip);
+                Assert.IsNotNull(result);
+            });
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_Animatorが非アクティブでも例外が発生しない()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var root = CreateNonHumanoidBoneHierarchy();
+            var animator = root.GetComponent<Animator>();
+            animator.enabled = false;
+            var clip = new AnimationClip();
+
+            // Act & Assert
+            Assert.DoesNotThrow(() =>
+            {
+                var result = converter.ConvertMuscleCurvesToRotation(animator, clip);
+                Assert.IsNotNull(result);
+            });
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_GameObjectが非アクティブでも例外が発生しない()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var root = CreateNonHumanoidBoneHierarchy();
+            var animator = root.GetComponent<Animator>();
+            root.SetActive(false);
+            var clip = new AnimationClip();
+
+            // Act & Assert
+            Assert.DoesNotThrow(() =>
+            {
+                var result = converter.ConvertMuscleCurvesToRotation(animator, clip);
+                Assert.IsNotNull(result);
+            });
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
         }
 
         #endregion

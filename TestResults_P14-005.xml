@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="21" result="Passed" total="21" passed="21" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.0701096">
+  <test-suite type="TestSuite" id="1000" name="AnimationMergeToolForTimeline" fullname="AnimationMergeToolForTimeline" runstate="Runnable" testcasecount="751" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.070110" total="21" passed="21" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1774" name="AnimationMergeTool.Editor.Tests.dll" fullname="D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.dll" runstate="Runnable" testcasecount="751" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.059547" total="21" passed="21" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="542064" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1775" name="AnimationMergeTool" fullname="AnimationMergeTool" runstate="Runnable" testcasecount="751" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.054170" total="21" passed="21" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1776" name="Editor" fullname="AnimationMergeTool.Editor" runstate="Runnable" testcasecount="751" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.048794" total="21" passed="21" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1777" name="Tests" fullname="AnimationMergeTool.Editor.Tests" runstate="Runnable" testcasecount="751" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.044515" total="21" passed="21" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1491" name="HumanoidToGenericConverterTests" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" testcasecount="21" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.032540" total="21" passed="21" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1492" name="Constructor_インスタンスを生成できる" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.Constructor_インスタンスを生成できる" methodname="Constructor_インスタンスを生成できる" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="1303170629" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.008245" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1504" name="ConvertMuscleCurvesToRotation_AnimationClipがnullの場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_AnimationClipがnullの場合_空のリストを返す" methodname="ConvertMuscleCurvesToRotation_AnimationClipがnullの場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="191575280" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.003466" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1505" name="ConvertMuscleCurvesToRotation_AnimatorがHumanoidでない場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_AnimatorがHumanoidでない場合_空のリストを返す" methodname="ConvertMuscleCurvesToRotation_AnimatorがHumanoidでない場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="2132275692" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000607" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1503" name="ConvertMuscleCurvesToRotation_Animatorがnullの場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_Animatorがnullの場合_空のリストを返す" methodname="ConvertMuscleCurvesToRotation_Animatorがnullの場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="78479440" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000225" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1511" name="ConvertMuscleCurvesToRotation_Animatorが非アクティブでも例外が発生しない" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_Animatorが非アクティブでも例外が発生しない" methodname="ConvertMuscleCurvesToRotation_Animatorが非アクティブでも例外が発生しない" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="1358692732" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000857" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1512" name="ConvertMuscleCurvesToRotation_GameObjectが非アクティブでも例外が発生しない" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_GameObjectが非アクティブでも例外が発生しない" methodname="ConvertMuscleCurvesToRotation_GameObjectが非アクティブでも例外が発生しない" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="174486425" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000429" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1507" name="ConvertMuscleCurvesToRotation_GenericAnimatorとGenericClipの場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_GenericAnimatorとGenericClipの場合_空のリストを返す" methodname="ConvertMuscleCurvesToRotation_GenericAnimatorとGenericClipの場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="1175089265" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.001076" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1508" name="ConvertMuscleCurvesToRotation_フレームレートが0のクリップ_例外が発生しない" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_フレームレートが0のクリップ_例外が発生しない" methodname="ConvertMuscleCurvesToRotation_フレームレートが0のクリップ_例外が発生しない" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="199326268" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.001466" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Framerate of 0 or less is not allowed
+]]></output>
+              </test-case>
+              <test-case id="1509" name="ConvertMuscleCurvesToRotation_空のクリップ_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_空のクリップ_空のリストを返す" methodname="ConvertMuscleCurvesToRotation_空のクリップ_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="1241800601" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000320" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1510" name="ConvertMuscleCurvesToRotation_非常に短いクリップ_正常に処理される" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_非常に短いクリップ_正常に処理される" methodname="ConvertMuscleCurvesToRotation_非常に短いクリップ_正常に処理される" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="742826331" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000403" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1506" name="ConvertMuscleCurvesToRotation_両方nullの場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.ConvertMuscleCurvesToRotation_両方nullの場合_空のリストを返す" methodname="ConvertMuscleCurvesToRotation_両方nullの場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="1035588572" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000178" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1494" name="GetTransformPath_AnimatorがHumanoidでない場合_nullを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.GetTransformPath_AnimatorがHumanoidでない場合_nullを返す" methodname="GetTransformPath_AnimatorがHumanoidでない場合_nullを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="1591611022" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000394" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1493" name="GetTransformPath_Animatorがnullの場合_nullを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.GetTransformPath_Animatorがnullの場合_nullを返す" methodname="GetTransformPath_Animatorがnullの場合_nullを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="968876307" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000150" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1501" name="GetTransformPath_Animatorがアクティブでない場合もエラーなく処理される" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.GetTransformPath_Animatorがアクティブでない場合もエラーなく処理される" methodname="GetTransformPath_Animatorがアクティブでない場合もエラーなく処理される" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="171911577" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000292" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1502" name="GetTransformPath_GameObjectが非アクティブの場合もエラーなく処理される" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.GetTransformPath_GameObjectが非アクティブの場合もエラーなく処理される" methodname="GetTransformPath_GameObjectが非アクティブの場合もエラーなく処理される" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="782407431" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000293" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1495" name="GetTransformPath_LastBoneを指定した場合_nullを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.GetTransformPath_LastBoneを指定した場合_nullを返す" methodname="GetTransformPath_LastBoneを指定した場合_nullを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="1080086265" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000266" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1499" name="GetTransformPath_ターゲットがAnimatorと同じ場合_空文字を返す想定" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.GetTransformPath_ターゲットがAnimatorと同じ場合_空文字を返す想定" methodname="GetTransformPath_ターゲットがAnimatorと同じ場合_空文字を返す想定" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="1896073751" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000236" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1496" name="GetTransformPath_ボーンが未設定の場合_nullを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.GetTransformPath_ボーンが未設定の場合_nullを返す" methodname="GetTransformPath_ボーンが未設定の場合_nullを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="968051197" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000218" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1500" name="GetTransformPath_全HumanBodyBones列挙値で例外が発生しない" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.GetTransformPath_全HumanBodyBones列挙値で例外が発生しない" methodname="GetTransformPath_全HumanBodyBones列挙値で例外が発生しない" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="318529693" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000733" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1497" name="IsHumanoidClip_clipがnullの場合_falseを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.IsHumanoidClip_clipがnullの場合_falseを返す" methodname="IsHumanoidClip_clipがnullの場合_falseを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="869641604" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000360" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1498" name="IsHumanoidClip_GenericクリップをisHumanMotionで判定_falseを返す" fullname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests.IsHumanoidClip_GenericクリップをisHumanMotionで判定_falseを返す" methodname="IsHumanoidClip_GenericクリップをisHumanMotionで判定_falseを返す" classname="AnimationMergeTool.Editor.Tests.HumanoidToGenericConverterTests" runstate="Runnable" seed="1913862503" result="Passed" start-time="2026-01-26 18:28:06Z" end-time="2026-01-26 18:28:06Z" duration="0.000417" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: D:\Personal\Repositries\AnimationMergeToolForTimeline\TestResults_P14-005.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

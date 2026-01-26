@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using AnimationMergeTool.Editor.Domain.Models;
 using UnityEngine;
 
 namespace AnimationMergeTool.Editor.Infrastructure
@@ -59,6 +61,40 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
             // clip.isHumanMotionプロパティを使用
             return clip.isHumanMotion;
+        }
+
+        /// <summary>
+        /// マッスルカーブをRotationカーブに変換する
+        /// タスク P14-005: テスト作成のためのスタブメソッド
+        /// タスク P14-006: 実装予定
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="humanoidClip">変換元のAnimationClip</param>
+        /// <returns>変換されたRotationカーブのリスト（現在は空のリスト）</returns>
+        public List<TransformCurveData> ConvertMuscleCurvesToRotation(
+            Animator animator,
+            AnimationClip humanoidClip)
+        {
+            var result = new List<TransformCurveData>();
+
+            // nullチェック
+            if (animator == null || humanoidClip == null)
+            {
+                return result;
+            }
+
+            // Humanoidリグでない場合は空のリストを返す
+            if (!animator.isHuman)
+            {
+                return result;
+            }
+
+            // P14-006で実装予定：
+            // - 各フレームをサンプリング
+            // - 各ボーンの回転を取得
+            // - Rotationカーブを生成
+
+            return result;
         }
 
         /// <summary>
