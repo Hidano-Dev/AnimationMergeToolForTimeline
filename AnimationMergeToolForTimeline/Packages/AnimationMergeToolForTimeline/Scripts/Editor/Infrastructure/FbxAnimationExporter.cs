@@ -675,6 +675,168 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
         #endregion
 
+        #region BlendShapeカーブFBX出力機能 (P15-004, P15-005)
+
+        /// <summary>
+        /// BlendShapeカーブをFBXにエクスポートする
+        /// タスク P15-005で本格実装予定
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="clip">対象のAnimationClip</param>
+        /// <param name="outputPath">出力先パス</param>
+        /// <returns>エクスポートが成功した場合はtrue</returns>
+        public bool ExportBlendShapeCurvesToFbx(Animator animator, AnimationClip clip, string outputPath)
+        {
+            if (clip == null)
+            {
+                Debug.LogError("AnimationClipがnullです。");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                Debug.LogError("出力パスが指定されていません。");
+                return false;
+            }
+
+            // BlendShapeカーブを抽出
+            var blendShapeCurves = ExtractBlendShapeCurves(clip, animator);
+
+            if (blendShapeCurves.Count == 0)
+            {
+                Debug.LogError("エクスポート可能なBlendShapeカーブがありません。");
+                return false;
+            }
+
+            // FbxExportDataを準備
+            var exportData = PrepareBlendShapeCurvesForExport(animator, clip, blendShapeCurves);
+
+            // エクスポート実行
+            return Export(exportData, outputPath);
+        }
+
+        /// <summary>
+        /// TransformカーブとBlendShapeカーブの両方を含むFbxExportDataを準備する
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="clip">対象のAnimationClip</param>
+        /// <returns>FbxExportData</returns>
+        public FbxExportData PrepareAllCurvesForExport(Animator animator, AnimationClip clip)
+        {
+            if (clip == null)
+            {
+                return new FbxExportData(
+                    animator,
+                    clip,
+                    null,
+                    new List<TransformCurveData>(),
+                    new List<BlendShapeCurveData>(),
+                    false);
+            }
+
+            // スケルトンを抽出（Animatorがある場合）
+            SkeletonData skeleton = null;
+            bool isHumanoid = false;
+
+            if (animator != null)
+            {
+                skeleton = ExtractSkeleton(animator);
+                isHumanoid = animator.isHuman;
+            }
+
+            // Transformカーブを抽出
+            var transformCurves = ExtractTransformCurves(clip, animator);
+
+            // BlendShapeカーブを抽出
+            var blendShapeCurves = ExtractBlendShapeCurves(clip, animator);
+
+            // FbxExportDataを作成
+            return new FbxExportData(
+                animator,
+                clip,
+                skeleton,
+                transformCurves,
+                blendShapeCurves,
+                isHumanoid);
+        }
+
+        /// <summary>
+        /// BlendShapeカーブデータからAnimationClipを生成する
+        /// </summary>
+        /// <param name="blendShapeCurves">BlendShapeカーブ情報のリスト</param>
+        /// <param name="clipName">生成するAnimationClipの名前</param>
+        /// <returns>生成されたAnimationClip（データがない場合はnull）</returns>
+        public AnimationClip CreateAnimationClipFromBlendShapeCurves(
+            List<BlendShapeCurveData> blendShapeCurves,
+            string clipName = "ExportedBlendShapeAnimation")
+        {
+            if (blendShapeCurves == null || blendShapeCurves.Count == 0)
+            {
+                return null;
+            }
+
+            var clip = new AnimationClip();
+            clip.name = clipName;
+
+            foreach (var curveData in blendShapeCurves)
+            {
+                if (curveData.Curve == null)
+                {
+                    continue;
+                }
+
+                // BlendShapeカーブをAnimationClipに設定
+                var binding = EditorCurveBinding.FloatCurve(
+                    curveData.Path,
+                    typeof(SkinnedMeshRenderer),
+                    $"blendShape.{curveData.BlendShapeName}");
+                AnimationUtility.SetEditorCurve(clip, binding, curveData.Curve);
+            }
+
+            // カーブが設定されたか確認
+            var bindings = AnimationUtility.GetCurveBindings(clip);
+            if (bindings.Length == 0)
+            {
+                Object.DestroyImmediate(clip);
+                return null;
+            }
+
+            return clip;
+        }
+
+        /// <summary>
+        /// BlendShapeカーブを含むFbxExportDataでエクスポートを実行する
+        /// </summary>
+        /// <param name="exportData">エクスポートデータ</param>
+        /// <param name="outputPath">出力先パス</param>
+        /// <returns>エクスポートが成功した場合はtrue</returns>
+        public bool ExportWithBlendShapeCurves(FbxExportData exportData, string outputPath)
+        {
+            if (exportData == null)
+            {
+                Debug.LogError("FbxExportDataがnullです。");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                Debug.LogError("出力パスが指定されていません。");
+                return false;
+            }
+
+            // BlendShapeカーブが存在するか確認
+            if (exportData.BlendShapeCurves == null || exportData.BlendShapeCurves.Count == 0)
+            {
+                Debug.LogError("エクスポート可能なBlendShapeカーブがありません。");
+                return false;
+            }
+
+            // 通常のエクスポート処理を実行
+            return Export(exportData, outputPath);
+        }
+
+        #endregion
+
         #region BlendShapeカーブ抽出機能 (P15-002, P15-003)
 
         /// <summary>
