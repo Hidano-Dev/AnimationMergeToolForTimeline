@@ -674,5 +674,144 @@ namespace AnimationMergeTool.Editor.Infrastructure
         }
 
         #endregion
+
+        #region BlendShapeカーブ抽出機能 (P15-002, P15-003)
+
+        /// <summary>
+        /// AnimationClipからBlendShapeカーブを抽出する
+        /// タスク P15-003で本格実装予定
+        /// </summary>
+        /// <param name="clip">対象のAnimationClip</param>
+        /// <param name="animator">対象のAnimator</param>
+        /// <returns>BlendShapeカーブ情報のリスト</returns>
+        public List<BlendShapeCurveData> ExtractBlendShapeCurves(AnimationClip clip, Animator animator)
+        {
+            var result = new List<BlendShapeCurveData>();
+
+            if (clip == null || animator == null)
+            {
+                return result;
+            }
+
+            // AnimationClipからカーブバインディングを取得
+            var bindings = AnimationUtility.GetCurveBindings(clip);
+
+            foreach (var binding in bindings)
+            {
+                // BlendShapeカーブのみを抽出
+                if (!IsBlendShapeBinding(binding))
+                {
+                    continue;
+                }
+
+                // カーブを取得
+                var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                if (curve == null)
+                {
+                    continue;
+                }
+
+                // BlendShape名を抽出（"blendShape."プレフィックスを除去）
+                string blendShapeName = ExtractBlendShapeName(binding.propertyName);
+
+                // BlendShapeCurveDataを作成
+                var curveData = new BlendShapeCurveData(
+                    binding.path,
+                    blendShapeName,
+                    curve);
+
+                result.Add(curveData);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// AnimationClipにBlendShapeカーブが含まれているかを確認する
+        /// </summary>
+        /// <param name="clip">対象のAnimationClip</param>
+        /// <returns>BlendShapeカーブが存在する場合true</returns>
+        public bool HasBlendShapeCurves(AnimationClip clip)
+        {
+            if (clip == null)
+            {
+                return false;
+            }
+
+            var bindings = AnimationUtility.GetCurveBindings(clip);
+            foreach (var binding in bindings)
+            {
+                if (IsBlendShapeBinding(binding))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// BlendShapeカーブ情報からFbxExportDataを準備する
+        /// タスク P15-003で本格実装予定
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="clip">対象のAnimationClip</param>
+        /// <param name="blendShapeCurves">BlendShapeカーブ情報のリスト</param>
+        /// <returns>FbxExportData</returns>
+        public FbxExportData PrepareBlendShapeCurvesForExport(
+            Animator animator,
+            AnimationClip clip,
+            List<BlendShapeCurveData> blendShapeCurves)
+        {
+            // スケルトンを抽出（Animatorがある場合）
+            SkeletonData skeleton = null;
+            bool isHumanoid = false;
+
+            if (animator != null)
+            {
+                skeleton = ExtractSkeleton(animator);
+                isHumanoid = animator.isHuman;
+            }
+
+            // FbxExportDataを作成
+            return new FbxExportData(
+                animator,
+                clip,
+                skeleton,
+                new List<TransformCurveData>(),
+                blendShapeCurves ?? new List<BlendShapeCurveData>(),
+                isHumanoid);
+        }
+
+        /// <summary>
+        /// EditorCurveBindingがBlendShapeカーブかどうかを判定する
+        /// </summary>
+        /// <param name="binding">判定対象のバインディング</param>
+        /// <returns>BlendShapeカーブの場合true</returns>
+        private bool IsBlendShapeBinding(EditorCurveBinding binding)
+        {
+            // SkinnedMeshRenderer型でblendShape.プレフィックスを持つプロパティ
+            return binding.type == typeof(SkinnedMeshRenderer) &&
+                   !string.IsNullOrEmpty(binding.propertyName) &&
+                   binding.propertyName.StartsWith("blendShape.");
+        }
+
+        /// <summary>
+        /// プロパティ名からBlendShape名を抽出する
+        /// </summary>
+        /// <param name="propertyName">プロパティ名（例: "blendShape.smile"）</param>
+        /// <returns>BlendShape名（例: "smile"）</returns>
+        private string ExtractBlendShapeName(string propertyName)
+        {
+            const string prefix = "blendShape.";
+            if (string.IsNullOrEmpty(propertyName) || !propertyName.StartsWith(prefix))
+            {
+                return string.Empty;
+            }
+
+            return propertyName.Substring(prefix.Length);
+        }
+
+        #endregion
     }
 }
