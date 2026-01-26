@@ -410,34 +410,44 @@ namespace AnimationMergeTool.Editor.Domain
                 return;
             }
 
+            // ブレンド区間内での進行度を計算（0〜1）
+            double blendProgress = (globalTime - blendInfo.BlendStartTime) / blendInfo.BlendDuration;
+            blendProgress = Math.Max(0, Math.Min(1, blendProgress)); // 0〜1にクランプ
+
             // 前のクリップのEaseOutウェイトを計算
+            // mixOutCurveは1→0に遷移するカーブなので、そのまま使用
             float previousWeight = 1f;
-            if (blendInfo.PreviousClip != null && blendInfo.PreviousClip.EaseOutDuration > 0)
+            if (blendInfo.PreviousClipEaseOutCurve != null && blendInfo.PreviousClip != null && blendInfo.PreviousClip.EaseOutDuration > 0)
             {
                 double easeOutStartTime = blendInfo.PreviousClip.EndTime - blendInfo.PreviousClip.EaseOutDuration;
                 if (globalTime >= easeOutStartTime && globalTime <= blendInfo.PreviousClip.EndTime)
                 {
                     double normalizedTime = (globalTime - easeOutStartTime) / blendInfo.PreviousClip.EaseOutDuration;
-                    if (blendInfo.PreviousClipEaseOutCurve != null)
-                    {
-                        previousWeight = blendInfo.PreviousClipEaseOutCurve.Evaluate((float)normalizedTime);
-                    }
+                    previousWeight = blendInfo.PreviousClipEaseOutCurve.Evaluate((float)normalizedTime);
                 }
+            }
+            else
+            {
+                // カーブがない場合は線形補間
+                previousWeight = 1f - (float)blendProgress;
             }
 
             // 次のクリップのEaseInウェイトを計算
-            float nextWeight = 1f;
-            if (blendInfo.NextClip != null && blendInfo.NextClip.EaseInDuration > 0)
+            // mixInCurveは0→1に遷移するカーブなので、そのまま使用
+            float nextWeight = 0f;
+            if (blendInfo.NextClipEaseInCurve != null && blendInfo.NextClip != null && blendInfo.NextClip.EaseInDuration > 0)
             {
                 double easeInEndTime = blendInfo.NextClip.StartTime + blendInfo.NextClip.EaseInDuration;
                 if (globalTime >= blendInfo.NextClip.StartTime && globalTime <= easeInEndTime)
                 {
                     double normalizedTime = (globalTime - blendInfo.NextClip.StartTime) / blendInfo.NextClip.EaseInDuration;
-                    if (blendInfo.NextClipEaseInCurve != null)
-                    {
-                        nextWeight = blendInfo.NextClipEaseInCurve.Evaluate((float)normalizedTime);
-                    }
+                    nextWeight = blendInfo.NextClipEaseInCurve.Evaluate((float)normalizedTime);
                 }
+            }
+            else
+            {
+                // カーブがない場合は線形補間
+                nextWeight = (float)blendProgress;
             }
 
             // ウェイトの正規化：両クリップのウェイトの合計が1になるように調整
@@ -446,6 +456,12 @@ namespace AnimationMergeTool.Editor.Domain
             {
                 previousClipWeight = previousWeight / totalWeight;
                 nextClipWeight = nextWeight / totalWeight;
+            }
+            else
+            {
+                // 両方のウェイトが0の場合は線形補間にフォールバック
+                previousClipWeight = 1f - (float)blendProgress;
+                nextClipWeight = (float)blendProgress;
             }
         }
 
