@@ -851,23 +851,28 @@ namespace AnimationMergeTool.Editor.Tests
             var curve = AnimationCurve.Linear(0, 0, 1, 10);
             _testClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
 
+            // Loopクリップ（start=0.0）
             var timelineClipLoop = _animationTrack.CreateClip(_testClip);
             timelineClipLoop.start = 0.0;
             timelineClipLoop.duration = 1.0;
+            timelineClipLoop.timeScale = 1.0; // TimeScaleを明示的に設定
             SetExtrapolationModes(timelineClipLoop, postMode: TimelineClip.ClipExtrapolation.Loop);
             var clipInfoLoop = new ClipInfo(timelineClipLoop, _testClip);
 
+            // PingPongクリップ（start=100.0で識別可能にする）
+            // SetExtrapolationModesがstart/durationで照合するため、異なるstartを設定
             var timelineClipPingPong = _animationTrack.CreateClip(_testClip);
-            timelineClipPingPong.start = 0.0;
+            timelineClipPingPong.start = 100.0;
             timelineClipPingPong.duration = 1.0;
+            timelineClipPingPong.timeScale = 1.0; // TimeScaleを明示的に設定
             SetExtrapolationModes(timelineClipPingPong, postMode: TimelineClip.ClipExtrapolation.PingPong);
             var clipInfoPingPong = new ClipInfo(timelineClipPingPong, _testClip);
 
-            // Act & Assert - 1.7秒での比較
-            // Loop: Repeat(1.7, 1.0) = 0.7 → 7
-            // PingPong: PingPong(1.7, 1.0) = 0.3 → 3 (復路なので逆方向)
+            // Act & Assert - 各クリップ終了後0.7秒での比較
+            // Loop: Repeat(0.7, 1.0) = 0.7 → 7
+            // PingPong: PingPong(0.7, 1.0) = 0.3 → 3 (復路なので逆方向)
             _processor.TryGetExtrapolatedValue(curve, clipInfoLoop, 1.7f, out var valueLoop);
-            _processor.TryGetExtrapolatedValue(curve, clipInfoPingPong, 1.7f, out var valuePingPong);
+            _processor.TryGetExtrapolatedValue(curve, clipInfoPingPong, 101.7f, out var valuePingPong);
 
             Assert.AreEqual(7f, valueLoop, 0.0001f);
             Assert.AreEqual(3f, valuePingPong, 0.0001f);

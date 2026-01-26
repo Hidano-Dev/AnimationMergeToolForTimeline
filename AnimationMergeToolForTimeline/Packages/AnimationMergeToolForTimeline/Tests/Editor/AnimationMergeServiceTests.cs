@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -1295,8 +1296,9 @@ namespace AnimationMergeTool.Editor.Tests
                 // 生成されたクリップに正しいカーブが含まれていることを確認
                 var bindings = AnimationUtility.GetCurveBindings(result.GeneratedClip);
                 // SetCurveを使用すると、Unityは内部的に全てのコンポーネント（x,y,z）を生成する
+                // また、プロパティ名は内部形式（m_LocalPosition.x）に変換される
                 Assert.AreEqual(3, bindings.Length, "3つのカーブが含まれるべき（x,y,z）");
-                Assert.IsTrue(bindings.Any(b => b.propertyName == "localPosition.x"), "localPosition.xカーブが含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "m_LocalPosition.x"), "m_LocalPosition.xカーブが含まれるべき");
 
                 // ログに空トラックの情報が含まれていることを確認
                 Assert.IsTrue(

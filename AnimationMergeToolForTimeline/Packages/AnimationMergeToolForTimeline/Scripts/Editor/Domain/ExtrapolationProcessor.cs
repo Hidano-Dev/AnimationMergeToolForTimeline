@@ -227,14 +227,14 @@ namespace AnimationMergeTool.Editor.Domain
                     return false;
 
                 case TimelineClip.ClipExtrapolation.Hold:
-                    // 最後のキーの値を維持
-                    value = lastKeyValue;
+                    // クリップ終了時点での値を維持（ClipInとDuration、TimeScaleを考慮）
+                    var endLocalTime = clipIn + clipDuration * timeScale;
+                    value = curve.Evaluate(endLocalTime);
                     return true;
 
                 case TimelineClip.ClipExtrapolation.Loop:
-                    // クリップの長さでループ（カーブの実際の長さを使用）
-                    var loopCurveDuration = keys.Length > 1 ? keys[keys.Length - 1].time - keys[0].time : clipDuration * timeScale;
-                    value = EvaluateLooped(curve, clipInfo, time, clipIn, loopCurveDuration);
+                    // クリップの見た目の長さでループ（duration * timeScale がソースクリップでの実際の再生範囲）
+                    value = EvaluateLooped(curve, clipInfo, time, clipIn, clipDuration * timeScale);
                     return true;
 
                 case TimelineClip.ClipExtrapolation.PingPong:
