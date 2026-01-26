@@ -326,5 +326,154 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region FBXエクスポートオプション テスト (P12-008)
+
+        [Test]
+        public void HierarchyFbxMenuPath_正しいパスが設定されている()
+        {
+            // Assert
+            Assert.AreEqual(
+                "GameObject/Animation Merge Tool/Export as FBX",
+                ContextMenuHandler.HierarchyFbxMenuPath
+            );
+        }
+
+        [Test]
+        public void AssetsFbxMenuPath_正しいパスが設定されている()
+        {
+            // Assert
+            Assert.AreEqual(
+                "Assets/Animation Merge Tool/Export as FBX",
+                ContextMenuHandler.AssetsFbxMenuPath
+            );
+        }
+
+        [Test]
+        public void CanExportFbxFromHierarchy_PlayableDirectorが選択されていない場合falseを返す()
+        {
+            // Arrange
+            UnityEditor.Selection.objects = new Object[0];
+
+            // Act
+            var result = ContextMenuHandler.CanExportFbxFromHierarchy();
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void CanExportFbxFromHierarchy_PlayableDirectorが選択されている場合trueを返す()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+
+            try
+            {
+                UnityEditor.Selection.objects = new Object[] { go };
+
+                // Act
+                var result = ContextMenuHandler.CanExportFbxFromHierarchy();
+
+                // Assert
+                Assert.IsTrue(result);
+            }
+            finally
+            {
+                UnityEditor.Selection.objects = new Object[0];
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void CanExportFbxFromProject_TimelineAssetが選択されていない場合falseを返す()
+        {
+            // Arrange
+            UnityEditor.Selection.objects = new Object[0];
+
+            // Act
+            var result = ContextMenuHandler.CanExportFbxFromProject();
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void CanExportFbxFromProject_TimelineAssetが選択されている場合trueを返す()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+
+            try
+            {
+                UnityEditor.Selection.objects = new Object[] { timeline };
+
+                // Act
+                var result = ContextMenuHandler.CanExportFbxFromProject();
+
+                // Assert
+                Assert.IsTrue(result);
+            }
+            finally
+            {
+                UnityEditor.Selection.objects = new Object[0];
+                Object.DestroyImmediate(timeline);
+            }
+        }
+
+        [Test]
+        public void ExportFbxForPlayableDirectors_nullの場合falseを返す()
+        {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] FBXエクスポート対象のPlayableDirectorがありません。");
+
+            // Act
+            var result = ContextMenuHandler.ExportFbxForPlayableDirectors(null);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void ExportFbxForPlayableDirectors_空配列の場合falseを返す()
+        {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] FBXエクスポート対象のPlayableDirectorがありません。");
+
+            // Act
+            var result = ContextMenuHandler.ExportFbxForPlayableDirectors(new PlayableDirector[0]);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void ExportFbxForTimelineAssets_nullの場合falseを返す()
+        {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] FBXエクスポート対象のTimelineAssetがありません。");
+
+            // Act
+            var result = ContextMenuHandler.ExportFbxForTimelineAssets(null);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void ExportFbxForTimelineAssets_空配列の場合falseを返す()
+        {
+            // Arrange
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] FBXエクスポート対象のTimelineAssetがありません。");
+
+            // Act
+            var result = ContextMenuHandler.ExportFbxForTimelineAssets(new TimelineAsset[0]);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        #endregion
     }
 }
