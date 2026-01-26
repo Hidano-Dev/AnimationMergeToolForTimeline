@@ -235,8 +235,9 @@ namespace AnimationMergeTool.Editor.Domain
                 // ClipIn分をオフセットしてから、TimeScaleで割る
                 var localTime = (sourceTime - clipIn) / timeScale;
 
-                // 3. クリップのDurationを超えるキーはスキップ
-                if (localTime > duration)
+                // 3. クリップのDurationを超えるキーはスキップ（浮動小数点誤差を考慮）
+                const float durationTolerance = 0.0001f;
+                if (localTime > duration + durationTolerance)
                 {
                     continue;
                 }
