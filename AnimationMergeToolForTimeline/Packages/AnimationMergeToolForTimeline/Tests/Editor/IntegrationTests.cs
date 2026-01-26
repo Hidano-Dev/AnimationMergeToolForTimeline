@@ -622,6 +622,9 @@ namespace AnimationMergeTool.Editor.Tests
             director.SetGenericBinding(boundTrack, animator);
             // unboundTrackはバインドしない
 
+            // バインドなしトラックに対するエラーログを期待
+            LogAssert.Expect(LogType.Error, "[AnimationMergeTool] トラック \"UnboundTrack\" にAnimatorがバインドされていません。");
+
             try
             {
                 // Act
