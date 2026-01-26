@@ -2884,6 +2884,348 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region Phase 15 統合テスト: BlendShapeエクスポート (P15-008)
+
+        /// <summary>
+        /// P15-008: BlendShapeカーブを含むAnimationClipからFbxExportDataを準備する統合テスト
+        /// BlendShapeカーブの検出・抽出・FbxExportData準備が正しく連携することを検証
+        /// </summary>
+        [Test]
+        public void Phase15統合_BlendShapeカーブのFbxExportData準備()
+        {
+            // Arrange: BlendShapeカーブを含むAnimationClipを作成
+            var clip = new AnimationClip();
+            clip.name = "Phase15BlendShapeTest";
+
+            // BlendShapeカーブを追加
+            var bindingSmile = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            var curveSmile = AnimationCurve.Linear(0, 0, 1, 100);
+            AnimationUtility.SetEditorCurve(clip, bindingSmile, curveSmile);
+
+            var bindingBlink = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.Blink");
+            var curveBlink = new AnimationCurve(
+                new Keyframe(0, 0),
+                new Keyframe(0.5f, 100),
+                new Keyframe(1, 0)
+            );
+            AnimationUtility.SetEditorCurve(clip, bindingBlink, curveBlink);
+
+            try
+            {
+                // Act
+                var exporter = new Infrastructure.FbxAnimationExporter();
+                var blendShapeCurves = exporter.ExtractBlendShapeCurves(clip, null);
+                var exportData = exporter.PrepareBlendShapeCurvesForExport(null, clip, blendShapeCurves);
+
+                // Assert
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
+                Assert.IsNotNull(exportData.BlendShapeCurves, "BlendShapeカーブリストがnullでないべき");
+                Assert.AreEqual(2, exportData.BlendShapeCurves.Count, "2つのBlendShapeカーブが抽出されるべき");
+
+                // BlendShape名を検証
+                var blendShapeNames = exportData.BlendShapeCurves.Select(c => c.BlendShapeName).ToList();
+                Assert.IsTrue(blendShapeNames.Contains("Smile"), "Smileカーブが含まれるべき");
+                Assert.IsTrue(blendShapeNames.Contains("Blink"), "Blinkカーブが含まれるべき");
+
+                // パスを検証
+                Assert.IsTrue(exportData.BlendShapeCurves.All(c => c.Path == "Face"), "全カーブのパスがFaceであるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// P15-008: TransformとBlendShapeカーブが混在するAnimationClipのFbxExportData準備統合テスト
+        /// </summary>
+        [Test]
+        public void Phase15統合_TransformとBlendShapeカーブ混在のFbxExportData準備()
+        {
+            // Arrange: 混在カーブを含むAnimationClipを作成
+            var clip = new AnimationClip();
+            clip.name = "Phase15MixedCurvesTest";
+
+            // BlendShapeカーブを追加
+            var bindingSmile = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            var curveSmile = AnimationCurve.Linear(0, 0, 2, 100);
+            AnimationUtility.SetEditorCurve(clip, bindingSmile, curveSmile);
+
+            // Transformカーブを追加
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 2, 10));
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 2, 5));
+
+            try
+            {
+                // Act
+                var exporter = new Infrastructure.FbxAnimationExporter();
+                var exportData = exporter.PrepareAllCurvesForExport(null, clip);
+
+                // Assert
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
+
+                // BlendShapeカーブの検証
+                Assert.IsNotNull(exportData.BlendShapeCurves, "BlendShapeカーブリストがnullでないべき");
+                Assert.AreEqual(1, exportData.BlendShapeCurves.Count, "1つのBlendShapeカーブが抽出されるべき");
+                Assert.AreEqual("Smile", exportData.BlendShapeCurves[0].BlendShapeName, "Smileカーブが含まれるべき");
+
+                // Transformカーブの検証
+                Assert.IsNotNull(exportData.TransformCurves, "Transformカーブリストがnullでないべき");
+                Assert.IsTrue(exportData.TransformCurves.Count >= 2, "少なくとも2つのTransformカーブが抽出されるべき");
+
+                // エクスポート可能データの検証
+                Assert.IsTrue(exportData.HasExportableData, "エクスポート可能なデータがあるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// P15-008: BlendShapeカーブを含まないAnimationClipのエラー処理統合テスト (ERR-004)
+        /// </summary>
+        [Test]
+        public void Phase15統合_BlendShapeカーブなしのエクスポートエラー処理()
+        {
+            // Arrange: BlendShapeカーブを含まないAnimationClipを作成
+            var clip = new AnimationClip();
+            clip.name = "Phase15NoBlendShapeTest";
+
+            // Transformカーブのみを追加
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 10));
+
+            try
+            {
+                // Act
+                var exporter = new Infrastructure.FbxAnimationExporter();
+                var hasBlendShapes = exporter.HasBlendShapeCurves(clip);
+                var blendShapeCurves = exporter.ExtractBlendShapeCurves(clip, null);
+
+                // Assert
+                Assert.IsFalse(hasBlendShapes, "BlendShapeカーブは含まれていないべき");
+                Assert.IsNotNull(blendShapeCurves, "空のリストが返されるべき（nullではない）");
+                Assert.AreEqual(0, blendShapeCurves.Count, "BlendShapeカーブは0件であるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// P15-008: BlendShapeカーブからAnimationClip生成の統合テスト
+        /// </summary>
+        [Test]
+        public void Phase15統合_BlendShapeカーブからAnimationClip生成()
+        {
+            // Arrange: BlendShapeカーブを含むAnimationClipを作成
+            var sourceClip = new AnimationClip();
+            sourceClip.name = "Phase15SourceClip";
+
+            var bindingSmile = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            var curveSmile = AnimationCurve.Linear(0, 0, 1, 100);
+            AnimationUtility.SetEditorCurve(sourceClip, bindingSmile, curveSmile);
+
+            var bindingAngry = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.Angry");
+            var curveAngry = AnimationCurve.Linear(0, 50, 1, 75);
+            AnimationUtility.SetEditorCurve(sourceClip, bindingAngry, curveAngry);
+
+            AnimationClip generatedClip = null;
+
+            try
+            {
+                // Act
+                var exporter = new Infrastructure.FbxAnimationExporter();
+                var blendShapeCurves = exporter.ExtractBlendShapeCurves(sourceClip, null);
+                generatedClip = exporter.CreateAnimationClipFromBlendShapeCurves(blendShapeCurves, "GeneratedBlendShapeClip");
+
+                // Assert
+                Assert.IsNotNull(generatedClip, "AnimationClipが生成されるべき");
+                Assert.AreEqual("GeneratedBlendShapeClip", generatedClip.name, "クリップ名が正しいべき");
+
+                // 生成されたクリップのカーブを検証
+                var bindings = AnimationUtility.GetCurveBindings(generatedClip);
+                Assert.AreEqual(2, bindings.Length, "2つのカーブが含まれるべき");
+
+                // BlendShapeプロパティが正しく設定されていることを確認
+                var propertyNames = bindings.Select(b => b.propertyName).ToList();
+                Assert.IsTrue(propertyNames.Contains("blendShape.Smile"), "blendShape.Smileが含まれるべき");
+                Assert.IsTrue(propertyNames.Contains("blendShape.Angry"), "blendShape.Angryが含まれるべき");
+
+                // 型がSkinnedMeshRendererであることを確認
+                Assert.IsTrue(bindings.All(b => b.type == typeof(SkinnedMeshRenderer)), "全バインディングがSkinnedMeshRenderer型であるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(sourceClip);
+                if (generatedClip != null)
+                {
+                    Object.DestroyImmediate(generatedClip);
+                }
+            }
+        }
+
+        /// <summary>
+        /// P15-008: 複数パスのBlendShapeカーブのFbxExportData準備統合テスト
+        /// 異なるSkinnedMeshRendererパスに紐づくBlendShapeカーブが正しく処理されることを検証
+        /// </summary>
+        [Test]
+        public void Phase15統合_複数パスのBlendShapeカーブのFbxExportData準備()
+        {
+            // Arrange: 複数パスのBlendShapeカーブを含むAnimationClipを作成
+            var clip = new AnimationClip();
+            clip.name = "Phase15MultiPathTest";
+
+            // Face用BlendShapeカーブ
+            var bindingFaceSmile = EditorCurveBinding.FloatCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, bindingFaceSmile, AnimationCurve.Linear(0, 0, 1, 100));
+
+            // Body用BlendShapeカーブ
+            var bindingBodyMuscle = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.Muscle");
+            AnimationUtility.SetEditorCurve(clip, bindingBodyMuscle, AnimationCurve.Linear(0, 0, 1, 50));
+
+            // Hands用BlendShapeカーブ
+            var bindingHandsGrip = EditorCurveBinding.FloatCurve("Hands", typeof(SkinnedMeshRenderer), "blendShape.Grip");
+            AnimationUtility.SetEditorCurve(clip, bindingHandsGrip, AnimationCurve.Linear(0, 0, 1, 75));
+
+            try
+            {
+                // Act
+                var exporter = new Infrastructure.FbxAnimationExporter();
+                var blendShapeCurves = exporter.ExtractBlendShapeCurves(clip, null);
+                var exportData = exporter.PrepareBlendShapeCurvesForExport(null, clip, blendShapeCurves);
+
+                // Assert
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
+                Assert.AreEqual(3, exportData.BlendShapeCurves.Count, "3つのBlendShapeカーブが抽出されるべき");
+
+                // 各パスのカーブを検証
+                var paths = exportData.BlendShapeCurves.Select(c => c.Path).ToList();
+                Assert.IsTrue(paths.Contains("Face"), "Faceパスが含まれるべき");
+                Assert.IsTrue(paths.Contains("Body"), "Bodyパスが含まれるべき");
+                Assert.IsTrue(paths.Contains("Hands"), "Handsパスが含まれるべき");
+
+                // BlendShape名を検証
+                var names = exportData.BlendShapeCurves.Select(c => c.BlendShapeName).ToList();
+                Assert.IsTrue(names.Contains("Smile"), "Smileが含まれるべき");
+                Assert.IsTrue(names.Contains("Muscle"), "Muscleが含まれるべき");
+                Assert.IsTrue(names.Contains("Grip"), "Gripが含まれるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        /// <summary>
+        /// P15-008: TimelineからBlendShapeカーブ抽出とFbxExportData準備の統合テスト
+        /// Timelineのマージ結果からBlendShapeカーブを抽出してFBXエクスポート準備ができることを検証
+        /// </summary>
+        [Test]
+        public void Phase15統合_TimelineマージからBlendShapeエクスポート準備()
+        {
+            // Arrange: BlendShapeカーブを含むTimelineを作成
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            timeline.name = "Phase15TimelineTest";
+
+            var track = timeline.CreateTrack<AnimationTrack>(null, "BlendShapeTrack");
+
+            var animClip = new AnimationClip();
+            animClip.name = "BlendShapeAnimClip";
+
+            // BlendShapeカーブを追加
+            var bindingSmile = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(animClip, bindingSmile, AnimationCurve.Linear(0, 0, 1, 100));
+
+            var bindingFrown = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.Frown");
+            AnimationUtility.SetEditorCurve(animClip, bindingFrown, AnimationCurve.Linear(0, 0, 1, 50));
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act: Timelineをマージ
+                var service = new AnimationMergeService();
+                var mergeResults = service.MergeFromTimelineAsset(timeline);
+
+                Assert.AreEqual(1, mergeResults.Count, "マージ結果が1つ返されるべき");
+                Assert.IsTrue(mergeResults[0].IsSuccess, "マージが成功すべき");
+
+                var mergedClip = mergeResults[0].GeneratedClip;
+                Assert.IsNotNull(mergedClip, "マージされたクリップが存在すべき");
+
+                // マージされたクリップからBlendShapeカーブを抽出
+                var exporter = new Infrastructure.FbxAnimationExporter();
+                var hasBlendShapes = exporter.HasBlendShapeCurves(mergedClip);
+                var blendShapeCurves = exporter.ExtractBlendShapeCurves(mergedClip, null);
+
+                // Assert
+                Assert.IsTrue(hasBlendShapes, "マージされたクリップにBlendShapeカーブがあるべき");
+                Assert.AreEqual(2, blendShapeCurves.Count, "2つのBlendShapeカーブが抽出されるべき");
+
+                // FbxExportDataの準備
+                var exportData = exporter.PrepareBlendShapeCurvesForExport(null, mergedClip, blendShapeCurves);
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
+                Assert.IsTrue(exportData.HasExportableData, "エクスポート可能なデータがあるべき");
+
+                // 生成されたファイルパスを記録
+                RecordCreatedAssetPaths(mergeResults[0].Logs);
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// P15-008: エクスポート可能データなしのエラーハンドリング統合テスト (ERR-004)
+        /// ExportWithBlendShapeCurvesでBlendShapeカーブがない場合のエラー処理を検証
+        /// </summary>
+        [Test]
+        public void Phase15統合_エクスポート可能データなしのエラーハンドリング()
+        {
+            // Arrange: 空のFbxExportDataを作成
+            var clip = new AnimationClip();
+            clip.name = "Phase15EmptyExportTest";
+
+            // Transformカーブのみ（BlendShapeなし）
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 10));
+
+            try
+            {
+                // Act
+                var exporter = new Infrastructure.FbxAnimationExporter();
+                var blendShapeCurves = exporter.ExtractBlendShapeCurves(clip, null);
+
+                // 空のBlendShapeカーブリストでFbxExportDataを作成
+                var exportData = exporter.PrepareBlendShapeCurvesForExport(null, clip, blendShapeCurves);
+
+                // Assert: BlendShapeカーブがない場合のエクスポート可能性を確認
+                Assert.IsNotNull(exportData, "FbxExportDataは生成されるべき");
+                Assert.AreEqual(0, exportData.BlendShapeCurves.Count, "BlendShapeカーブは0件であるべき");
+
+                // BlendShapeカーブがない場合、Transformカーブもなければエクスポートできないはずだが、
+                // PrepareBlendShapeCurvesForExportはBlendShape用なのでTransformは考慮しない
+                // 従って、BlendShape専用エクスポートとしては不可
+
+                // ExportWithBlendShapeCurvesでのエラー処理を確認
+                LogAssert.Expect(LogType.Error, "エクスポート可能なBlendShapeカーブがありません。");
+                var result = exporter.ExportWithBlendShapeCurves(exportData, "Assets/TestExport.fbx");
+                Assert.IsFalse(result, "BlendShapeなしのエクスポートは失敗すべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        #endregion
+
         #region ヘルパーメソッド
 
         /// <summary>
