@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using AnimationMergeTool.Editor.Application;
+using AnimationMergeTool.Editor.Domain.Models;
+using AnimationMergeTool.Editor.Infrastructure;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -255,7 +257,14 @@ namespace AnimationMergeTool.Editor.UI
                 return false;
             }
 
-            // P12-009で実装予定: FBXエクスポート処理の実装
+            // FBX Exporterパッケージのチェック
+            if (!FbxPackageChecker.CheckPackageAndShowDialogIfMissing())
+            {
+                return false;
+            }
+
+            var service = GetService();
+            var exporter = new FbxAnimationExporter();
             var successCount = 0;
 
             foreach (var director in directors)
@@ -265,8 +274,41 @@ namespace AnimationMergeTool.Editor.UI
                     continue;
                 }
 
-                // FBXエクスポート処理はP12-009で実装
-                // ここでは成功フラグのみ返す
+                // マージ処理を実行
+                var mergeResults = service.MergeFromPlayableDirector(director);
+                if (mergeResults == null || mergeResults.Count == 0)
+                {
+                    continue;
+                }
+
+                // 各マージ結果をFBXとしてエクスポート
+                foreach (var result in mergeResults)
+                {
+                    if (result.GeneratedClip == null)
+                    {
+                        continue;
+                    }
+
+                    // FbxExportDataを作成
+                    var exportData = CreateFbxExportData(result);
+                    if (exportData == null || !exporter.CanExport(exportData))
+                    {
+                        continue;
+                    }
+
+                    // 出力パスを生成
+                    var outputPath = GenerateFbxOutputPath(director.name, result.TargetAnimator);
+                    if (string.IsNullOrEmpty(outputPath))
+                    {
+                        continue;
+                    }
+
+                    // FBXエクスポート実行
+                    if (exporter.Export(exportData, outputPath))
+                    {
+                        successCount++;
+                    }
+                }
             }
 
             return successCount > 0;
@@ -285,7 +327,14 @@ namespace AnimationMergeTool.Editor.UI
                 return false;
             }
 
-            // P12-009で実装予定: FBXエクスポート処理の実装
+            // FBX Exporterパッケージのチェック
+            if (!FbxPackageChecker.CheckPackageAndShowDialogIfMissing())
+            {
+                return false;
+            }
+
+            var service = GetService();
+            var exporter = new FbxAnimationExporter();
             var successCount = 0;
 
             foreach (var timelineAsset in timelineAssets)
@@ -295,8 +344,41 @@ namespace AnimationMergeTool.Editor.UI
                     continue;
                 }
 
-                // FBXエクスポート処理はP12-009で実装
-                // ここでは成功フラグのみ返す
+                // マージ処理を実行
+                var mergeResults = service.MergeFromTimelineAsset(timelineAsset);
+                if (mergeResults == null || mergeResults.Count == 0)
+                {
+                    continue;
+                }
+
+                // 各マージ結果をFBXとしてエクスポート
+                foreach (var result in mergeResults)
+                {
+                    if (result.GeneratedClip == null)
+                    {
+                        continue;
+                    }
+
+                    // FbxExportDataを作成
+                    var exportData = CreateFbxExportData(result);
+                    if (exportData == null || !exporter.CanExport(exportData))
+                    {
+                        continue;
+                    }
+
+                    // 出力パスを生成
+                    var outputPath = GenerateFbxOutputPath(timelineAsset.name, result.TargetAnimator);
+                    if (string.IsNullOrEmpty(outputPath))
+                    {
+                        continue;
+                    }
+
+                    // FBXエクスポート実行
+                    if (exporter.Export(exportData, outputPath))
+                    {
+                        successCount++;
+                    }
+                }
             }
 
             return successCount > 0;
@@ -342,6 +424,59 @@ namespace AnimationMergeTool.Editor.UI
         private static bool ValidateExecuteFbxExportFromProjectMenu()
         {
             return CanExportFbxFromProject();
+        }
+
+        /// <summary>
+        /// MergeResultからFbxExportDataを作成する
+        /// </summary>
+        /// <param name="result">マージ結果</param>
+        /// <returns>FBXエクスポートデータ</returns>
+        private static FbxExportData CreateFbxExportData(MergeResult result)
+        {
+            if (result == null || result.GeneratedClip == null)
+            {
+                return null;
+            }
+
+            var animator = result.TargetAnimator;
+            var isHumanoid = animator != null && animator.isHuman;
+
+            // スケルトン情報を取得（Phase 13で詳細実装予定）
+            SkeletonData skeleton = null;
+            if (animator != null)
+            {
+                var rootBone = animator.transform;
+                var bones = new System.Collections.Generic.List<Transform> { rootBone };
+                skeleton = new SkeletonData(rootBone, bones);
+            }
+
+            // Transformカーブ情報（Phase 13で詳細実装予定）
+            var transformCurves = new System.Collections.Generic.List<TransformCurveData>();
+
+            // BlendShapeカーブ情報（Phase 15で詳細実装予定）
+            var blendShapeCurves = new System.Collections.Generic.List<BlendShapeCurveData>();
+
+            return new FbxExportData(
+                animator,
+                result.GeneratedClip,
+                skeleton,
+                transformCurves,
+                blendShapeCurves,
+                isHumanoid
+            );
+        }
+
+        /// <summary>
+        /// FBX出力パスを生成する
+        /// </summary>
+        /// <param name="baseName">基本名</param>
+        /// <param name="animator">対象Animator</param>
+        /// <returns>出力パス</returns>
+        private static string GenerateFbxOutputPath(string baseName, Animator animator)
+        {
+            var animatorName = animator != null ? animator.name : "NoAnimator";
+            var fileName = $"{baseName}_{animatorName}_Merged.fbx";
+            return $"Assets/{fileName}";
         }
 
         #endregion
