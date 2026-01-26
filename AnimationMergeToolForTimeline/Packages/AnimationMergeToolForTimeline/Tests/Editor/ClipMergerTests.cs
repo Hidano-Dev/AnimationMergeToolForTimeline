@@ -604,7 +604,8 @@ namespace AnimationMergeTool.Editor.Tests
             Assert.IsNotNull(result);
             var resultCurves = _clipMerger.GetAnimationCurves(result);
             Assert.AreEqual(1, resultCurves.Count);
-            Assert.AreEqual("localPosition.x", resultCurves[0].Binding.propertyName);
+            // SetCurveを使用した場合、Unityは内部的にプロパティ名を"m_LocalPosition.x"に変換する
+            Assert.AreEqual("m_LocalPosition.x", resultCurves[0].Binding.propertyName);
 
             Object.DestroyImmediate(animClip);
             Object.DestroyImmediate(result);
