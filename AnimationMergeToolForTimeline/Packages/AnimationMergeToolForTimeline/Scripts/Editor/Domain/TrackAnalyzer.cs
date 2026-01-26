@@ -339,7 +339,7 @@ namespace AnimationMergeTool.Editor.Domain
 
         /// <summary>
         /// 階層構造を含めてAnimationTrackに優先順位を割り当てて取得する
-        /// GetOutputTracks()の順序に基づき、下にあるトラック（インデックスが大きい）ほど高い優先順位を持つ
+        /// Timeline上の視覚的な表示順序に基づき、下にあるトラック（インデックスが大きい）ほど高い優先順位を持つ
         /// GroupTrack内のトラックも含めて正しい順序で優先順位を計算する
         /// </summary>
         /// <returns>優先順位が設定されたTrackInfoのリスト（優先順位の低い順）</returns>
@@ -352,13 +352,12 @@ namespace AnimationMergeTool.Editor.Domain
                 return result;
             }
 
-            // GetOutputTracks()はGroupTrack内のトラックも含めてフラット化された順序で返す
-            // この順序がTimeline上の視覚的な表示順序（上から下）に対応する
-            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
+            // 階層構造を考慮してフラット化された順序でトラックを取得
+            var orderedTracks = GetFlattenedTracksInHierarchyOrder();
 
-            for (int i = 0; i < outputTracks.Count; i++)
+            for (int i = 0; i < orderedTracks.Count; i++)
             {
-                if (outputTracks[i] is AnimationTrack animationTrack)
+                if (orderedTracks[i] is AnimationTrack animationTrack)
                 {
                     var trackInfo = new TrackInfo(animationTrack, i);
                     result.Add(trackInfo);
@@ -370,7 +369,7 @@ namespace AnimationMergeTool.Editor.Domain
 
         /// <summary>
         /// 階層構造を含めてトラックリストに優先順位を割り当てる
-        /// GetOutputTracks()の順序に基づいて優先順位を設定する
+        /// Timeline上の視覚的な表示順序に基づいて優先順位を設定する
         /// 下にあるトラック（インデックスが大きい）ほど高い優先順位を持つ
         /// </summary>
         /// <param name="tracks">優先順位を割り当てるトラックリスト</param>
@@ -381,8 +380,8 @@ namespace AnimationMergeTool.Editor.Domain
                 return;
             }
 
-            // GetOutputTracks()はGroupTrack内のトラックも含めてフラット化された順序で返す
-            var outputTracks = _timelineAsset.GetOutputTracks().ToList();
+            // 階層構造を考慮してフラット化された順序でトラックを取得
+            var orderedTracks = GetFlattenedTracksInHierarchyOrder();
 
             foreach (var trackInfo in tracks)
             {
@@ -391,10 +390,56 @@ namespace AnimationMergeTool.Editor.Domain
                     continue;
                 }
 
-                var index = outputTracks.IndexOf(trackInfo.Track);
+                var index = orderedTracks.IndexOf(trackInfo.Track);
                 if (index >= 0)
                 {
                     trackInfo.Priority = index;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Timeline上の視覚的な表示順序（上から下）でトラックをフラット化して取得する
+        /// GroupTrackの子トラックは親の直後に挿入される
+        /// </summary>
+        /// <returns>フラット化されたトラックのリスト</returns>
+        private List<TrackAsset> GetFlattenedTracksInHierarchyOrder()
+        {
+            var result = new List<TrackAsset>();
+
+            foreach (var rootTrack in _timelineAsset.GetRootTracks())
+            {
+                CollectTracksRecursively(rootTrack, result);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// トラックを再帰的に収集する
+        /// GroupTrackの場合は子トラックを再帰的に処理する
+        /// </summary>
+        /// <param name="track">処理するトラック</param>
+        /// <param name="result">結果を格納するリスト</param>
+        private void CollectTracksRecursively(TrackAsset track, List<TrackAsset> result)
+        {
+            if (track == null)
+            {
+                return;
+            }
+
+            // GroupTrack以外は結果に追加
+            if (!(track is GroupTrack))
+            {
+                result.Add(track);
+            }
+
+            // GroupTrackの場合は子トラックを再帰的に処理
+            if (track is GroupTrack groupTrack)
+            {
+                foreach (var childTrack in groupTrack.GetChildTracks())
+                {
+                    CollectTracksRecursively(childTrack, result);
                 }
             }
         }
