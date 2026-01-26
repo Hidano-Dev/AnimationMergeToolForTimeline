@@ -9,6 +9,11 @@ namespace AnimationMergeTool.Editor.Domain
     /// <summary>
     /// AnimationClipの統合処理を行うクラス
     /// 複数のClipInfoから単一のAnimationClipを生成する
+    ///
+    /// サポートするカーブタイプ:
+    /// - Transformカーブ（Position, Rotation, Scale）
+    /// - Animatorカーブ（マッスル、ルートモーション）
+    /// - BlendShapeカーブ（blendShape.* プロパティ）
     /// </summary>
     public class ClipMerger
     {
@@ -73,6 +78,9 @@ namespace AnimationMergeTool.Editor.Domain
 
         /// <summary>
         /// 複数のClipInfoを統合して単一のAnimationClipを生成する
+        /// Transform、Animator、BlendShapeなどすべてのカーブタイプを
+        /// バインディング情報（path, type, propertyName）に基づいて統合する
+        /// 同じバインディングのカーブは時間軸上でマージされる
         /// </summary>
         /// <param name="clipInfos">統合対象のClipInfoリスト</param>
         /// <returns>統合されたAnimationClip</returns>
