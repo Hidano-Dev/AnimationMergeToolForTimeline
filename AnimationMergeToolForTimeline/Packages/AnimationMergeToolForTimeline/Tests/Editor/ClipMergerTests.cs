@@ -1518,5 +1518,232 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region ループ処理テスト
+
+        [Test]
+        public void ApplyTimeOffset_ループ設定のAnimationClipがTimelineClipより短い場合_複数回のキーフレームが生成される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+
+            // 1秒のループ設定のAnimationClipを作成
+            var animClip = new AnimationClip();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(0.5f, 1f);
+            curve.AddKey(1f, 0f);
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, curve);
+
+            // ループ設定を有効にする
+            var clipSettings = AnimationUtility.GetAnimationClipSettings(animClip);
+            clipSettings.loopTime = true;
+            AnimationUtility.SetAnimationClipSettings(animClip, clipSettings);
+
+            // TimelineClipのdurationを3秒に設定（AnimationClipが3回ループ）
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 3.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // 1回目のループ（0〜1秒）: 0秒, 0.5秒, 1秒
+            // 2回目のループ（1〜2秒）: 1秒(上書き), 1.5秒, 2秒
+            // 3回目のループ（2〜3秒）: 2秒(上書き), 2.5秒, 3秒
+            // 1秒と2秒の位置が重複するので、7キーになる
+            Assert.AreEqual(7, result.keys.Length);
+
+            Assert.AreEqual(0f, result.keys[0].time, 0.0001f);
+            Assert.AreEqual(0.5f, result.keys[1].time, 0.0001f);
+            Assert.AreEqual(1f, result.keys[2].time, 0.0001f);
+            Assert.AreEqual(1.5f, result.keys[3].time, 0.0001f);
+            Assert.AreEqual(2f, result.keys[4].time, 0.0001f);
+            Assert.AreEqual(2.5f, result.keys[5].time, 0.0001f);
+            Assert.AreEqual(3f, result.keys[6].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_ループ設定でない場合_1回分のキーフレームのみ生成される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+
+            // 1秒のループ設定でないAnimationClipを作成
+            var animClip = new AnimationClip();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(0.5f, 1f);
+            curve.AddKey(1f, 0f);
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, curve);
+
+            // ループ設定を無効にする（デフォルトで無効だが明示的に設定）
+            var clipSettings = AnimationUtility.GetAnimationClipSettings(animClip);
+            clipSettings.loopTime = false;
+            AnimationUtility.SetAnimationClipSettings(animClip, clipSettings);
+
+            // TimelineClipのdurationを3秒に設定
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 3.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // ループしないので1回分の3キーのみ
+            Assert.AreEqual(3, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time, 0.0001f);
+            Assert.AreEqual(0.5f, result.keys[1].time, 0.0001f);
+            Assert.AreEqual(1f, result.keys[2].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_ループ設定でTimeScaleが適用される場合_正しくキーフレームが生成される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+
+            // 1秒のループ設定のAnimationClipを作成
+            var animClip = new AnimationClip();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(1f, 1f);
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, curve);
+
+            // ループ設定を有効にする
+            var clipSettings = AnimationUtility.GetAnimationClipSettings(animClip);
+            clipSettings.loopTime = true;
+            AnimationUtility.SetAnimationClipSettings(animClip, clipSettings);
+
+            // TimeScale=2（2倍速）、duration=1秒なので、元の1秒のアニメが0.5秒で1ループ
+            // 1秒間で2回ループする
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.timeScale = 2.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // 1回目のループ（0〜0.5秒）: 0秒, 0.5秒
+            // 2回目のループ（0.5〜1秒）: 0.5秒(上書き), 1秒
+            // 0.5秒の位置が重複するので、3キーになる
+            Assert.AreEqual(3, result.keys.Length);
+
+            Assert.AreEqual(0f, result.keys[0].time, 0.0001f);
+            Assert.AreEqual(0.5f, result.keys[1].time, 0.0001f);
+            Assert.AreEqual(1f, result.keys[2].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void ApplyTimeOffset_ループ設定でClipInが適用される場合_正しくキーフレームが生成される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+
+            // 2秒のループ設定のAnimationClipを作成
+            var animClip = new AnimationClip();
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(1f, 1f);
+            curve.AddKey(2f, 0f);
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, curve);
+
+            // ループ設定を有効にする
+            var clipSettings = AnimationUtility.GetAnimationClipSettings(animClip);
+            clipSettings.loopTime = true;
+            AnimationUtility.SetAnimationClipSettings(animClip, clipSettings);
+
+            // ClipIn=1秒（アニメの後半1秒だけ使用）、duration=2秒なので2回ループ
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.clipIn = 1.0;
+            timelineClip.duration = 2.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+
+            // Act
+            var result = _clipMerger.ApplyTimeOffset(curve, clipInfo);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // ClipIn=1秒以降のキー（1秒, 2秒）が有効で、有効長さは1秒
+            // 1回目のループ: 出力時間 0秒, 1秒
+            // 2回目のループ: 出力時間 1秒, 2秒
+            // 1秒の位置が重複するので、AnimationCurve.AddKeyにより上書きされ、3キーになる
+            Assert.AreEqual(3, result.keys.Length);
+
+            Assert.AreEqual(0f, result.keys[0].time, 0.0001f);
+            Assert.AreEqual(1f, result.keys[1].time, 0.0001f);
+            Assert.AreEqual(2f, result.keys[2].time, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_ループ設定のAnimationClipを含むClipInfoを正しく統合できる()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+
+            // 1秒のループ設定のAnimationClipを作成
+            var animClip = new AnimationClip();
+            var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(1f, 1f);
+            AnimationUtility.SetEditorCurve(animClip, binding, curve);
+
+            // ループ設定を有効にする
+            var clipSettings = AnimationUtility.GetAnimationClipSettings(animClip);
+            clipSettings.loopTime = true;
+            AnimationUtility.SetAnimationClipSettings(animClip, clipSettings);
+
+            // TimelineClipのdurationを2秒に設定（AnimationClipが2回ループ）
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 2.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+            Assert.AreEqual(1, resultCurves.Count);
+            // 2キー × 2ループ = 4キー（ただし同じ時間のキーは統合される可能性がある）
+            // 0秒, 1秒(1回目終了/2回目開始), 2秒の3つのユニークな時間になる
+            Assert.IsTrue(resultCurves[0].Curve.keys.Length >= 3);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        #endregion
     }
 }

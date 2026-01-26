@@ -189,6 +189,7 @@ namespace AnimationMergeTool.Editor.Domain
         /// <summary>
         /// カーブに時間オフセットを適用する
         /// ClipInfoの情報（開始時間、ClipIn、TimeScale）に基づいてキーフレームの時間を調整する
+        /// AnimationClipがLoop設定でTimelineClipのdurationより短い場合、ループ分のキーフレームを生成する
         /// </summary>
         /// <param name="curve">元のAnimationCurve</param>
         /// <param name="clipInfo">ClipInfo（開始時間、ClipIn、TimeScale情報を含む）</param>
@@ -220,42 +221,86 @@ namespace AnimationMergeTool.Editor.Domain
                 timeScale = 1f;
             }
 
-            foreach (var key in originalKeys)
+            // ソースAnimationClipの長さを取得
+            var sourceClipLength = clipInfo.AnimationClip != null ? clipInfo.AnimationClip.length : 0f;
+
+            // AnimationClipがLoop設定かどうかを確認
+            var isLooping = false;
+            if (clipInfo.AnimationClip != null)
             {
-                // 1. ClipInを適用（元のカーブのClipIn以降の部分のみ使用）
-                var sourceTime = key.time;
+                var clipSettings = AnimationUtility.GetAnimationClipSettings(clipInfo.AnimationClip);
+                isLooping = clipSettings.loopTime;
+            }
 
-                // ClipInより前のキーはスキップ
-                if (sourceTime < clipIn)
+            // ソースクリップのClipIn以降の有効な長さを計算
+            var effectiveSourceLength = sourceClipLength - clipIn;
+            if (effectiveSourceLength <= 0)
+            {
+                effectiveSourceLength = sourceClipLength;
+            }
+
+            // TimeScaleを考慮した1ループあたりの実時間
+            var loopDurationInTimeline = effectiveSourceLength / timeScale;
+
+            // ループが必要かどうか判定
+            // ソースクリップがTimelineClipのdurationより短く、Loop設定の場合にループ処理を行う
+            var needsLoop = isLooping && loopDurationInTimeline > 0 && duration > loopDurationInTimeline;
+
+            // ループ回数を計算（1回目も含む）
+            var loopCount = needsLoop ? Mathf.CeilToInt(duration / loopDurationInTimeline) : 1;
+
+            const float durationTolerance = 0.0001f;
+
+            for (var loopIndex = 0; loopIndex < loopCount; loopIndex++)
+            {
+                // 現在のループの開始時間（Timeline上）
+                var loopStartTimeInTimeline = loopIndex * loopDurationInTimeline;
+
+                foreach (var key in originalKeys)
                 {
-                    continue;
+                    // 1. ClipInを適用（元のカーブのClipIn以降の部分のみ使用）
+                    var sourceTime = key.time;
+
+                    // ClipInより前のキーはスキップ
+                    if (sourceTime < clipIn)
+                    {
+                        continue;
+                    }
+
+                    // ソースクリップの長さを超えるキーはスキップ（最初のループ以降では不要だが念のため）
+                    if (sourceTime > sourceClipLength + durationTolerance)
+                    {
+                        continue;
+                    }
+
+                    // 2. TimeScaleを適用して実際の再生時間を計算
+                    // ClipIn分をオフセットしてから、TimeScaleで割る
+                    var localTime = (sourceTime - clipIn) / timeScale;
+
+                    // ループオフセットを加算
+                    var localTimeWithLoop = loopStartTimeInTimeline + localTime;
+
+                    // 3. クリップのDurationを超えるキーはスキップ（浮動小数点誤差を考慮）
+                    if (localTimeWithLoop > duration + durationTolerance)
+                    {
+                        continue;
+                    }
+
+                    // 4. Timeline上の開始時間を加算
+                    var outputTime = startTime + localTimeWithLoop;
+
+                    // 新しいキーフレームを作成
+                    var newKey = new Keyframe(outputTime, key.value)
+                    {
+                        inTangent = key.inTangent * timeScale,
+                        outTangent = key.outTangent * timeScale,
+                        inWeight = key.inWeight,
+                        outWeight = key.outWeight,
+                        weightedMode = key.weightedMode
+                    };
+
+                    newCurve.AddKey(newKey);
                 }
-
-                // 2. TimeScaleを適用して実際の再生時間を計算
-                // ClipIn分をオフセットしてから、TimeScaleで割る
-                var localTime = (sourceTime - clipIn) / timeScale;
-
-                // 3. クリップのDurationを超えるキーはスキップ（浮動小数点誤差を考慮）
-                const float durationTolerance = 0.0001f;
-                if (localTime > duration + durationTolerance)
-                {
-                    continue;
-                }
-
-                // 4. Timeline上の開始時間を加算
-                var outputTime = startTime + localTime;
-
-                // 新しいキーフレームを作成
-                var newKey = new Keyframe(outputTime, key.value)
-                {
-                    inTangent = key.inTangent * timeScale,
-                    outTangent = key.outTangent * timeScale,
-                    inWeight = key.inWeight,
-                    outWeight = key.outWeight,
-                    weightedMode = key.weightedMode
-                };
-
-                newCurve.AddKey(newKey);
             }
 
             return newCurve;
