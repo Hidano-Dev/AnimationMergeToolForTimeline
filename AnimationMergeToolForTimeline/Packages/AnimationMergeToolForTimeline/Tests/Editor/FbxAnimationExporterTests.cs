@@ -2008,5 +2008,291 @@ namespace AnimationMergeTool.Editor.Tests
 #endif
 
         #endregion
+
+        #region エクスポートデータなしエラー処理テスト (P15-006 / ERR-004)
+
+        /// <summary>
+        /// P15-006: エクスポート可能なデータがない場合のエラー処理テスト
+        /// 要件 ERR-004: FBXエクスポート時にエクスポート可能なデータがない場合のエラー処理
+        /// </summary>
+        [Test]
+        public void ERR004_スケルトンもカーブもないFbxExportDataでCanExportがfalseを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var exportData = new FbxExportData(
+                _testAnimator,
+                _testClip,
+                null, // スケルトンなし
+                new List<TransformCurveData>(), // Transformカーブなし
+                new List<BlendShapeCurveData>(), // BlendShapeカーブなし
+                false);
+
+            // Act
+            var canExport = exporter.CanExport(exportData);
+
+            // Assert
+            Assert.IsFalse(canExport, "エクスポート可能なデータがない場合はCanExportがfalseを返すこと");
+            Assert.IsFalse(exportData.HasExportableData, "HasExportableDataがfalseであること");
+        }
+
+        [Test]
+        public void ERR004_エクスポートデータなしでExportがfalseを返しエラーログを出力する()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var exportData = new FbxExportData(
+                _testAnimator,
+                _testClip,
+                null,
+                new List<TransformCurveData>(),
+                new List<BlendShapeCurveData>(),
+                false);
+            LogAssert.Expect(LogType.Error, "エクスポート可能なデータがありません。");
+
+            // Act
+            var result = exporter.Export(exportData, "Assets/TestExport.fbx");
+
+            // Assert
+            Assert.IsFalse(result, "エクスポートが失敗すること");
+        }
+
+        [Test]
+        public void ERR004_ValidateExportDataでエラーメッセージを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var exportData = new FbxExportData(
+                _testAnimator,
+                _testClip,
+                null,
+                new List<TransformCurveData>(),
+                new List<BlendShapeCurveData>(),
+                false);
+
+            // Act
+            var errorMessage = exporter.ValidateExportData(exportData);
+
+            // Assert
+            Assert.IsNotNull(errorMessage, "エラーメッセージが返されること");
+            Assert.IsTrue(
+                errorMessage.Contains("エクスポート") || errorMessage.Contains("データ"),
+                "エラーメッセージにエクスポートまたはデータに関する内容が含まれること");
+        }
+
+        [Test]
+        public void ERR004_空のAnimationClipからPrepareAllCurvesForExportでエクスポート不可データを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var emptyClip = new AnimationClip();
+            emptyClip.name = "EmptyClip";
+
+            // Act
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, emptyClip);
+
+            // Assert
+            Assert.IsNotNull(exportData);
+            Assert.IsFalse(exportData.HasExportableData, "空のクリップからはエクスポート不可データが作成されること");
+            Assert.AreEqual(0, exportData.TransformCurves.Count, "Transformカーブがないこと");
+            Assert.AreEqual(0, exportData.BlendShapeCurves.Count, "BlendShapeカーブがないこと");
+
+            // クリーンアップ
+            Object.DestroyImmediate(emptyClip);
+        }
+
+        [Test]
+        public void ERR004_BlendShapeカーブのみ抽出失敗時にエラー処理が正しく動作する()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            // Transform以外、BlendShape以外のカーブを設定（マテリアルカーブなど）
+            clip.SetCurve("", typeof(MeshRenderer), "material._Color.r", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+            LogAssert.Expect(LogType.Error, "エクスポート可能なBlendShapeカーブがありません。");
+
+            // Act
+            var result = exporter.ExportBlendShapeCurvesToFbx(_testAnimator, clip, "Assets/TestExport.fbx");
+
+            // Assert
+            Assert.IsFalse(result, "BlendShapeカーブがない場合はエクスポートが失敗すること");
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ERR004_ExportWithBlendShapeCurvesで空のBlendShapeカーブリストの場合エラー()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var exportData = new FbxExportData(
+                _testAnimator,
+                _testClip,
+                null,
+                new List<TransformCurveData>(),
+                new List<BlendShapeCurveData>(), // 空のBlendShapeカーブリスト
+                false);
+            LogAssert.Expect(LogType.Error, "エクスポート可能なBlendShapeカーブがありません。");
+
+            // Act
+            var result = exporter.ExportWithBlendShapeCurves(exportData, "Assets/TestExport.fbx");
+
+            // Assert
+            Assert.IsFalse(result, "空のBlendShapeカーブリストの場合エクスポートが失敗すること");
+        }
+
+        [Test]
+        public void ERR004_ExportWithTransformCurvesで空のTransformカーブリストの場合エラー()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var exportData = new FbxExportData(
+                _testAnimator,
+                _testClip,
+                null,
+                new List<TransformCurveData>(), // 空のTransformカーブリスト
+                new List<BlendShapeCurveData>(),
+                false);
+            LogAssert.Expect(LogType.Error, "エクスポート可能なTransformカーブがありません。");
+
+            // Act
+            var result = exporter.ExportWithTransformCurves(exportData, "Assets/TestExport.fbx");
+
+            // Assert
+            Assert.IsFalse(result, "空のTransformカーブリストの場合エクスポートが失敗すること");
+        }
+
+        [Test]
+        public void ERR004_ExportTransformCurvesToFbxでTransformカーブがない場合エラー()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            // BlendShapeカーブのみ設定（Transformカーブなし）
+            var binding = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.smile");
+            AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+            LogAssert.Expect(LogType.Error, "エクスポート可能なTransformカーブがありません。");
+
+            // Act
+            var result = exporter.ExportTransformCurvesToFbx(_testAnimator, clip, "Assets/TestExport.fbx");
+
+            // Assert
+            Assert.IsFalse(result, "Transformカーブがない場合はエクスポートが失敗すること");
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ERR004_スケルトンのみでカーブなしの場合はエクスポート可能()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var bones = new List<Transform> { _testGameObject.transform };
+            var skeleton = new SkeletonData(_testGameObject.transform, bones);
+            var exportData = new FbxExportData(
+                _testAnimator,
+                _testClip,
+                skeleton, // スケルトンあり
+                new List<TransformCurveData>(),
+                new List<BlendShapeCurveData>(),
+                false);
+
+            // Act
+            var canExport = exporter.CanExport(exportData);
+
+            // Assert
+            Assert.IsTrue(canExport, "スケルトンが存在する場合はエクスポート可能");
+            Assert.IsTrue(exportData.HasExportableData, "スケルトンがあればHasExportableDataはtrue");
+        }
+
+        [Test]
+        public void ERR004_nullのTransformカーブリストでもFbxExportDataが正しく処理される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            // nullリストをFbxExportDataに渡す場合のテスト
+            // PrepareTransformCurvesForExportはnullを空リストに変換するべき
+
+            // Act
+            var exportData = exporter.PrepareTransformCurvesForExport(
+                _testAnimator,
+                _testClip,
+                null); // nullを渡す
+
+            // Assert
+            Assert.IsNotNull(exportData);
+            Assert.IsNotNull(exportData.TransformCurves, "nullが渡されても空リストに変換されること");
+            Assert.AreEqual(0, exportData.TransformCurves.Count);
+        }
+
+        [Test]
+        public void ERR004_nullのBlendShapeカーブリストでもFbxExportDataが正しく処理される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // Act
+            var exportData = exporter.PrepareBlendShapeCurvesForExport(
+                _testAnimator,
+                _testClip,
+                null); // nullを渡す
+
+            // Assert
+            Assert.IsNotNull(exportData);
+            Assert.IsNotNull(exportData.BlendShapeCurves, "nullが渡されても空リストに変換されること");
+            Assert.AreEqual(0, exportData.BlendShapeCurves.Count);
+        }
+
+        [Test]
+        public void ERR004_複数のエクスポートメソッドで一貫したエラー処理が行われる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var emptyExportData = new FbxExportData(
+                _testAnimator,
+                _testClip,
+                null,
+                new List<TransformCurveData>(),
+                new List<BlendShapeCurveData>(),
+                false);
+
+            // Act & Assert - CanExport
+            Assert.IsFalse(exporter.CanExport(emptyExportData), "CanExportがfalseを返すこと");
+
+            // Act & Assert - ValidateExportData
+            var validationError = exporter.ValidateExportData(emptyExportData);
+            Assert.IsNotNull(validationError, "ValidateExportDataがエラーメッセージを返すこと");
+
+            // Act & Assert - Export
+            LogAssert.Expect(LogType.Error, "エクスポート可能なデータがありません。");
+            var exportResult = exporter.Export(emptyExportData, "Assets/TestExport.fbx");
+            Assert.IsFalse(exportResult, "Exportがfalseを返すこと");
+        }
+
+        [Test]
+        public void ERR004_HasExportableDataがfalseの場合のフラグ確認()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var emptyExportData = new FbxExportData(
+                null, // Animatorなし
+                null, // Clipなし
+                null, // スケルトンなし
+                new List<TransformCurveData>(), // Transformカーブなし
+                new List<BlendShapeCurveData>(), // BlendShapeカーブなし
+                false);
+
+            // Assert
+            Assert.IsFalse(emptyExportData.HasExportableData, "全てのデータがない場合HasExportableDataはfalse");
+            Assert.IsNull(emptyExportData.SourceAnimator, "SourceAnimatorはnull");
+            Assert.IsNull(emptyExportData.MergedClip, "MergedClipはnull");
+            Assert.IsNull(emptyExportData.Skeleton, "Skeletonはnull");
+            Assert.AreEqual(0, emptyExportData.TransformCurves.Count, "TransformCurvesは空");
+            Assert.AreEqual(0, emptyExportData.BlendShapeCurves.Count, "BlendShapeCurvesは空");
+        }
+
+        #endregion
     }
 }
