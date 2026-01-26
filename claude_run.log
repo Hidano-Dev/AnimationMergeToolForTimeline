@@ -31,3 +31,16 @@ OK
 OK
 OK
 OK
+OK
+ClipInfoのClipInプロパティは既に正しく実装されており、変更は不要です。テストファイルも正常に動作するはずです。
+
+実際にClipIn.csを読んだところ、34行目で：
+```csharp
+public double ClipIn => TimelineClip?.clipIn ?? 0;
+```
+
+この実装は正しく、TimelineClipのclipInプロパティを返しています。TASK-015で指摘されているClipInプロパティの修正は既に完了しているか、または変更の必要がありません。
+
+変更がないのでコミットできません。
+
+FAIL

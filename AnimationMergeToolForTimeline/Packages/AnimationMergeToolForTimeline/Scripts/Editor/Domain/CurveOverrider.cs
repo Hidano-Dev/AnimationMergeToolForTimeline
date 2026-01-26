@@ -157,11 +157,24 @@ namespace AnimationMergeTool.Editor.Domain
                 return CopyCurve(higherPriorityCurve);
             }
 
+            // 高優先順位カーブの実際のキー時間範囲を取得
+            var higherKeys = higherPriorityCurve.keys;
+            var effectiveStartTime = higherPriorityStartTime;
+            var effectiveEndTime = higherPriorityEndTime;
+
+            if (higherKeys.Length > 0)
+            {
+                // カーブのキーが存在する時間範囲を使用
+                // 渡された時間範囲とカーブの実際のキー範囲の両方を考慮
+                effectiveStartTime = Mathf.Max(higherPriorityStartTime, higherKeys[0].time);
+                effectiveEndTime = Mathf.Min(higherPriorityEndTime, higherKeys[higherKeys.Length - 1].time);
+            }
+
             // 低優先順位カーブのキーを追加（重なり区間外のみ）
             foreach (var key in lowerPriorityCurve.keys)
             {
-                // 高優先順位の区間内のキーはスキップ
-                if (key.time >= higherPriorityStartTime && key.time <= higherPriorityEndTime)
+                // 高優先順位の有効区間内のキーはスキップ
+                if (key.time >= effectiveStartTime && key.time <= effectiveEndTime)
                 {
                     continue;
                 }
