@@ -318,5 +318,238 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region FBX対応 GenerateBaseName テスト
+
+        [Test]
+        public void GenerateBaseName_FBX拡張子で正しい形式のファイル名を生成する()
+        {
+            // Arrange
+            var timelineAssetName = "MyTimeline";
+            var animatorName = "MyAnimator";
+            var extension = ".fbx";
+
+            // Act
+            var result = _fileNameGenerator.GenerateBaseName(timelineAssetName, animatorName, extension);
+
+            // Assert
+            Assert.AreEqual("MyTimeline_MyAnimator_Merged.fbx", result);
+        }
+
+        [Test]
+        public void GenerateBaseName_FBX拡張子でTimelineAsset名がnullの場合Unknownを使用する()
+        {
+            // Arrange
+            string timelineAssetName = null;
+            var animatorName = "MyAnimator";
+            var extension = ".fbx";
+
+            // Act
+            var result = _fileNameGenerator.GenerateBaseName(timelineAssetName, animatorName, extension);
+
+            // Assert
+            Assert.AreEqual("Unknown_MyAnimator_Merged.fbx", result);
+        }
+
+        [Test]
+        public void GenerateBaseName_FBX拡張子でAnimator名がnullの場合Unknownを使用する()
+        {
+            // Arrange
+            var timelineAssetName = "MyTimeline";
+            string animatorName = null;
+            var extension = ".fbx";
+
+            // Act
+            var result = _fileNameGenerator.GenerateBaseName(timelineAssetName, animatorName, extension);
+
+            // Assert
+            Assert.AreEqual("MyTimeline_Unknown_Merged.fbx", result);
+        }
+
+        [Test]
+        public void GenerateBaseName_FBX拡張子で両方nullの場合両方Unknownを使用する()
+        {
+            // Arrange
+            string timelineAssetName = null;
+            string animatorName = null;
+            var extension = ".fbx";
+
+            // Act
+            var result = _fileNameGenerator.GenerateBaseName(timelineAssetName, animatorName, extension);
+
+            // Assert
+            Assert.AreEqual("Unknown_Unknown_Merged.fbx", result);
+        }
+
+        [Test]
+        public void GenerateBaseName_拡張子にドットがない場合でも正しく処理する()
+        {
+            // Arrange
+            var timelineAssetName = "MyTimeline";
+            var animatorName = "MyAnimator";
+            var extension = "fbx"; // ドットなし
+
+            // Act
+            var result = _fileNameGenerator.GenerateBaseName(timelineAssetName, animatorName, extension);
+
+            // Assert
+            Assert.AreEqual("MyTimeline_MyAnimator_Merged.fbx", result);
+        }
+
+        [Test]
+        public void GenerateBaseName_拡張子がnullの場合デフォルトのanim拡張子を使用する()
+        {
+            // Arrange
+            var timelineAssetName = "MyTimeline";
+            var animatorName = "MyAnimator";
+            string extension = null;
+
+            // Act
+            var result = _fileNameGenerator.GenerateBaseName(timelineAssetName, animatorName, extension);
+
+            // Assert
+            Assert.AreEqual("MyTimeline_MyAnimator_Merged.anim", result);
+        }
+
+        [Test]
+        public void GenerateBaseName_拡張子が空文字の場合デフォルトのanim拡張子を使用する()
+        {
+            // Arrange
+            var timelineAssetName = "MyTimeline";
+            var animatorName = "MyAnimator";
+            var extension = "";
+
+            // Act
+            var result = _fileNameGenerator.GenerateBaseName(timelineAssetName, animatorName, extension);
+
+            // Assert
+            Assert.AreEqual("MyTimeline_MyAnimator_Merged.anim", result);
+        }
+
+        #endregion
+
+        #region FBX対応 GenerateUniqueFilePath テスト
+
+        [Test]
+        public void GenerateUniqueFilePath_FBX拡張子でファイルが存在しない場合基本ファイル名を返す()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator", ".fbx");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged.fbx", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_FBX拡張子でファイルが存在する場合連番1を付与する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged.fbx");
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator", ".fbx");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged(1).fbx", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_FBX拡張子で連番1も存在する場合連番2を付与する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged.fbx");
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged(1).fbx");
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator", ".fbx");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged(2).fbx", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_FBX拡張子で連番に途中の欠番がある場合最初の空きを使用する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged.fbx");
+            // (1)は存在しない
+            mockChecker.AddExistingFile("Assets/MyTimeline_MyAnimator_Merged(2).fbx");
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator", ".fbx");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged(1).fbx", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_FBX拡張子でサブディレクトリでも正しく動作する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/Animations/MyTimeline_MyAnimator_Merged.fbx");
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets/Animations", "MyTimeline", "MyAnimator", ".fbx");
+
+            // Assert
+            Assert.AreEqual("Assets/Animations/MyTimeline_MyAnimator_Merged(1).fbx", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_FBX拡張子でディレクトリ末尾にスラッシュがあっても正しく処理する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets/", "MyTimeline", "MyAnimator", ".fbx");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged.fbx", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_拡張子がnullの場合デフォルトのanim拡張子を使用する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator", null);
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged.anim", result);
+        }
+
+        [Test]
+        public void GenerateUniqueFilePath_拡張子パラメータなしの場合anim拡張子を使用する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            var generator = new FileNameGenerator(mockChecker);
+
+            // Act
+            // 既存のオーバーロード（拡張子なし）を使用
+            var result = generator.GenerateUniqueFilePath("Assets", "MyTimeline", "MyAnimator");
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_MyAnimator_Merged.anim", result);
+        }
+
+        #endregion
     }
 }
