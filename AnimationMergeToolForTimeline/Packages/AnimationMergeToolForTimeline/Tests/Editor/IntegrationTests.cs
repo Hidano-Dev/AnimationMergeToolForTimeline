@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -1617,8 +1618,14 @@ namespace AnimationMergeTool.Editor.Tests
                 Assert.IsNotNull(results[0].GeneratedClip, "AnimationClipが生成されるべき");
 
                 // 両方のトラックからのカーブが含まれていることを確認
+                // 注意: Unityはlocalpositionを3Dベクターとして管理するため、
+                // x, yを設定するとzも自動追加される（Unityの仕様）
                 var bindings = AnimationUtility.GetCurveBindings(results[0].GeneratedClip);
-                Assert.AreEqual(2, bindings.Length, "2つのカーブが含まれるべき");
+                Assert.IsTrue(bindings.Length >= 2, "少なくとも2つのカーブが含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "m_LocalPosition.x"),
+                    "localPosition.xのカーブが含まれるべき");
+                Assert.IsTrue(bindings.Any(b => b.propertyName == "m_LocalPosition.y"),
+                    "localPosition.yのカーブが含まれるべき");
 
                 // クリーンアップ用にパスを記録
                 RecordCreatedAssetPaths(results[0].Logs);
