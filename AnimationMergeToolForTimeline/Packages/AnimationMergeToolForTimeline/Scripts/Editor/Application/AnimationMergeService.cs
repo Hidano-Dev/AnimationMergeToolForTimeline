@@ -226,43 +226,37 @@ namespace AnimationMergeTool.Editor.Application
                 var trackStartTime = (float)clipInfos.Min(c => c.StartTime);
                 var trackEndTime = (float)clipInfos.Max(c => c.EndTime);
 
-                // 各クリップから直接カーブを取得して統合
-                foreach (var clipInfo in clipInfos)
+                // 同じトラック内のクリップを先に統合（ClipMergerを使用）
+                var mergedTrackClip = clipMerger.Merge(clipInfos);
+                if (mergedTrackClip == null)
                 {
-                    if (clipInfo?.AnimationClip == null)
-                    {
-                        continue;
-                    }
-
-                    // ClipInfoから直接カーブを取得
-                    var curveBindingPairs = clipMerger.GetAnimationCurves(clipInfo.AnimationClip);
-
-                    foreach (var pair in curveBindingPairs)
-                    {
-                        // 時間オフセットを適用
-                        var offsetCurve = clipMerger.ApplyTimeOffset(pair.Curve, clipInfo);
-                        if (offsetCurve == null || offsetCurve.keys.Length == 0)
-                        {
-                            continue;
-                        }
-
-                        var bindingKey = curveOverrider.GetBindingKey(pair.Binding);
-
-                        if (!allCurveData.ContainsKey(bindingKey))
-                        {
-                            allCurveData[bindingKey] = new List<CurveWithTimeRangeAndPriority>();
-                        }
-
-                        allCurveData[bindingKey].Add(new CurveWithTimeRangeAndPriority
-                        {
-                            Binding = pair.Binding,
-                            Curve = offsetCurve,
-                            StartTime = trackStartTime,
-                            EndTime = trackEndTime,
-                            Priority = trackInfo.Priority
-                        });
-                    }
+                    continue;
                 }
+
+                // 統合されたクリップからカーブを取得
+                var mergedCurveBindingPairs = clipMerger.GetAnimationCurves(mergedTrackClip);
+
+                foreach (var pair in mergedCurveBindingPairs)
+                {
+                    var bindingKey = curveOverrider.GetBindingKey(pair.Binding);
+
+                    if (!allCurveData.ContainsKey(bindingKey))
+                    {
+                        allCurveData[bindingKey] = new List<CurveWithTimeRangeAndPriority>();
+                    }
+
+                    allCurveData[bindingKey].Add(new CurveWithTimeRangeAndPriority
+                    {
+                        Binding = pair.Binding,
+                        Curve = pair.Curve,
+                        StartTime = trackStartTime,
+                        EndTime = trackEndTime,
+                        Priority = trackInfo.Priority
+                    });
+                }
+
+                // マージされた一時クリップを破棄
+                Object.DestroyImmediate(mergedTrackClip);
 
                 result.AddLog($"トラック \"{trackInfo.Track.name}\" を処理しました（優先順位: {trackInfo.Priority}）");
             }
