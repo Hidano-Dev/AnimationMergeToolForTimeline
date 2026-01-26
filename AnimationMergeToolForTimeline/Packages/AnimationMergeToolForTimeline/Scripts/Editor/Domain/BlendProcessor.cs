@@ -463,17 +463,31 @@ namespace AnimationMergeTool.Editor.Domain
             float previousClipValue,
             float nextClipValue)
         {
+            // ブレンド区間が無効な場合は前クリップの値を返す
+            if (!blendInfo.IsValid)
+            {
+                return previousClipValue;
+            }
+
+            // ブレンド区間前の場合は前クリップの値を返す
+            if (globalTime < blendInfo.BlendStartTime)
+            {
+                return previousClipValue;
+            }
+
+            // ブレンド区間後の場合は次クリップの値を返す
+            if (globalTime > blendInfo.BlendEndTime)
+            {
+                return nextClipValue;
+            }
+
+            // ブレンド区間内の場合はウェイトで補間
             CalculateConsecutiveBlendWeights(blendInfo, globalTime, out float previousWeight, out float nextWeight);
 
-            // ブレンド区間外の場合、どちらかの値をそのまま返す
+            // ウェイトが両方0の場合（エッジケース）
             if (previousWeight == 0f && nextWeight == 0f)
             {
-                // 時間に応じてどちらを返すか決定
-                if (globalTime < blendInfo.BlendStartTime)
-                {
-                    return previousClipValue;
-                }
-                return nextClipValue;
+                return previousClipValue;
             }
 
             return previousClipValue * previousWeight + nextClipValue * nextWeight;
@@ -493,15 +507,31 @@ namespace AnimationMergeTool.Editor.Domain
             Vector3 previousClipValue,
             Vector3 nextClipValue)
         {
+            // ブレンド区間が無効な場合は前クリップの値を返す
+            if (!blendInfo.IsValid)
+            {
+                return previousClipValue;
+            }
+
+            // ブレンド区間前の場合は前クリップの値を返す
+            if (globalTime < blendInfo.BlendStartTime)
+            {
+                return previousClipValue;
+            }
+
+            // ブレンド区間後の場合は次クリップの値を返す
+            if (globalTime > blendInfo.BlendEndTime)
+            {
+                return nextClipValue;
+            }
+
+            // ブレンド区間内の場合はウェイトで補間
             CalculateConsecutiveBlendWeights(blendInfo, globalTime, out float previousWeight, out float nextWeight);
 
+            // ウェイトが両方0の場合（エッジケース）
             if (previousWeight == 0f && nextWeight == 0f)
             {
-                if (globalTime < blendInfo.BlendStartTime)
-                {
-                    return previousClipValue;
-                }
-                return nextClipValue;
+                return previousClipValue;
             }
 
             return previousClipValue * previousWeight + nextClipValue * nextWeight;
@@ -521,15 +551,31 @@ namespace AnimationMergeTool.Editor.Domain
             Quaternion previousClipValue,
             Quaternion nextClipValue)
         {
+            // ブレンド区間が無効な場合は前クリップの値を返す
+            if (!blendInfo.IsValid)
+            {
+                return previousClipValue;
+            }
+
+            // ブレンド区間前の場合は前クリップの値を返す
+            if (globalTime < blendInfo.BlendStartTime)
+            {
+                return previousClipValue;
+            }
+
+            // ブレンド区間後の場合は次クリップの値を返す
+            if (globalTime > blendInfo.BlendEndTime)
+            {
+                return nextClipValue;
+            }
+
+            // ブレンド区間内の場合はウェイトで補間
             CalculateConsecutiveBlendWeights(blendInfo, globalTime, out float previousWeight, out float nextWeight);
 
+            // ウェイトが両方0の場合（エッジケース）
             if (previousWeight == 0f && nextWeight == 0f)
             {
-                if (globalTime < blendInfo.BlendStartTime)
-                {
-                    return previousClipValue;
-                }
-                return nextClipValue;
+                return previousClipValue;
             }
 
             // Quaternionの場合はSlerpで補間
