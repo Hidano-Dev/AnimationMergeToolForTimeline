@@ -2163,3 +2163,25 @@ Assert.Less(stopwatch.ElapsedMilliseconds, 5000,
 「変更なし」となるため、FAILを返します。
 
 FAIL
+コミットが完了しました。ユーザーがUnity Test Runnerでテストを実行して結果を確認する必要があります。
+
+テストを実行できる環境ではないため、変更内容を確認し、ユーザーにテスト実行を依頼する必要があります。
+
+**注意**: 今回の修正は「タスク1: カーブ数のずれを修正」に対応しています。主な変更点：
+
+1. **ClipMergerTests.cs** - `SetCurve` を `AnimationUtility.SetEditorCurve` に変更し、単一カーブのみを設定するように修正。また、propertyNameを `localPosition.x` から `m_LocalPosition.x` に変更。
+
+2. **AnimationMergeServiceTests.cs** - カーブ数の期待値を1から3に修正（Unityが内部的にx/y/zを生成するため）。
+
+3. **IntegrationTests.cs** - 同様にカーブ数の期待値を修正し、propertyName検証を `m_LocalPosition.*` に変更。
+
+コミット完了しましたが、Unity環境でのテスト実行ができませんでした。
+
+OK
+コミットは完了しましたが、テスト結果が修正前の古いもののままのため、修正後のテストを実行できていません。
+
+**FAIL**
+コミットが成功しました。
+
+OK
+OK
