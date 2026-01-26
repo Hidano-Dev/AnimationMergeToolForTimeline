@@ -14,6 +14,46 @@ namespace AnimationMergeTool.Editor.Infrastructure
     /// </summary>
     public class FbxAnimationExporter
     {
+        private readonly SkeletonExtractor _skeletonExtractor;
+
+        /// <summary>
+        /// デフォルトコンストラクタ
+        /// </summary>
+        public FbxAnimationExporter()
+        {
+            _skeletonExtractor = new SkeletonExtractor();
+        }
+
+        /// <summary>
+        /// SkeletonExtractorを指定するコンストラクタ（テスト用）
+        /// </summary>
+        /// <param name="skeletonExtractor">スケルトン抽出器</param>
+        public FbxAnimationExporter(SkeletonExtractor skeletonExtractor)
+        {
+            _skeletonExtractor = skeletonExtractor ?? new SkeletonExtractor();
+        }
+
+        /// <summary>
+        /// Animatorからスケルトン情報を取得する
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <returns>スケルトン情報（取得できない場合は空のSkeletonData）</returns>
+        public SkeletonData ExtractSkeleton(Animator animator)
+        {
+            return _skeletonExtractor.Extract(animator);
+        }
+
+        /// <summary>
+        /// ボーンのAnimator相対パスを取得する
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="bone">パスを取得するボーン</param>
+        /// <returns>Animator相対パス（Animator自身の場合は空文字）</returns>
+        public string GetBonePath(Animator animator, Transform bone)
+        {
+            return _skeletonExtractor.GetBonePath(animator, bone);
+        }
+
         /// <summary>
         /// FBXエクスポート機能が利用可能かどうかを確認する
         /// </summary>

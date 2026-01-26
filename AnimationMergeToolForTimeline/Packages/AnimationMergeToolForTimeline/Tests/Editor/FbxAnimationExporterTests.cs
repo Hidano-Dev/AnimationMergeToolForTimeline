@@ -468,5 +468,148 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region ExtractSkeleton テスト (P13-003)
+
+        [Test]
+        public void ExtractSkeleton_Animatorがnullの場合_空のSkeletonDataを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // Act
+            var result = exporter.ExtractSkeleton(null);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.HasSkeleton);
+        }
+
+        [Test]
+        public void ExtractSkeleton_ボーン階層が存在する場合_SkeletonDataを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // ボーン階層を作成
+            var hips = new GameObject("Hips");
+            hips.transform.SetParent(_testGameObject.transform);
+
+            var spine = new GameObject("Spine");
+            spine.transform.SetParent(hips.transform);
+
+            // SkinnedMeshRendererを追加
+            var meshObj = new GameObject("Body");
+            meshObj.transform.SetParent(_testGameObject.transform);
+            var smr = meshObj.AddComponent<SkinnedMeshRenderer>();
+            smr.bones = new Transform[] { hips.transform, spine.transform };
+            smr.rootBone = hips.transform;
+
+            // Act
+            var result = exporter.ExtractSkeleton(_testAnimator);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.HasSkeleton);
+            Assert.IsNotNull(result.RootBone);
+            Assert.Greater(result.Bones.Count, 0);
+        }
+
+        [Test]
+        public void ExtractSkeleton_SkeletonExtractorを委譲する()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // 単純な子オブジェクトを追加（SkinnedMeshRendererなし）
+            var child = new GameObject("Child");
+            child.transform.SetParent(_testGameObject.transform);
+
+            // Act
+            var result = exporter.ExtractSkeleton(_testAnimator);
+
+            // Assert
+            // SkeletonExtractorに処理が委譲され、結果が返される
+            Assert.IsNotNull(result);
+        }
+
+        #endregion
+
+        #region GetBonePath テスト (P13-003)
+
+        [Test]
+        public void GetBonePath_ボーンパスを取得できる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            var hips = new GameObject("Hips");
+            hips.transform.SetParent(_testGameObject.transform);
+
+            var spine = new GameObject("Spine");
+            spine.transform.SetParent(hips.transform);
+
+            // Act
+            var path = exporter.GetBonePath(_testAnimator, spine.transform);
+
+            // Assert
+            Assert.AreEqual("Hips/Spine", path);
+        }
+
+        [Test]
+        public void GetBonePath_Animator自身の場合は空文字を返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // Act
+            var path = exporter.GetBonePath(_testAnimator, _testGameObject.transform);
+
+            // Assert
+            Assert.AreEqual(string.Empty, path);
+        }
+
+        [Test]
+        public void GetBonePath_nullの場合はnullを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // Act & Assert
+            Assert.IsNull(exporter.GetBonePath(null, _testGameObject.transform));
+            Assert.IsNull(exporter.GetBonePath(_testAnimator, null));
+        }
+
+        #endregion
+
+        #region Constructor with SkeletonExtractor テスト (P13-003)
+
+        [Test]
+        public void Constructor_SkeletonExtractorを指定できる()
+        {
+            // Arrange
+            var skeletonExtractor = new SkeletonExtractor();
+
+            // Act
+            var exporter = new FbxAnimationExporter(skeletonExtractor);
+
+            // Assert
+            Assert.IsNotNull(exporter);
+        }
+
+        [Test]
+        public void Constructor_SkeletonExtractorがnullの場合デフォルトを使用()
+        {
+            // Act
+            var exporter = new FbxAnimationExporter(null);
+
+            // Assert
+            Assert.IsNotNull(exporter);
+            // ExtractSkeletonが正常に動作することを確認
+            var result = exporter.ExtractSkeleton(_testAnimator);
+            Assert.IsNotNull(result);
+        }
+
+        #endregion
     }
 }
