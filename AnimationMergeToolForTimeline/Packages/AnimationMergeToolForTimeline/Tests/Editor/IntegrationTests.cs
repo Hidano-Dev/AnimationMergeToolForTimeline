@@ -1246,7 +1246,8 @@ namespace AnimationMergeTool.Editor.Tests
             timelineClip.duration = 2;
             (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
 
-            string expectedAssetPath = "Assets/E2E_ProjectViewTimeline_Merged.anim";
+            // TimelineAssetのみからの処理ではAnimatorがnullなのでファイル名に"NoAnimator"が含まれる
+            string expectedAssetPath = "Assets/E2E_ProjectViewTimeline_NoAnimator_Merged.anim";
 
             try
             {
@@ -1261,7 +1262,7 @@ namespace AnimationMergeTool.Editor.Tests
                 var generatedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(expectedAssetPath);
                 if (generatedClip == null)
                 {
-                    generatedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/E2E_ProjectViewTimeline_Merged(1).anim");
+                    generatedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/E2E_ProjectViewTimeline_NoAnimator_Merged(1).anim");
                 }
 
                 Assert.IsNotNull(generatedClip, "AnimationClipアセットが生成されるべき");
@@ -1272,7 +1273,7 @@ namespace AnimationMergeTool.Editor.Tests
 
                 // クリーンアップ用にパスを記録
                 _createdAssetPaths.Add(expectedAssetPath);
-                _createdAssetPaths.Add("Assets/E2E_ProjectViewTimeline_Merged(1).anim");
+                _createdAssetPaths.Add("Assets/E2E_ProjectViewTimeline_NoAnimator_Merged(1).anim");
             }
             finally
             {
