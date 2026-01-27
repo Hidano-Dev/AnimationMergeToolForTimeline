@@ -681,12 +681,15 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 transformCurves = ExtractTransformCurves(humanoidClip, animator);
             }
 
+            // BlendShapeカーブを抽出（P17-002）
+            var blendShapeCurves = ExtractBlendShapeCurves(humanoidClip, animator);
+
             return new FbxExportData(
                 animator,
                 humanoidClip,
                 skeleton,
                 transformCurves,
-                new List<BlendShapeCurveData>(),
+                blendShapeCurves,
                 isHumanoid);
         }
 

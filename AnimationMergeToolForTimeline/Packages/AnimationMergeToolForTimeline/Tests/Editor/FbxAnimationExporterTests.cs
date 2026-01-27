@@ -2399,5 +2399,131 @@ namespace AnimationMergeTool.Editor.Tests
 #endif
 
         #endregion
+
+        #region P17-002: PrepareHumanoidForExportのBlendShapeカーブ抽出テスト
+
+        [Test]
+        public void PrepareHumanoidForExport_BlendShapeカーブを含むクリップでBlendShapeCurvesが抽出される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "HumanoidWithBlendShape";
+
+            // BlendShapeカーブを追加
+            var blendCurve = AnimationCurve.Linear(0f, 0f, 1f, 100f);
+            var binding = EditorCurveBinding.FloatCurve(
+                "Body",
+                typeof(SkinnedMeshRenderer),
+                "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, binding, blendCurve);
+
+            // Transformカーブも追加（通常のGenericリグ動作）
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+
+            try
+            {
+                // Act
+                var exportData = exporter.PrepareHumanoidForExport(_testAnimator, clip);
+
+                // Assert
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
+                Assert.IsNotNull(exportData.BlendShapeCurves, "BlendShapeCurvesがnullであってはならない");
+                Assert.AreEqual(1, exportData.BlendShapeCurves.Count,
+                    "BlendShapeカーブが1つ抽出されるべき");
+                Assert.AreEqual("Smile", exportData.BlendShapeCurves[0].BlendShapeName,
+                    "BlendShape名が正しく抽出されるべき");
+                Assert.AreEqual("Body", exportData.BlendShapeCurves[0].Path,
+                    "パスが正しく抽出されるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void PrepareHumanoidForExport_BlendShapeカーブなしのクリップでBlendShapeCurvesが空リスト()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "NoBlendShape";
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+
+            try
+            {
+                // Act
+                var exportData = exporter.PrepareHumanoidForExport(_testAnimator, clip);
+
+                // Assert
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
+                Assert.IsNotNull(exportData.BlendShapeCurves, "BlendShapeCurvesがnullであってはならない");
+                Assert.AreEqual(0, exportData.BlendShapeCurves.Count,
+                    "BlendShapeカーブがない場合は空リストであるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void PrepareHumanoidForExport_複数BlendShapeカーブが全て抽出される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "MultipleBlendShapes";
+
+            // 複数のBlendShapeカーブを追加
+            var curve1 = AnimationCurve.Linear(0f, 0f, 1f, 100f);
+            var binding1 = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, binding1, curve1);
+
+            var curve2 = AnimationCurve.Linear(0f, 50f, 1f, 0f);
+            var binding2 = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Blink");
+            AnimationUtility.SetEditorCurve(clip, binding2, curve2);
+
+            var curve3 = AnimationCurve.Linear(0f, 0f, 1f, 75f);
+            var binding3 = EditorCurveBinding.FloatCurve(
+                "Face", typeof(SkinnedMeshRenderer), "blendShape.Angry");
+            AnimationUtility.SetEditorCurve(clip, binding3, curve3);
+
+            try
+            {
+                // Act
+                var exportData = exporter.PrepareHumanoidForExport(_testAnimator, clip);
+
+                // Assert
+                Assert.IsNotNull(exportData.BlendShapeCurves, "BlendShapeCurvesがnullであってはならない");
+                Assert.AreEqual(3, exportData.BlendShapeCurves.Count,
+                    "3つのBlendShapeカーブが全て抽出されるべき");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void PrepareHumanoidForExport_null引数でBlendShapeCurvesが空リスト()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // Act
+            var exportData = exporter.PrepareHumanoidForExport(null, null);
+
+            // Assert
+            Assert.IsNotNull(exportData, "null引数でもFbxExportDataが返されるべき");
+            Assert.IsNotNull(exportData.BlendShapeCurves, "BlendShapeCurvesがnullであってはならない");
+            Assert.AreEqual(0, exportData.BlendShapeCurves.Count,
+                "null引数の場合は空リストであるべき");
+        }
+
+        #endregion
     }
 }
