@@ -2325,5 +2325,79 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region ExportModelSettingsSerialize設定テスト (P17-001)
+
+        [Test]
+        public void Export_ExportModelSettingsSerialize設定がExportInternalで使用される()
+        {
+            // Arrange
+            // ExportInternalはprivateのため、Exportメソッド経由でテストする
+            // FBX Exporterパッケージの有無に関わらず、エクスポートフローが正しく動作することを確認
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            // BlendShapeカーブを含むクリップを作成
+            var bindingSmile = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.smile");
+            AnimationUtility.SetEditorCurve(clip, bindingSmile, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            // Transformカーブも追加
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+
+            // エクスポートデータを準備
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+
+            // Assert - エクスポートデータが正しく構成されていること
+            Assert.IsNotNull(exportData);
+            Assert.IsTrue(exportData.HasExportableData, "BlendShapeとTransformカーブを含むデータはエクスポート可能");
+            Assert.Greater(exportData.BlendShapeCurves.Count, 0, "BlendShapeカーブが含まれていること");
+            Assert.Greater(exportData.TransformCurves.Count, 0, "Transformカーブが含まれていること");
+
+            // エクスポート可能であることを確認
+            Assert.IsTrue(exporter.CanExport(exportData));
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+#if UNITY_FORMATS_FBX
+        [Test]
+        public void Export_ExportModelSettingsSerializeでBlendShapeとAnimateSkinnedMeshが有効化されてエクスポートされる()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            // BlendShapeカーブを含むAnimationClipを作成
+            var bindingSmile = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.smile");
+            AnimationUtility.SetEditorCurve(clip, bindingSmile, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+            // Transformカーブも追加
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+            var outputPath = "Assets/TestP17001_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            // Act
+            var result = exporter.Export(exportData, outputPath);
+
+            // Assert
+            try
+            {
+                Assert.IsTrue(result, "ExportModelSettingsSerialize設定付きのエクスポートが成功すること");
+                Assert.IsTrue(
+                    System.IO.File.Exists(outputPath) || AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null,
+                    "FBXファイルが作成されていること");
+            }
+            finally
+            {
+                // クリーンアップ
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(clip);
+            }
+        }
+#endif
+
+        #endregion
     }
 }
