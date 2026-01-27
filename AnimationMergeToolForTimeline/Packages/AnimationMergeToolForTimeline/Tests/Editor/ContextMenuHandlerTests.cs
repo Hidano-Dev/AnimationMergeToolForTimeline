@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+using AnimationMergeTool.Editor.Domain.Models;
 using AnimationMergeTool.Editor.UI;
 
 namespace AnimationMergeTool.Editor.Tests
@@ -472,6 +473,128 @@ namespace AnimationMergeTool.Editor.Tests
 
             // Assert
             Assert.IsFalse(result);
+        }
+
+        #endregion
+
+        #region CreateFbxExportData テスト (P17-004)
+
+        [Test]
+        public void CreateFbxExportData_nullのMergeResultの場合nullを返す()
+        {
+            // Act
+            var result = ContextMenuHandler.CreateFbxExportData(null);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void CreateFbxExportData_GeneratedClipがnullの場合nullを返す()
+        {
+            // Arrange
+            var mergeResult = new MergeResult(null);
+            // GeneratedClipはデフォルトでnull
+
+            // Act
+            var result = ContextMenuHandler.CreateFbxExportData(mergeResult);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void CreateFbxExportData_有効なMergeResultの場合FbxExportDataを返す()
+        {
+            // Arrange
+            var clip = new AnimationClip();
+            clip.name = "TestClip";
+            var mergeResult = new MergeResult(null);
+            mergeResult.GeneratedClip = clip;
+
+            try
+            {
+                // Act
+                var result = ContextMenuHandler.CreateFbxExportData(mergeResult);
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.AreEqual(clip, result.MergedClip);
+                Assert.IsNotNull(result.TransformCurves);
+                Assert.IsNotNull(result.BlendShapeCurves);
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void CreateFbxExportData_Animatorがある場合スケルトンが設定される()
+        {
+            // Arrange
+            var go = new GameObject("TestAnimator");
+            var animator = go.AddComponent<Animator>();
+            var clip = new AnimationClip();
+            clip.name = "TestClip";
+            var mergeResult = new MergeResult(animator);
+            mergeResult.GeneratedClip = clip;
+
+            try
+            {
+                // Act
+                var result = ContextMenuHandler.CreateFbxExportData(mergeResult);
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.AreEqual(animator, result.SourceAnimator);
+                Assert.IsNotNull(result.Skeleton);
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void CreateFbxExportData_PrepareAllCurvesForExportと同じ結果を返す()
+        {
+            // Arrange - BlendShapeカーブを含むAnimationClipを作成
+            var go = new GameObject("TestAnimator");
+            var animator = go.AddComponent<Animator>();
+            var clip = new AnimationClip();
+            clip.name = "TestClipWithCurves";
+
+            // Transformカーブを追加
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            clip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var mergeResult = new MergeResult(animator);
+            mergeResult.GeneratedClip = clip;
+
+            try
+            {
+                // Act
+                var result = ContextMenuHandler.CreateFbxExportData(mergeResult);
+
+                // Assert - PrepareAllCurvesForExportを直接呼んだ結果と一致することを確認
+                var exporter = new AnimationMergeTool.Editor.Infrastructure.FbxAnimationExporter();
+                var directResult = exporter.PrepareAllCurvesForExport(animator, clip);
+
+                Assert.IsNotNull(result);
+                Assert.IsNotNull(directResult);
+                Assert.AreEqual(directResult.SourceAnimator, result.SourceAnimator);
+                Assert.AreEqual(directResult.MergedClip, result.MergedClip);
+                Assert.AreEqual(directResult.IsHumanoid, result.IsHumanoid);
+                Assert.AreEqual(directResult.TransformCurves.Count, result.TransformCurves.Count);
+                Assert.AreEqual(directResult.BlendShapeCurves.Count, result.BlendShapeCurves.Count);
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+                Object.DestroyImmediate(go);
+            }
         }
 
         #endregion

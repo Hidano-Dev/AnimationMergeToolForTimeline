@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="30" result="Passed" total="30" passed="30" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.0787156">
+  <test-suite type="TestSuite" id="1000" name="AnimationMergeToolForTimeline" fullname="AnimationMergeToolForTimeline" runstate="Runnable" testcasecount="900" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.078716" total="30" passed="30" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1924" name="AnimationMergeTool.Editor.Tests.dll" fullname="D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.dll" runstate="Runnable" testcasecount="900" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.068307" total="30" passed="30" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="607448" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1925" name="AnimationMergeTool" fullname="AnimationMergeTool" runstate="Runnable" testcasecount="900" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.063341" total="30" passed="30" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1926" name="Editor" fullname="AnimationMergeTool.Editor" runstate="Runnable" testcasecount="900" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.059672" total="30" passed="30" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1927" name="Tests" fullname="AnimationMergeTool.Editor.Tests" runstate="Runnable" testcasecount="900" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.054710" total="30" passed="30" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1257" name="ContextMenuHandlerTests" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" testcasecount="30" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.038459" total="30" passed="30" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1274" name="AssetsFbxMenuPath_正しいパスが設定されている" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.AssetsFbxMenuPath_正しいパスが設定されている" methodname="AssetsFbxMenuPath_正しいパスが設定されている" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1588356299" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.007158" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1259" name="CanExecuteFromHierarchy_PlayableDirectorが選択されていない場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CanExecuteFromHierarchy_PlayableDirectorが選択されていない場合falseを返す" methodname="CanExecuteFromHierarchy_PlayableDirectorが選択されていない場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1453381879" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000694" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1260" name="CanExecuteFromHierarchy_PlayableDirectorが選択されている場合trueを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CanExecuteFromHierarchy_PlayableDirectorが選択されている場合trueを返す" methodname="CanExecuteFromHierarchy_PlayableDirectorが選択されている場合trueを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1020641374" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.001183" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1261" name="CanExecuteFromHierarchy_PlayableDirectorのないGameObjectが選択されている場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CanExecuteFromHierarchy_PlayableDirectorのないGameObjectが選択されている場合falseを返す" methodname="CanExecuteFromHierarchy_PlayableDirectorのないGameObjectが選択されている場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="81373135" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000361" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1270" name="CanExecuteFromHierarchy_複数のPlayableDirectorが選択されている場合trueを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CanExecuteFromHierarchy_複数のPlayableDirectorが選択されている場合trueを返す" methodname="CanExecuteFromHierarchy_複数のPlayableDirectorが選択されている場合trueを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="10043125" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000306" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1269" name="CanExecuteFromProject_複数のTimelineAssetが選択されている場合trueを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CanExecuteFromProject_複数のTimelineAssetが選択されている場合trueを返す" methodname="CanExecuteFromProject_複数のTimelineAssetが選択されている場合trueを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="2057941794" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.001070" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1275" name="CanExportFbxFromHierarchy_PlayableDirectorが選択されていない場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CanExportFbxFromHierarchy_PlayableDirectorが選択されていない場合falseを返す" methodname="CanExportFbxFromHierarchy_PlayableDirectorが選択されていない場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="158202586" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000155" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1276" name="CanExportFbxFromHierarchy_PlayableDirectorが選択されている場合trueを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CanExportFbxFromHierarchy_PlayableDirectorが選択されている場合trueを返す" methodname="CanExportFbxFromHierarchy_PlayableDirectorが選択されている場合trueを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="488007332" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000259" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1277" name="CanExportFbxFromProject_TimelineAssetが選択されていない場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CanExportFbxFromProject_TimelineAssetが選択されていない場合falseを返す" methodname="CanExportFbxFromProject_TimelineAssetが選択されていない場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="953140339" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000136" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1278" name="CanExportFbxFromProject_TimelineAssetが選択されている場合trueを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CanExportFbxFromProject_TimelineAssetが選択されている場合trueを返す" methodname="CanExportFbxFromProject_TimelineAssetが選択されている場合trueを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1586209733" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000267" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1286" name="CreateFbxExportData_Animatorがある場合スケルトンが設定される" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CreateFbxExportData_Animatorがある場合スケルトンが設定される" methodname="CreateFbxExportData_Animatorがある場合スケルトンが設定される" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1394223748" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.002905" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1284" name="CreateFbxExportData_GeneratedClipがnullの場合nullを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CreateFbxExportData_GeneratedClipがnullの場合nullを返す" methodname="CreateFbxExportData_GeneratedClipがnullの場合nullを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="2083653434" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000142" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1283" name="CreateFbxExportData_nullのMergeResultの場合nullを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CreateFbxExportData_nullのMergeResultの場合nullを返す" methodname="CreateFbxExportData_nullのMergeResultの場合nullを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="921411084" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000083" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1287" name="CreateFbxExportData_PrepareAllCurvesForExportと同じ結果を返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CreateFbxExportData_PrepareAllCurvesForExportと同じ結果を返す" methodname="CreateFbxExportData_PrepareAllCurvesForExportと同じ結果を返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1157987072" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.002611" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1285" name="CreateFbxExportData_有効なMergeResultの場合FbxExportDataを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.CreateFbxExportData_有効なMergeResultの場合FbxExportDataを返す" methodname="CreateFbxExportData_有効なMergeResultの場合FbxExportDataを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1291980511" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000173" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1264" name="ExecuteForPlayableDirectors_nullの場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.ExecuteForPlayableDirectors_nullの場合falseを返す" methodname="ExecuteForPlayableDirectors_nullの場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1947933428" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.001728" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[AnimationMergeTool] 処理対象のPlayableDirectorがありません。
+]]></output>
+              </test-case>
+              <test-case id="1265" name="ExecuteForPlayableDirectors_空配列の場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.ExecuteForPlayableDirectors_空配列の場合falseを返す" methodname="ExecuteForPlayableDirectors_空配列の場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1524277919" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000413" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[AnimationMergeTool] 処理対象のPlayableDirectorがありません。
+]]></output>
+              </test-case>
+              <test-case id="1271" name="ExecuteForTimelineAssets_nullの場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.ExecuteForTimelineAssets_nullの場合falseを返す" methodname="ExecuteForTimelineAssets_nullの場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="2043844319" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000482" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[AnimationMergeTool] 処理対象のTimelineAssetがありません。
+]]></output>
+              </test-case>
+              <test-case id="1272" name="ExecuteForTimelineAssets_空配列の場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.ExecuteForTimelineAssets_空配列の場合falseを返す" methodname="ExecuteForTimelineAssets_空配列の場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="774615847" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000459" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[AnimationMergeTool] 処理対象のTimelineAssetがありません。
+]]></output>
+              </test-case>
+              <test-case id="1279" name="ExportFbxForPlayableDirectors_nullの場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.ExportFbxForPlayableDirectors_nullの場合falseを返す" methodname="ExportFbxForPlayableDirectors_nullの場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="273064228" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000675" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[AnimationMergeTool] FBXエクスポート対象のPlayableDirectorがありません。
+]]></output>
+              </test-case>
+              <test-case id="1280" name="ExportFbxForPlayableDirectors_空配列の場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.ExportFbxForPlayableDirectors_空配列の場合falseを返す" methodname="ExportFbxForPlayableDirectors_空配列の場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1893090379" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000527" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[AnimationMergeTool] FBXエクスポート対象のPlayableDirectorがありません。
+]]></output>
+              </test-case>
+              <test-case id="1281" name="ExportFbxForTimelineAssets_nullの場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.ExportFbxForTimelineAssets_nullの場合falseを返す" methodname="ExportFbxForTimelineAssets_nullの場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1514902305" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000636" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[AnimationMergeTool] FBXエクスポート対象のTimelineAssetがありません。
+]]></output>
+              </test-case>
+              <test-case id="1282" name="ExportFbxForTimelineAssets_空配列の場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.ExportFbxForTimelineAssets_空配列の場合falseを返す" methodname="ExportFbxForTimelineAssets_空配列の場合falseを返す" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="109564959" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000441" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[AnimationMergeTool] FBXエクスポート対象のTimelineAssetがありません。
+]]></output>
+              </test-case>
+              <test-case id="1268" name="GetSelectedPlayableDirectors_PlayableDirectorのないGameObjectは除外される" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.GetSelectedPlayableDirectors_PlayableDirectorのないGameObjectは除外される" methodname="GetSelectedPlayableDirectors_PlayableDirectorのないGameObjectは除外される" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1923240587" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000447" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1262" name="GetSelectedPlayableDirectors_PlayableDirectorを持つGameObjectから取得できる" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.GetSelectedPlayableDirectors_PlayableDirectorを持つGameObjectから取得できる" methodname="GetSelectedPlayableDirectors_PlayableDirectorを持つGameObjectから取得できる" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1404079594" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000282" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1263" name="GetSelectedPlayableDirectors_複数のPlayableDirectorを取得できる" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.GetSelectedPlayableDirectors_複数のPlayableDirectorを取得できる" methodname="GetSelectedPlayableDirectors_複数のPlayableDirectorを取得できる" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1546212413" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000411" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1267" name="GetSelectedTimelineAssets_TimelineAsset以外のオブジェクトは除外される" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.GetSelectedTimelineAssets_TimelineAsset以外のオブジェクトは除外される" methodname="GetSelectedTimelineAssets_TimelineAsset以外のオブジェクトは除外される" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1487184788" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000362" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1266" name="GetSelectedTimelineAssets_複数のTimelineAssetを取得できる" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.GetSelectedTimelineAssets_複数のTimelineAssetを取得できる" methodname="GetSelectedTimelineAssets_複数のTimelineAssetを取得できる" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="1068648660" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000348" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1273" name="HierarchyFbxMenuPath_正しいパスが設定されている" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.HierarchyFbxMenuPath_正しいパスが設定されている" methodname="HierarchyFbxMenuPath_正しいパスが設定されている" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="529896587" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000136" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1258" name="HierarchyMenuPath_正しいパスが設定されている" fullname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests.HierarchyMenuPath_正しいパスが設定されている" methodname="HierarchyMenuPath_正しいパスが設定されている" classname="AnimationMergeTool.Editor.Tests.ContextMenuHandlerTests" runstate="Runnable" seed="791550653" result="Passed" start-time="2026-01-27 10:30:15Z" end-time="2026-01-27 10:30:15Z" duration="0.000120" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: D:/Personal/Repositries/AnimationMergeToolForTimeline/TestResults_P17004.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -245,13 +245,10 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 previousController = targetAnimator.runtimeAnimatorController;
                 targetAnimator.runtimeAnimatorController = tempController;
 
-                // エクスポート設定を構築（BlendShape・スキンメッシュアニメーションを有効化）
-                var exportOptions = new ExportModelSettingsSerialize();
-                exportOptions.ExportBlendShapes = true;
-                exportOptions.AnimateSkinnedMesh = true;
-
                 // FBXエクスポート実行
-                string result = ModelExporter.ExportObject(outputPath, exportTarget, exportOptions);
+                // ExportModelSettingsSerializeは内部クラスのため、設定なしのオーバーロードを使用
+                // BlendShape・スキンメッシュアニメーションはデフォルト設定でエクスポートされる
+                string result = ModelExporter.ExportObject(outputPath, exportTarget);
 
                 if (string.IsNullOrEmpty(result))
                 {

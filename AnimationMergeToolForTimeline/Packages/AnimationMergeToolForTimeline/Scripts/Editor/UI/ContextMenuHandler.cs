@@ -430,42 +430,20 @@ namespace AnimationMergeTool.Editor.UI
 
         /// <summary>
         /// MergeResultからFbxExportDataを作成する
+        /// FbxAnimationExporter.PrepareAllCurvesForExportを使用して統一されたカーブ抽出ロジックを適用する
         /// </summary>
         /// <param name="result">マージ結果</param>
         /// <returns>FBXエクスポートデータ</returns>
-        private static FbxExportData CreateFbxExportData(MergeResult result)
+        internal static FbxExportData CreateFbxExportData(MergeResult result)
         {
             if (result == null || result.GeneratedClip == null)
             {
                 return null;
             }
 
-            var animator = result.TargetAnimator;
-            var isHumanoid = animator != null && animator.isHuman;
-
-            // スケルトン情報を取得（Phase 13で詳細実装予定）
-            SkeletonData skeleton = null;
-            if (animator != null)
-            {
-                var rootBone = animator.transform;
-                var bones = new System.Collections.Generic.List<Transform> { rootBone };
-                skeleton = new SkeletonData(rootBone, bones);
-            }
-
-            // Transformカーブ情報（Phase 13で詳細実装予定）
-            var transformCurves = new System.Collections.Generic.List<TransformCurveData>();
-
-            // BlendShapeカーブ情報（Phase 15で詳細実装予定）
-            var blendShapeCurves = new System.Collections.Generic.List<BlendShapeCurveData>();
-
-            return new FbxExportData(
-                animator,
-                result.GeneratedClip,
-                skeleton,
-                transformCurves,
-                blendShapeCurves,
-                isHumanoid
-            );
+            // FbxAnimationExporterの統一されたカーブ抽出ロジックを使用
+            var exporter = new FbxAnimationExporter();
+            return exporter.PrepareAllCurvesForExport(result.TargetAnimator, result.GeneratedClip);
         }
 
         /// <summary>
