@@ -2525,5 +2525,313 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region P17-005: GenericリグBlendShape FBXエクスポート検証テスト
+
+        [Test]
+        public void GenericBlendShapeExport_PrepareAllCurvesForExportでBlendShapeカーブが抽出される()
+        {
+            // Arrange - GenericリグのBlendShapeカーブを含むAnimationClipを作成
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "GenericBlendShapeClip";
+
+            // BlendShapeカーブを追加（Genericリグ想定）
+            var smileBinding = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, smileBinding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            var blinkBinding = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Blink");
+            AnimationUtility.SetEditorCurve(clip, blinkBinding, AnimationCurve.Linear(0f, 0f, 0.5f, 100f));
+
+            // Transformカーブも追加（Genericリグの典型的なカーブ）
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+
+            try
+            {
+                // Act
+                var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+
+                // Assert
+                Assert.IsNotNull(exportData, "FbxExportDataが生成されること");
+                Assert.IsNotNull(exportData.BlendShapeCurves, "BlendShapeCurvesがnullでないこと");
+                Assert.AreEqual(2, exportData.BlendShapeCurves.Count,
+                    "2つのBlendShapeカーブが抽出されること");
+                Assert.IsNotNull(exportData.TransformCurves, "TransformCurvesがnullでないこと");
+                Assert.Greater(exportData.TransformCurves.Count, 0,
+                    "Transformカーブも含まれること");
+                Assert.IsTrue(exportData.HasExportableData,
+                    "エクスポート可能なデータとして判定されること");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void GenericBlendShapeExport_CanExportがtrueを返す()
+        {
+            // Arrange - GenericリグのBlendShapeカーブのみを含むAnimationClip
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "GenericBlendShapeOnly";
+
+            var binding = EditorCurveBinding.FloatCurve(
+                "Face", typeof(SkinnedMeshRenderer), "blendShape.Happy");
+            AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            try
+            {
+                // Act
+                var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+
+                // Assert
+                Assert.IsTrue(exporter.CanExport(exportData),
+                    "BlendShapeカーブを含むデータはエクスポート可能であること");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void GenericBlendShapeExport_BlendShape名とパスが正確に保持される()
+        {
+            // Arrange - 複数パスのBlendShapeカーブ
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "GenericMultiPathBlendShape";
+
+            var bodySmile = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, bodySmile, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            var faceAngry = EditorCurveBinding.FloatCurve(
+                "Head/Face", typeof(SkinnedMeshRenderer), "blendShape.Angry");
+            AnimationUtility.SetEditorCurve(clip, faceAngry, AnimationCurve.Linear(0f, 0f, 1f, 50f));
+
+            try
+            {
+                // Act
+                var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+
+                // Assert
+                Assert.AreEqual(2, exportData.BlendShapeCurves.Count);
+
+                // パスとBlendShape名を検証（順序不定のためContainsで確認）
+                var paths = new List<string>();
+                var names = new List<string>();
+                foreach (var curve in exportData.BlendShapeCurves)
+                {
+                    paths.Add(curve.Path);
+                    names.Add(curve.BlendShapeName);
+                }
+
+                Assert.Contains("Body", paths, "Bodyパスが含まれること");
+                Assert.Contains("Head/Face", paths, "Head/Faceパスが含まれること");
+                Assert.Contains("Smile", names, "Smile BlendShapeが含まれること");
+                Assert.Contains("Angry", names, "Angry BlendShapeが含まれること");
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void GenericBlendShapeExport_CreateAnimationClipFromBlendShapeCurvesでクリップが再構成される()
+        {
+            // Arrange - BlendShapeカーブを抽出してからAnimationClipに再構成
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "GenericBlendShapeReconstruct";
+
+            var binding = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            try
+            {
+                // Act - 抽出→再構成のフロー
+                var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+                var reconstructedClip = exporter.CreateAnimationClipFromBlendShapeCurves(
+                    new List<BlendShapeCurveData>(exportData.BlendShapeCurves), "ReconstructedClip");
+
+                // Assert
+                Assert.IsNotNull(reconstructedClip, "再構成されたクリップがnullでないこと");
+
+                var bindings = AnimationUtility.GetCurveBindings(reconstructedClip);
+                Assert.AreEqual(1, bindings.Length, "1つのカーブバインディングが存在すること");
+
+                // BlendShapeバインディングの検証
+                Assert.AreEqual("Body", bindings[0].path);
+                Assert.AreEqual(typeof(SkinnedMeshRenderer), bindings[0].type);
+                Assert.IsTrue(bindings[0].propertyName.StartsWith("blendShape."),
+                    "BlendShapeプロパティ名であること");
+
+                Object.DestroyImmediate(reconstructedClip);
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+#if UNITY_FORMATS_FBX
+        [Test]
+        public void GenericBlendShapeExport_FBXファイルが正常に生成される()
+        {
+            // Arrange - GenericリグのBlendShapeカーブを含むAnimationClip
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "GenericBlendShapeFbxExport";
+
+            // BlendShapeカーブを追加
+            var smileBinding = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, smileBinding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            // Transformカーブも追加
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+            var outputPath = "Assets/TestP17005_GenericBS_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                var result = exporter.Export(exportData, outputPath);
+
+                // Assert
+                Assert.IsTrue(result, "FBXエクスポートが成功すること");
+                Assert.IsTrue(
+                    System.IO.File.Exists(outputPath) || AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null,
+                    "FBXファイルが生成されていること");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void GenericBlendShapeExport_出力FBXを再インポートしてアニメーションデータが存在する()
+        {
+            // Arrange - GenericリグのBlendShapeカーブを含むAnimationClip
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "GenericBlendShapeReimport";
+
+            // BlendShapeカーブを追加
+            var smileBinding = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, smileBinding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            var blinkBinding = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Blink");
+            AnimationUtility.SetEditorCurve(clip, blinkBinding, AnimationCurve.Linear(0f, 50f, 1f, 0f));
+
+            // Transformカーブも追加
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+            var outputPath = "Assets/TestP17005_GenericBSReimport_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act - エクスポート
+                var exportResult = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(exportResult, "FBXエクスポートが成功すること");
+
+                // FBXを再インポートしてアニメーションデータを検証
+                AssetDatabase.Refresh();
+                var importedObjects = AssetDatabase.LoadAllAssetsAtPath(outputPath);
+                Assert.IsNotNull(importedObjects, "インポートされたアセットが存在すること");
+
+                // AnimationClipが含まれているか検証
+                AnimationClip importedClip = null;
+                foreach (var obj in importedObjects)
+                {
+                    if (obj is AnimationClip animClip && !animClip.name.StartsWith("__preview__"))
+                    {
+                        importedClip = animClip;
+                        break;
+                    }
+                }
+
+                Assert.IsNotNull(importedClip, "再インポートされたFBXにAnimationClipが含まれること");
+
+                // カーブバインディングを検証
+                var bindings = AnimationUtility.GetCurveBindings(importedClip);
+                Assert.Greater(bindings.Length, 0, "再インポートされたクリップにカーブが含まれること");
+
+                // BlendShapeカーブの存在を検証
+                bool hasBlendShapeCurve = false;
+                foreach (var b in bindings)
+                {
+                    if (b.propertyName.StartsWith("blendShape."))
+                    {
+                        hasBlendShapeCurve = true;
+                        break;
+                    }
+                }
+                Assert.IsTrue(hasBlendShapeCurve,
+                    "再インポートされたFBXにBlendShapeアニメーションカーブが含まれること");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void GenericBlendShapeExport_BlendShapeのみのクリップでもFBXエクスポートが成功する()
+        {
+            // Arrange - BlendShapeカーブのみ（Transformカーブなし）
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "GenericBlendShapeOnlyExport";
+
+            var binding = EditorCurveBinding.FloatCurve(
+                "Body", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+            var outputPath = "Assets/TestP17005_GenericBSOnly_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                var result = exporter.Export(exportData, outputPath);
+
+                // Assert
+                Assert.IsTrue(result, "BlendShapeのみのクリップでもFBXエクスポートが成功すること");
+                Assert.IsTrue(
+                    System.IO.File.Exists(outputPath) || AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null,
+                    "FBXファイルが生成されていること");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(clip);
+            }
+        }
+#endif
+
+        #endregion
     }
 }

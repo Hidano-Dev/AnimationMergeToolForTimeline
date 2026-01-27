@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="7" result="Failed(Child)" total="7" passed="6" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.4657043">
+  <test-suite type="TestSuite" id="1000" name="AnimationMergeToolForTimeline" fullname="AnimationMergeToolForTimeline" runstate="Runnable" testcasecount="907" result="Failed" site="Child" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.465704" total="7" passed="6" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1931" name="AnimationMergeTool.Editor.Tests.dll" fullname="D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.dll" runstate="Runnable" testcasecount="907" result="Failed" site="Child" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.450075" total="7" passed="6" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="618360" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1932" name="AnimationMergeTool" fullname="AnimationMergeTool" runstate="Runnable" testcasecount="907" result="Failed" site="Child" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.441044" total="7" passed="6" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1933" name="Editor" fullname="AnimationMergeTool.Editor" runstate="Runnable" testcasecount="907" result="Failed" site="Child" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.432064" total="7" passed="6" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1934" name="Tests" fullname="AnimationMergeTool.Editor.Tests" runstate="Runnable" testcasecount="907" result="Failed" site="Child" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.423205" total="7" passed="6" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1432" name="FbxAnimationExporterTests" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" testcasecount="107" result="Failed" site="Child" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.404007" total="7" passed="6" failed="1" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1539" name="GenericBlendShapeExport_BlendShapeのみのクリップでもFBXエクスポートが成功する" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GenericBlendShapeExport_BlendShapeのみのクリップでもFBXエクスポートが成功する" methodname="GenericBlendShapeExport_BlendShapeのみのクリップでもFBXエクスポートが成功する" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1546336288" result="Passed" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.165281" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Successfully exported: Assets/TestP17005_GenericBSOnly_c67d81c1.fbx
+FBXエクスポート完了: Assets/TestP17005_GenericBSOnly_c67d81c1.fbx
+]]></output>
+              </test-case>
+              <test-case id="1535" name="GenericBlendShapeExport_BlendShape名とパスが正確に保持される" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GenericBlendShapeExport_BlendShape名とパスが正確に保持される" methodname="GenericBlendShapeExport_BlendShape名とパスが正確に保持される" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1481924866" result="Passed" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.003280" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1534" name="GenericBlendShapeExport_CanExportがtrueを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GenericBlendShapeExport_CanExportがtrueを返す" methodname="GenericBlendShapeExport_CanExportがtrueを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1487706646" result="Passed" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.000467" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1536" name="GenericBlendShapeExport_CreateAnimationClipFromBlendShapeCurvesでクリップが再構成される" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GenericBlendShapeExport_CreateAnimationClipFromBlendShapeCurvesでクリップが再構成される" methodname="GenericBlendShapeExport_CreateAnimationClipFromBlendShapeCurvesでクリップが再構成される" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1533991500" result="Passed" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.001657" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1537" name="GenericBlendShapeExport_FBXファイルが正常に生成される" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GenericBlendShapeExport_FBXファイルが正常に生成される" methodname="GenericBlendShapeExport_FBXファイルが正常に生成される" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="710260055" result="Passed" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.094587" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Successfully exported: Assets/TestP17005_GenericBS_f1953090.fbx
+FBXエクスポート完了: Assets/TestP17005_GenericBS_f1953090.fbx
+]]></output>
+              </test-case>
+              <test-case id="1533" name="GenericBlendShapeExport_PrepareAllCurvesForExportでBlendShapeカーブが抽出される" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GenericBlendShapeExport_PrepareAllCurvesForExportでBlendShapeカーブが抽出される" methodname="GenericBlendShapeExport_PrepareAllCurvesForExportでBlendShapeカーブが抽出される" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1337826824" result="Passed" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.002437" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1538" name="GenericBlendShapeExport_出力FBXを再インポートしてアニメーションデータが存在する" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GenericBlendShapeExport_出力FBXを再インポートしてアニメーションデータが存在する" methodname="GenericBlendShapeExport_出力FBXを再インポートしてアニメーションデータが存在する" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="557210842" result="Failed" start-time="2026-01-27 11:34:00Z" end-time="2026-01-27 11:34:00Z" duration="0.111782" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  再インポートされたFBXにBlendShapeアニメーションカーブが含まれること
+  Expected: True
+  But was:  False
+]]></message>
+                  <stack-trace><![CDATA[at AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GenericBlendShapeExport_出力FBXを再インポートしてアニメーションデータが存在する () [0x00207] in .\Packages\AnimationMergeToolForTimeline\Tests\Editor\FbxAnimationExporterTests.cs:2785
+]]></stack-trace>
+                </failure>
+                <output><![CDATA[Successfully exported: Assets/TestP17005_GenericBSReimport_96927627.fbx
+FBXエクスポート完了: Assets/TestP17005_GenericBSReimport_96927627.fbx
+Saving results to: ./TestResults_P17005.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
