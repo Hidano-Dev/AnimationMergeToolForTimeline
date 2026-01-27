@@ -462,7 +462,9 @@ namespace AnimationMergeTool.Editor.Infrastructure
         {
             var result = new List<TransformCurveData>();
 
-            if (clip == null || animator == null)
+            // clipがnullの場合は空のリストを返す
+            // animatorはnullでも、AnimationClipからカーブ抽出は可能
+            if (clip == null)
             {
                 return result;
             }
@@ -919,7 +921,9 @@ namespace AnimationMergeTool.Editor.Infrastructure
         {
             var result = new List<BlendShapeCurveData>();
 
-            if (clip == null || animator == null)
+            // clipがnullの場合は空のリストを返す
+            // animatorはnullでも、AnimationClipからBlendShapeカーブ抽出は可能
+            if (clip == null)
             {
                 return result;
             }
