@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using AnimationMergeTool.Editor.Domain;
 using AnimationMergeTool.Editor.Domain.Models;
 #if UNITY_FORMATS_FBX
 using UnityEditor.Formats.Fbx.Exporter;
@@ -16,6 +17,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
     {
         private readonly SkeletonExtractor _skeletonExtractor;
         private readonly HumanoidToGenericConverter _humanoidConverter;
+        private readonly BlendShapeDetector _blendShapeDetector;
 
         /// <summary>
         /// デフォルトコンストラクタ
@@ -24,6 +26,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
         {
             _skeletonExtractor = new SkeletonExtractor();
             _humanoidConverter = new HumanoidToGenericConverter();
+            _blendShapeDetector = new BlendShapeDetector();
         }
 
         /// <summary>
@@ -34,6 +37,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
         {
             _skeletonExtractor = skeletonExtractor ?? new SkeletonExtractor();
             _humanoidConverter = new HumanoidToGenericConverter();
+            _blendShapeDetector = new BlendShapeDetector();
         }
 
         /// <summary>
@@ -45,6 +49,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
         {
             _skeletonExtractor = skeletonExtractor ?? new SkeletonExtractor();
             _humanoidConverter = humanoidConverter ?? new HumanoidToGenericConverter();
+            _blendShapeDetector = new BlendShapeDetector();
         }
 
         /// <summary>
@@ -947,7 +952,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 }
 
                 // BlendShape名を抽出（"blendShape."プレフィックスを除去）
-                string blendShapeName = ExtractBlendShapeName(binding.propertyName);
+                string blendShapeName = ExtractBlendShapeName(binding);
 
                 // BlendShapeCurveDataを作成
                 var curveData = new BlendShapeCurveData(
@@ -968,21 +973,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
         /// <returns>BlendShapeカーブが存在する場合true</returns>
         public bool HasBlendShapeCurves(AnimationClip clip)
         {
-            if (clip == null)
-            {
-                return false;
-            }
-
-            var bindings = AnimationUtility.GetCurveBindings(clip);
-            foreach (var binding in bindings)
-            {
-                if (IsBlendShapeBinding(binding))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return _blendShapeDetector.HasBlendShapeCurves(clip);
         }
 
         /// <summary>
@@ -1020,31 +1011,24 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
         /// <summary>
         /// EditorCurveBindingがBlendShapeカーブかどうかを判定する
+        /// BlendShapeDetectorに処理を委譲する
         /// </summary>
         /// <param name="binding">判定対象のバインディング</param>
         /// <returns>BlendShapeカーブの場合true</returns>
         private bool IsBlendShapeBinding(EditorCurveBinding binding)
         {
-            // SkinnedMeshRenderer型でblendShape.プレフィックスを持つプロパティ
-            return binding.type == typeof(SkinnedMeshRenderer) &&
-                   !string.IsNullOrEmpty(binding.propertyName) &&
-                   binding.propertyName.StartsWith("blendShape.");
+            return _blendShapeDetector.IsBlendShapeProperty(binding);
         }
 
         /// <summary>
-        /// プロパティ名からBlendShape名を抽出する
+        /// EditorCurveBindingからBlendShape名を抽出する
+        /// BlendShapeDetectorに処理を委譲する
         /// </summary>
-        /// <param name="propertyName">プロパティ名（例: "blendShape.smile"）</param>
-        /// <returns>BlendShape名（例: "smile"）</returns>
-        private string ExtractBlendShapeName(string propertyName)
+        /// <param name="binding">BlendShapeプロパティのEditorCurveBinding</param>
+        /// <returns>BlendShape名（"blendShape."プレフィックスを除いた部分）</returns>
+        private string ExtractBlendShapeName(EditorCurveBinding binding)
         {
-            const string prefix = "blendShape.";
-            if (string.IsNullOrEmpty(propertyName) || !propertyName.StartsWith(prefix))
-            {
-                return string.Empty;
-            }
-
-            return propertyName.Substring(prefix.Length);
+            return _blendShapeDetector.GetBlendShapeName(binding) ?? string.Empty;
         }
 
         #endregion
