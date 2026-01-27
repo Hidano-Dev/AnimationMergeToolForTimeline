@@ -1524,9 +1524,10 @@ namespace AnimationMergeTool.Editor.Tests
                 var exportData = fbxExporter.PrepareAllCurvesForExport(null, generatedClip);
 
                 Assert.IsNotNull(exportData);
-                // Animatorがなくてもカーブデータは含まれない（抽出にAnimatorが必要）
-                Assert.IsFalse(exportData.HasExportableData,
-                    "Animatorがない場合はエクスポート可能なデータがない");
+                // Animatorがなくても、AnimationClipからTransformカーブは抽出可能
+                // カーブが存在すればHasExportableDataはtrue
+                Assert.IsTrue(exportData.HasExportableData,
+                    "AnimationClipにTransformカーブがあればエクスポート可能");
 
                 // クリーンアップ用にパスを記録
                 foreach (var log in results[0].Logs)

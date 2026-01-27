@@ -629,17 +629,19 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         [Test]
-        public void ExtractTransformCurves_Animatorがnullの場合_空のリストを返す()
+        public void ExtractTransformCurves_Animatorがnullの場合_カーブは抽出される()
         {
             // Arrange
             var exporter = new FbxAnimationExporter();
 
             // Act
+            // Animatorがnullでも、AnimationClipからTransformカーブは抽出可能
             var result = exporter.ExtractTransformCurves(_testClip, null);
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(0, result.Count);
+            // _testClipには3つのTransformカーブ（localPosition.x/y/z）が設定されている
+            Assert.GreaterOrEqual(result.Count, 1, "Animatorがnullでもカーブは抽出される");
         }
 
         [Test]
@@ -1553,7 +1555,12 @@ namespace AnimationMergeTool.Editor.Tests
             var clip = new AnimationClip();
             var binding = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.smile");
             AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
-            LogAssert.Expect(LogType.Error, "エクスポート可能なBlendShapeカーブがありません。");
+
+            // FBX Exporterパッケージがインストールされていない場合はそのエラーが出る
+            if (!FbxPackageChecker.IsPackageInstalled())
+            {
+                LogAssert.Expect(LogType.Error, "FBX Exporterパッケージがインストールされていません。");
+            }
 
             // Act
             var result = exporter.ExportBlendShapeCurvesToFbx(null, clip, "Assets/TestExport.fbx");
@@ -1648,8 +1655,10 @@ namespace AnimationMergeTool.Editor.Tests
 
             // Assert
             Assert.IsNotNull(exportData);
-            // Animatorがnullの場合、ExtractBlendShapeCurvesは空リストを返すため、HasExportableDataはfalse
-            Assert.IsFalse(exportData.HasExportableData);
+            // Animatorがnullでも、BlendShapeカーブはAnimationClipから抽出可能
+            // HasExportableDataはBlendShapeカーブがあればtrue
+            Assert.IsTrue(exportData.HasExportableData, "BlendShapeカーブがあるためエクスポート可能");
+            Assert.AreEqual(1, exportData.BlendShapeCurves.Count);
 
             // クリーンアップ
             Object.DestroyImmediate(clip);

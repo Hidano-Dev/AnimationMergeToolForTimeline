@@ -2837,20 +2837,38 @@ namespace AnimationMergeTool.Editor.Tests
 
             var clip = new AnimationClip();
             clip.name = "GenericAnimation";
-            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0, 0, 1, 1));
-            clip.SetCurve("Hips", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0, 0, 1, 2));
-            clip.SetCurve("Hips", typeof(Transform), "localPosition.z", AnimationCurve.Linear(0, 0, 1, 3));
-            clip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.x", AnimationCurve.Linear(0, 0, 1, 0.1f));
-            clip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.y", AnimationCurve.Linear(0, 0, 1, 0.2f));
-            clip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.z", AnimationCurve.Linear(0, 0, 1, 0.3f));
-            clip.SetCurve("Hips/Spine", typeof(Transform), "localRotation.w", AnimationCurve.Linear(0, 1, 1, 0.9f));
+            // AnimationUtility.SetEditorCurveを使用してカーブを設定
+            // （SetCurveはLegacy Animation用）
+            AnimationUtility.SetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("Hips", typeof(Transform), "m_LocalPosition.x"),
+                AnimationCurve.Linear(0, 0, 1, 1));
+            AnimationUtility.SetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("Hips", typeof(Transform), "m_LocalPosition.y"),
+                AnimationCurve.Linear(0, 0, 1, 2));
+            AnimationUtility.SetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("Hips", typeof(Transform), "m_LocalPosition.z"),
+                AnimationCurve.Linear(0, 0, 1, 3));
+            AnimationUtility.SetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("Hips/Spine", typeof(Transform), "m_LocalRotation.x"),
+                AnimationCurve.Linear(0, 0, 1, 0.1f));
+            AnimationUtility.SetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("Hips/Spine", typeof(Transform), "m_LocalRotation.y"),
+                AnimationCurve.Linear(0, 0, 1, 0.2f));
+            AnimationUtility.SetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("Hips/Spine", typeof(Transform), "m_LocalRotation.z"),
+                AnimationCurve.Linear(0, 0, 1, 0.3f));
+            AnimationUtility.SetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("Hips/Spine", typeof(Transform), "m_LocalRotation.w"),
+                AnimationCurve.Linear(0, 1, 1, 0.9f));
 
             try
             {
                 var exporter = new Infrastructure.FbxAnimationExporter();
 
                 // Act
-                var exportData = exporter.PrepareHumanoidForExport(animator, clip);
+                // GenericリグにはPrepareAllCurvesForExportを使用する
+                // PrepareHumanoidForExportはHumanoidリグ専用
+                var exportData = exporter.PrepareAllCurvesForExport(animator, clip);
 
                 // Assert
                 Assert.IsNotNull(exportData, "FbxExportDataが生成されるべき");
@@ -2863,11 +2881,12 @@ namespace AnimationMergeTool.Editor.Tests
                 var spineRotationCount = 0;
                 foreach (var curveData in exportData.TransformCurves)
                 {
-                    if (curveData.Path == "Hips" && curveData.PropertyName.StartsWith("localPosition"))
+                    // m_LocalPositionまたはlocalPositionで始まるものをチェック
+                    if (curveData.Path == "Hips" && (curveData.PropertyName.StartsWith("m_LocalPosition") || curveData.PropertyName.StartsWith("localPosition")))
                     {
                         hipsPositionCount++;
                     }
-                    else if (curveData.Path == "Hips/Spine" && curveData.PropertyName.StartsWith("localRotation"))
+                    else if (curveData.Path == "Hips/Spine" && (curveData.PropertyName.StartsWith("m_LocalRotation") || curveData.PropertyName.StartsWith("localRotation")))
                     {
                         spineRotationCount++;
                     }
