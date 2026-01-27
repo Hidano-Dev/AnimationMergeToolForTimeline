@@ -180,6 +180,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
 #if UNITY_FORMATS_FBX
             string tempClipPath = null;
             string tempControllerPath = null;
+            string tempDirPath = null;
             RuntimeAnimatorController previousController = null;
             Animator targetAnimator = null;
             bool isTemporaryObject = false;
@@ -212,17 +213,27 @@ namespace AnimationMergeTool.Editor.Infrastructure
                     return false;
                 }
 
+                // FBX出力ファイル名をアニメーション名として使用する
+                // AssetDatabase.CreateAssetはオブジェクト名をファイル名で上書きするため、
+                // 一時ファイルのファイル名自体をFBX名と一致させる必要がある
+                var desiredClipName = System.IO.Path.GetFileNameWithoutExtension(outputPath);
+
+                // 一時ディレクトリを作成（GUIDで一意にし、ファイル名の衝突を回避）
+                var tempDirName = $"_temp_merge_{System.Guid.NewGuid():N}";
+                AssetDatabase.CreateFolder("Assets", tempDirName);
+                tempDirPath = $"Assets/{tempDirName}";
+
                 // AnimationClipを一時アセットとして保存（ModelExporterがシリアライズできるように）
                 var tempClip = Object.Instantiate(exportClip);
-                tempClip.name = exportClip.name ?? "MergedAnimation";
-                tempClipPath = $"Assets/_temp_merge_clip_{System.Guid.NewGuid():N}.anim";
+                tempClip.name = desiredClipName;
+                tempClipPath = $"{tempDirPath}/{desiredClipName}.anim";
                 AssetDatabase.CreateAsset(tempClip, tempClipPath);
 
                 // 一時的なAnimatorControllerを作成
-                tempControllerPath = $"Assets/_temp_merge_ctrl_{System.Guid.NewGuid():N}.controller";
+                tempControllerPath = $"{tempDirPath}/{desiredClipName}.controller";
                 var tempController = AnimatorController.CreateAnimatorControllerAtPath(tempControllerPath);
                 var stateMachine = tempController.layers[0].stateMachine;
-                var state = stateMachine.AddState("MergedAnimation");
+                var state = stateMachine.AddState(desiredClipName);
                 state.motion = AssetDatabase.LoadAssetAtPath<AnimationClip>(tempClipPath);
 
                 // Animatorにバインド
@@ -262,14 +273,10 @@ namespace AnimationMergeTool.Editor.Infrastructure
                     targetAnimator.runtimeAnimatorController = previousController;
                 }
 
-                // 一時アセットを削除
-                if (!string.IsNullOrEmpty(tempControllerPath))
+                // 一時ディレクトリごと削除（中の一時アセットも一括削除される）
+                if (!string.IsNullOrEmpty(tempDirPath))
                 {
-                    AssetDatabase.DeleteAsset(tempControllerPath);
-                }
-                if (!string.IsNullOrEmpty(tempClipPath))
-                {
-                    AssetDatabase.DeleteAsset(tempClipPath);
+                    AssetDatabase.DeleteAsset(tempDirPath);
                 }
 
                 // 一時オブジェクトを削除
