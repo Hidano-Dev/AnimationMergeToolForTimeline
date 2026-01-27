@@ -3,7 +3,8 @@
     "rootNamespace": "AnimationMergeTool.Editor",
     "references": [
         "Unity.Timeline",
-        "Unity.Timeline.Editor"
+        "Unity.Timeline.Editor",
+        "Unity.Formats.Fbx.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -14,6 +15,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.formats.fbx",
+            "expression": "",
+            "define": "UNITY_FORMATS_FBX"
+        }
+    ],
     "noEngineReferences": false
 }
