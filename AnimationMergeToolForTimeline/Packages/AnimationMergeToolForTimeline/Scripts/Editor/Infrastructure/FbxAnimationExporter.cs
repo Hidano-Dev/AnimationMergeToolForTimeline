@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Animations;
 using AnimationMergeTool.Editor.Domain;
 using AnimationMergeTool.Editor.Domain.Models;
 #if UNITY_FORMATS_FBX
@@ -172,68 +173,110 @@ namespace AnimationMergeTool.Editor.Infrastructure
         /// <summary>
         /// 内部エクスポート処理
         /// ModelExporter APIを使用してFBXをエクスポートする
+        /// AnimationClipを一時的なAnimatorControllerにバインドしてエクスポートする
         /// </summary>
         private bool ExportInternal(FbxExportData exportData, string outputPath)
         {
 #if UNITY_FORMATS_FBX
+            string tempClipPath = null;
+            string tempControllerPath = null;
+            RuntimeAnimatorController previousController = null;
+            Animator targetAnimator = null;
+            bool isTemporaryObject = false;
+            GameObject exportTarget = null;
+
             try
             {
-                // エクスポート対象のGameObjectを取得
-                GameObject exportTarget = GetExportTarget(exportData);
+                // Animatorがない場合は一時オブジェクトを作成、ある場合はAnimatorのGameObjectを使用
+                if (exportData.SourceAnimator == null)
+                {
+                    exportTarget = CreateTemporaryExportObject(exportData);
+                    isTemporaryObject = true;
+                }
+                else
+                {
+                    exportTarget = GetExportTarget(exportData);
+                }
+
                 if (exportTarget == null)
                 {
                     Debug.LogError("エクスポート対象のGameObjectを取得できませんでした。");
                     return false;
                 }
 
-                // 一時的にAnimationClipをAnimatorにアタッチしてエクスポート
-                bool isTemporaryObject = false;
-                if (exportData.SourceAnimator == null)
-                {
-                    // Animatorがない場合は一時オブジェクトを作成
-                    exportTarget = CreateTemporaryExportObject(exportData);
-                    isTemporaryObject = true;
-                }
-
-                // BlendShapeカーブを含む統合AnimationClipを作成
+                // エクスポート用AnimationClipを作成
                 AnimationClip exportClip = CreateExportAnimationClip(exportData);
-
-                try
+                if (exportClip == null)
                 {
-                    // FBXエクスポート実行
-                    string result = ModelExporter.ExportObject(outputPath, exportTarget);
-
-                    if (string.IsNullOrEmpty(result))
-                    {
-                        Debug.LogError($"FBXエクスポートに失敗しました: {outputPath}");
-                        return false;
-                    }
-
-                    // アセットデータベースを更新
-                    AssetDatabase.Refresh();
-
-                    Debug.Log($"FBXエクスポート完了: {result}");
-                    return true;
+                    Debug.LogError("エクスポート用AnimationClipの作成に失敗しました。");
+                    return false;
                 }
-                finally
+
+                // AnimationClipを一時アセットとして保存（ModelExporterがシリアライズできるように）
+                var tempClip = Object.Instantiate(exportClip);
+                tempClip.name = exportClip.name ?? "MergedAnimation";
+                tempClipPath = $"Assets/_temp_merge_clip_{System.Guid.NewGuid():N}.anim";
+                AssetDatabase.CreateAsset(tempClip, tempClipPath);
+
+                // 一時的なAnimatorControllerを作成
+                tempControllerPath = $"Assets/_temp_merge_ctrl_{System.Guid.NewGuid():N}.controller";
+                var tempController = AnimatorController.CreateAnimatorControllerAtPath(tempControllerPath);
+                var stateMachine = tempController.layers[0].stateMachine;
+                var state = stateMachine.AddState("MergedAnimation");
+                state.motion = AssetDatabase.LoadAssetAtPath<AnimationClip>(tempClipPath);
+
+                // Animatorにバインド
+                targetAnimator = exportTarget.GetComponent<Animator>();
+                if (targetAnimator == null)
                 {
-                    // 一時オブジェクトを削除
-                    if (isTemporaryObject && exportTarget != null)
-                    {
-                        Object.DestroyImmediate(exportTarget);
-                    }
-
-                    // 一時的に作成したAnimationClipを削除
-                    if (exportClip != null && exportClip != exportData.MergedClip)
-                    {
-                        Object.DestroyImmediate(exportClip);
-                    }
+                    targetAnimator = exportTarget.AddComponent<Animator>();
                 }
+                previousController = targetAnimator.runtimeAnimatorController;
+                targetAnimator.runtimeAnimatorController = tempController;
+
+                // FBXエクスポート実行
+                string result = ModelExporter.ExportObject(outputPath, exportTarget);
+
+                if (string.IsNullOrEmpty(result))
+                {
+                    Debug.LogError($"FBXエクスポートに失敗しました: {outputPath}");
+                    return false;
+                }
+
+                // アセットデータベースを更新
+                AssetDatabase.Refresh();
+
+                Debug.Log($"FBXエクスポート完了: {result}");
+                return true;
             }
             catch (System.Exception ex)
             {
                 Debug.LogError($"FBXエクスポートに失敗しました: {ex.Message}");
                 return false;
+            }
+            finally
+            {
+                // 元のAnimatorControllerを復元
+                if (targetAnimator != null && !isTemporaryObject)
+                {
+                    targetAnimator.runtimeAnimatorController = previousController;
+                }
+
+                // 一時アセットを削除
+                if (!string.IsNullOrEmpty(tempControllerPath))
+                {
+                    AssetDatabase.DeleteAsset(tempControllerPath);
+                }
+                if (!string.IsNullOrEmpty(tempClipPath))
+                {
+                    AssetDatabase.DeleteAsset(tempClipPath);
+                }
+
+                // 一時オブジェクトを削除
+                if (isTemporaryObject && exportTarget != null)
+                {
+                    Object.DestroyImmediate(exportTarget);
+                }
             }
 #else
             Debug.LogError("FBX Exporterパッケージがインストールされていません。");

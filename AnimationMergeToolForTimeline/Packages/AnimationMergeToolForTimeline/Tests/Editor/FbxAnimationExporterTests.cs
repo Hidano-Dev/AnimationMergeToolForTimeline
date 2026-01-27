@@ -1556,17 +1556,39 @@ namespace AnimationMergeTool.Editor.Tests
             var binding = EditorCurveBinding.FloatCurve("Body", typeof(SkinnedMeshRenderer), "blendShape.smile");
             AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
 
-            // FBX Exporterパッケージがインストールされていない場合はそのエラーが出る
+            var outputPath = "Assets/TestExport_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
             if (!FbxPackageChecker.IsPackageInstalled())
             {
+                // FBX Exporterパッケージがインストールされていない場合はエラーで失敗する
                 LogAssert.Expect(LogType.Error, "FBX Exporterパッケージがインストールされていません。");
+
+                // Act
+                var result = exporter.ExportBlendShapeCurvesToFbx(null, clip, outputPath);
+
+                // Assert
+                Assert.IsFalse(result);
             }
+            else
+            {
+                // FBX Exporterパッケージがインストールされている場合、
+                // Animatorがnullでも一時オブジェクトを作成してエクスポートが成功する
+                // Act
+                var result = exporter.ExportBlendShapeCurvesToFbx(null, clip, outputPath);
 
-            // Act
-            var result = exporter.ExportBlendShapeCurvesToFbx(null, clip, "Assets/TestExport.fbx");
-
-            // Assert
-            Assert.IsFalse(result);
+                // Assert & Cleanup
+                try
+                {
+                    Assert.IsTrue(result);
+                }
+                finally
+                {
+                    if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                    {
+                        AssetDatabase.DeleteAsset(outputPath);
+                    }
+                }
+            }
 
             // クリーンアップ
             Object.DestroyImmediate(clip);

@@ -246,6 +246,7 @@ namespace AnimationMergeTool.Editor.UI
 
         /// <summary>
         /// 選択されたPlayableDirectorに対してFBXエクスポート処理を実行する
+        /// .animファイルは生成せず、FBXファイルのみを出力する
         /// </summary>
         /// <param name="directors">処理対象のPlayableDirector配列</param>
         /// <returns>処理に成功した場合はtrue</returns>
@@ -274,8 +275,8 @@ namespace AnimationMergeTool.Editor.UI
                     continue;
                 }
 
-                // マージ処理を実行
-                var mergeResults = service.MergeFromPlayableDirector(director);
+                // メモリ上でマージ処理を実行（.animファイルは保存しない）
+                var mergeResults = service.MergeFromPlayableDirectorInMemory(director);
                 if (mergeResults == null || mergeResults.Count == 0)
                 {
                     continue;
@@ -316,6 +317,7 @@ namespace AnimationMergeTool.Editor.UI
 
         /// <summary>
         /// 選択されたTimelineAssetに対してFBXエクスポート処理を実行する
+        /// .animファイルは生成せず、FBXファイルのみを出力する
         /// </summary>
         /// <param name="timelineAssets">処理対象のTimelineAsset配列</param>
         /// <returns>処理に成功した場合はtrue</returns>
@@ -344,8 +346,8 @@ namespace AnimationMergeTool.Editor.UI
                     continue;
                 }
 
-                // マージ処理を実行
-                var mergeResults = service.MergeFromTimelineAsset(timelineAsset);
+                // メモリ上でマージ処理を実行（.animファイルは保存しない）
+                var mergeResults = service.MergeFromTimelineAssetInMemory(timelineAsset);
                 if (mergeResults == null || mergeResults.Count == 0)
                 {
                     continue;
