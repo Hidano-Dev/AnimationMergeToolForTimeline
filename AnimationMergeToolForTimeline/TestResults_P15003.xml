@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="57" result="Passed" total="57" passed="57" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.1088102">
+  <test-suite type="TestSuite" id="1000" name="AnimationMergeToolForTimeline" fullname="AnimationMergeToolForTimeline" runstate="Runnable" testcasecount="797" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.108810" total="57" passed="57" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1820" name="AnimationMergeTool.Editor.Tests.dll" fullname="D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.dll" runstate="Runnable" testcasecount="797" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.095587" total="57" passed="57" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="548468" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1821" name="AnimationMergeTool" fullname="AnimationMergeTool" runstate="Runnable" testcasecount="797" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.088320" total="57" passed="57" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1822" name="Editor" fullname="AnimationMergeTool.Editor" runstate="Runnable" testcasecount="797" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.081482" total="57" passed="57" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1823" name="Tests" fullname="AnimationMergeTool.Editor.Tests" runstate="Runnable" testcasecount="797" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.074433" total="57" passed="57" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1420" name="FbxAnimationExporterTests" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" testcasecount="57" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.057980" total="57" passed="57" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1477" name="BlendShapeCurves_TransformとBlendShape両方を含むクリップのエクスポートデータ作成" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.BlendShapeCurves_TransformとBlendShape両方を含むクリップのエクスポートデータ作成" methodname="BlendShapeCurves_TransformとBlendShape両方を含むクリップのエクスポートデータ作成" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="2101844547" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.012884" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1476" name="BlendShapeCurves_抽出からエクスポートデータ準備までの統合テスト" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.BlendShapeCurves_抽出からエクスポートデータ準備までの統合テスト" methodname="BlendShapeCurves_抽出からエクスポートデータ準備までの統合テスト" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1108127979" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.002354" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1427" name="CanExport_BlendShapeカーブが存在する場合trueを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.CanExport_BlendShapeカーブが存在する場合trueを返す" methodname="CanExport_BlendShapeカーブが存在する場合trueを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1814103895" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000284" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1424" name="CanExport_FbxExportDataがnullの場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.CanExport_FbxExportDataがnullの場合falseを返す" methodname="CanExport_FbxExportDataがnullの場合falseを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="454415615" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000316" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1426" name="CanExport_Transformカーブが存在する場合trueを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.CanExport_Transformカーブが存在する場合trueを返す" methodname="CanExport_Transformカーブが存在する場合trueを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1367389540" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000273" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1425" name="CanExport_エクスポート可能なデータがない場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.CanExport_エクスポート可能なデータがない場合falseを返す" methodname="CanExport_エクスポート可能なデータがない場合falseを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="954688984" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000222" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1428" name="CanExport_スケルトンが存在する場合trueを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.CanExport_スケルトンが存在する場合trueを返す" methodname="CanExport_スケルトンが存在する場合trueを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="847566472" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000448" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1445" name="Constructor_SkeletonExtractorがnullの場合デフォルトを使用" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.Constructor_SkeletonExtractorがnullの場合デフォルトを使用" methodname="Constructor_SkeletonExtractorがnullの場合デフォルトを使用" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="652908009" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000271" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1444" name="Constructor_SkeletonExtractorを指定できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.Constructor_SkeletonExtractorを指定できる" methodname="Constructor_SkeletonExtractorを指定できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="523924323" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000217" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1421" name="Constructor_デフォルトコンストラクタでインスタンスを生成できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.Constructor_デフォルトコンストラクタでインスタンスを生成できる" methodname="Constructor_デフォルトコンストラクタでインスタンスを生成できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1492956862" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000202" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1430" name="Export_FbxExportDataがnullの場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.Export_FbxExportDataがnullの場合falseを返す" methodname="Export_FbxExportDataがnullの場合falseを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1995635719" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.001957" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[FbxExportDataがnullです。
+]]></output>
+              </test-case>
+              <test-case id="1433" name="Export_エクスポート可能なデータがない場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.Export_エクスポート可能なデータがない場合falseを返す" methodname="Export_エクスポート可能なデータがない場合falseを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1802442841" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000616" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[エクスポート可能なデータがありません。
+]]></output>
+              </test-case>
+              <test-case id="1429" name="Export_パッケージが未インストールの場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.Export_パッケージが未インストールの場合falseを返す" methodname="Export_パッケージが未インストールの場合falseを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="143739819" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000668" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[FBX Exporterパッケージがインストールされていません。
+]]></output>
+              </test-case>
+              <test-case id="1432" name="Export_出力パスがnullの場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.Export_出力パスがnullの場合falseを返す" methodname="Export_出力パスがnullの場合falseを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="644881727" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000639" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[出力パスが指定されていません。
+]]></output>
+              </test-case>
+              <test-case id="1431" name="Export_出力パスが空の場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.Export_出力パスが空の場合falseを返す" methodname="Export_出力パスが空の場合falseを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="59786312" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000675" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[出力パスが指定されていません。
+]]></output>
+              </test-case>
+              <test-case id="1460" name="ExportTransformCurves_Position_Rotation_Scale複合でエクスポートできる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExportTransformCurves_Position_Rotation_Scale複合でエクスポートできる" methodname="ExportTransformCurves_Position_Rotation_Scale複合でエクスポートできる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="865002790" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000649" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1459" name="ExportTransformCurves_有効なデータでエクスポート処理を呼び出せる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExportTransformCurves_有効なデータでエクスポート処理を呼び出せる" methodname="ExportTransformCurves_有効なデータでエクスポート処理を呼び出せる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1166856601" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000319" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1461" name="ExtractBlendShapeCurves_AnimationClipがnullの場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractBlendShapeCurves_AnimationClipがnullの場合_空のリストを返す" methodname="ExtractBlendShapeCurves_AnimationClipがnullの場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="375579677" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000257" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1462" name="ExtractBlendShapeCurves_Animatorがnullの場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractBlendShapeCurves_Animatorがnullの場合_空のリストを返す" methodname="ExtractBlendShapeCurves_Animatorがnullの場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1518584052" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000247" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1466" name="ExtractBlendShapeCurves_BlendShapeカーブがない場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractBlendShapeCurves_BlendShapeカーブがない場合_空のリストを返す" methodname="ExtractBlendShapeCurves_BlendShapeカーブがない場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="834312064" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000273" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1465" name="ExtractBlendShapeCurves_BlendShapeカーブのみを抽出する" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractBlendShapeCurves_BlendShapeカーブのみを抽出する" methodname="ExtractBlendShapeCurves_BlendShapeカーブのみを抽出する" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1706069644" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000423" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1463" name="ExtractBlendShapeCurves_BlendShapeカーブを抽出できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractBlendShapeCurves_BlendShapeカーブを抽出できる" methodname="ExtractBlendShapeCurves_BlendShapeカーブを抽出できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1287071322" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000388" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1469" name="ExtractBlendShapeCurves_アンダースコア含む名前を正しく抽出できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractBlendShapeCurves_アンダースコア含む名前を正しく抽出できる" methodname="ExtractBlendShapeCurves_アンダースコア含む名前を正しく抽出できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="102879803" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000329" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1467" name="ExtractBlendShapeCurves_カーブの値が正しく抽出される" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractBlendShapeCurves_カーブの値が正しく抽出される" methodname="ExtractBlendShapeCurves_カーブの値が正しく抽出される" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="78520713" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000919" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1468" name="ExtractBlendShapeCurves_異なるパスのBlendShapeカーブを正しく抽出できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractBlendShapeCurves_異なるパスのBlendShapeカーブを正しく抽出できる" methodname="ExtractBlendShapeCurves_異なるパスのBlendShapeカーブを正しく抽出できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="236614955" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000539" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1464" name="ExtractBlendShapeCurves_複数のBlendShapeカーブを抽出できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractBlendShapeCurves_複数のBlendShapeカーブを抽出できる" methodname="ExtractBlendShapeCurves_複数のBlendShapeカーブを抽出できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="659860702" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000374" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1438" name="ExtractSkeleton_Animatorがnullの場合_空のSkeletonDataを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractSkeleton_Animatorがnullの場合_空のSkeletonDataを返す" methodname="ExtractSkeleton_Animatorがnullの場合_空のSkeletonDataを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="770947785" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000220" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1440" name="ExtractSkeleton_SkeletonExtractorを委譲する" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractSkeleton_SkeletonExtractorを委譲する" methodname="ExtractSkeleton_SkeletonExtractorを委譲する" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1707229865" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.001113" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1439" name="ExtractSkeleton_ボーン階層が存在する場合_SkeletonDataを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractSkeleton_ボーン階層が存在する場合_SkeletonDataを返す" methodname="ExtractSkeleton_ボーン階層が存在する場合_SkeletonDataを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="73917712" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000714" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1446" name="ExtractTransformCurves_AnimationClipがnullの場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_AnimationClipがnullの場合_空のリストを返す" methodname="ExtractTransformCurves_AnimationClipがnullの場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1972875419" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000254" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1447" name="ExtractTransformCurves_Animatorがnullの場合_空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_Animatorがnullの場合_空のリストを返す" methodname="ExtractTransformCurves_Animatorがnullの場合_空のリストを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="923412837" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000308" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1451" name="ExtractTransformCurves_EulerAnglesカーブを抽出できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_EulerAnglesカーブを抽出できる" methodname="ExtractTransformCurves_EulerAnglesカーブを抽出できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1836958599" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.001018" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1448" name="ExtractTransformCurves_Positionカーブを抽出できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_Positionカーブを抽出できる" methodname="ExtractTransformCurves_Positionカーブを抽出できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="752967056" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000427" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1449" name="ExtractTransformCurves_Rotationカーブを抽出できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_Rotationカーブを抽出できる" methodname="ExtractTransformCurves_Rotationカーブを抽出できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="2131413076" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000401" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1450" name="ExtractTransformCurves_Scaleカーブを抽出できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_Scaleカーブを抽出できる" methodname="ExtractTransformCurves_Scaleカーブを抽出できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1647215595" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000373" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1454" name="ExtractTransformCurves_Transform以外のカーブは含まれない" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_Transform以外のカーブは含まれない" methodname="ExtractTransformCurves_Transform以外のカーブは含まれない" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="2118660154" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000507" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1455" name="ExtractTransformCurves_カーブの値が正しく抽出される" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_カーブの値が正しく抽出される" methodname="ExtractTransformCurves_カーブの値が正しく抽出される" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="2075896832" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000521" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1452" name="ExtractTransformCurves_子オブジェクトのパスを正しく取得できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_子オブジェクトのパスを正しく取得できる" methodname="ExtractTransformCurves_子オブジェクトのパスを正しく取得できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="455688033" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000505" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1453" name="ExtractTransformCurves_複数のTransformのカーブを抽出できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ExtractTransformCurves_複数のTransformのカーブを抽出できる" methodname="ExtractTransformCurves_複数のTransformのカーブを抽出できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="7757150" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000539" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1442" name="GetBonePath_Animator自身の場合は空文字を返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GetBonePath_Animator自身の場合は空文字を返す" methodname="GetBonePath_Animator自身の場合は空文字を返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="568409263" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000353" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1443" name="GetBonePath_nullの場合はnullを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GetBonePath_nullの場合はnullを返す" methodname="GetBonePath_nullの場合はnullを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="848398912" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000314" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1441" name="GetBonePath_ボーンパスを取得できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GetBonePath_ボーンパスを取得できる" methodname="GetBonePath_ボーンパスを取得できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="95357676" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000404" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1437" name="GetSupportedExportOptions_オプションリストを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.GetSupportedExportOptions_オプションリストを返す" methodname="GetSupportedExportOptions_オプションリストを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1743781939" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000257" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1475" name="HasBlendShapeCurves_AnimationClipがnullの場合_falseを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.HasBlendShapeCurves_AnimationClipがnullの場合_falseを返す" methodname="HasBlendShapeCurves_AnimationClipがnullの場合_falseを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="2104117474" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000309" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1474" name="HasBlendShapeCurves_BlendShapeカーブが存在しない場合_falseを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.HasBlendShapeCurves_BlendShapeカーブが存在しない場合_falseを返す" methodname="HasBlendShapeCurves_BlendShapeカーブが存在しない場合_falseを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1971002387" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000247" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1473" name="HasBlendShapeCurves_BlendShapeカーブが存在する場合_trueを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.HasBlendShapeCurves_BlendShapeカーブが存在する場合_trueを返す" methodname="HasBlendShapeCurves_BlendShapeカーブが存在する場合_trueを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="709651187" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000268" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1422" name="IsAvailable_FbxPackageCheckerと同じ結果を返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.IsAvailable_FbxPackageCheckerと同じ結果を返す" methodname="IsAvailable_FbxPackageCheckerと同じ結果を返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1217849239" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000579" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1423" name="IsAvailable_戻り値がbool型である" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.IsAvailable_戻り値がbool型である" methodname="IsAvailable_戻り値がbool型である" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="2093247166" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000420" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1472" name="PrepareBlendShapeCurvesForExport_Animatorがnullでも動作する" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.PrepareBlendShapeCurvesForExport_Animatorがnullでも動作する" methodname="PrepareBlendShapeCurvesForExport_Animatorがnullでも動作する" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="679711644" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000292" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1470" name="PrepareBlendShapeCurvesForExport_BlendShapeCurveDataリストからFbxExportDataを作成できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.PrepareBlendShapeCurvesForExport_BlendShapeCurveDataリストからFbxExportDataを作成できる" methodname="PrepareBlendShapeCurvesForExport_BlendShapeCurveDataリストからFbxExportDataを作成できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="854904159" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000385" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1471" name="PrepareBlendShapeCurvesForExport_空のリストでもFbxExportDataを作成できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.PrepareBlendShapeCurvesForExport_空のリストでもFbxExportDataを作成できる" methodname="PrepareBlendShapeCurvesForExport_空のリストでもFbxExportDataを作成できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1904637486" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000314" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1458" name="PrepareTransformCurvesForExport_Animatorがnullでも動作する" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.PrepareTransformCurvesForExport_Animatorがnullでも動作する" methodname="PrepareTransformCurvesForExport_Animatorがnullでも動作する" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1922455635" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000288" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1456" name="PrepareTransformCurvesForExport_TransformCurveDataリストからFbxExportDataを作成できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.PrepareTransformCurvesForExport_TransformCurveDataリストからFbxExportDataを作成できる" methodname="PrepareTransformCurvesForExport_TransformCurveDataリストからFbxExportDataを作成できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="446569133" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000308" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1457" name="PrepareTransformCurvesForExport_空のリストでもFbxExportDataを作成できる" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.PrepareTransformCurvesForExport_空のリストでもFbxExportDataを作成できる" methodname="PrepareTransformCurvesForExport_空のリストでもFbxExportDataを作成できる" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1396723701" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000251" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1435" name="ValidateExportData_nullの場合エラーメッセージを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ValidateExportData_nullの場合エラーメッセージを返す" methodname="ValidateExportData_nullの場合エラーメッセージを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1621843944" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000244" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1436" name="ValidateExportData_エクスポート可能なデータがない場合エラーメッセージを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ValidateExportData_エクスポート可能なデータがない場合エラーメッセージを返す" methodname="ValidateExportData_エクスポート可能なデータがない場合エラーメッセージを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="328068222" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000259" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1434" name="ValidateExportData_有効なデータの場合nullを返す" fullname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests.ValidateExportData_有効なデータの場合nullを返す" methodname="ValidateExportData_有効なデータの場合nullを返す" classname="AnimationMergeTool.Editor.Tests.FbxAnimationExporterTests" runstate="Runnable" seed="1489316187" result="Passed" start-time="2026-01-26 18:49:35Z" end-time="2026-01-26 18:49:35Z" duration="0.000248" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: ./TestResults_P15003.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -78,7 +78,59 @@ https://github.com/hidano/AnimationMergeToolForTimeline.git?path=AnimationMergeT
 
 ---
 
-## 出力仕様
+## FBXエクスポート機能
+
+Timeline上のアニメーションをFBX形式でエクスポートし、他のゲームエンジン（Unreal Engine、Godot等）やDCCツール（Blender等）で利用できます。
+
+### 前提条件
+
+FBXエクスポートには **com.unity.formats.fbx** (FBX Exporter) パッケージが必要です。
+
+Package Managerから「Add package by name...」で `com.unity.formats.fbx` を追加してください。
+
+### FBXエクスポートの実行
+
+AnimationClip出力と同様の操作で、コンテキストメニューから **「Animation Merge Tool」>「Export as FBX」** を選択します。
+
+### FBX出力仕様
+
+| 項目 | 内容 |
+|------|------|
+| ファイル形式 | FBX Binary (.fbx) |
+| ファイル名 | `{TimelineAsset名}_{Animator名}_Merged.fbx` |
+| 保存先 | Assets フォルダ直下 |
+| リグタイプ | Generic形式固定 |
+
+FBXファイルには以下のデータが含まれます：
+
+- スケルトン（AnimatorにバインドされたBone階層）
+- Transformアニメーション（Position/Rotation/Scale）
+- BlendShapeアニメーション（モーフターゲット）
+- ルートモーション
+
+Humanoidリグの場合、マッスルカーブはTransformの回転カーブに自動変換されます。
+
+### 他エンジンへのインポート
+
+**Unreal Engine**: Content Browserで右クリック → Import → FBXファイルを選択 → Import Animationsにチェック
+
+**Godot**: プロジェクトフォルダにFBXファイルを配置 → Importタブで Animation > Import Animations を有効化
+
+**Blender**: File → Import → FBX (.fbx) → Animation チェックを有効化
+
+### AnimationClip出力との違い
+
+| 機能 | AnimationClip出力 | FBXエクスポート |
+|-----|------------------|----------------|
+| 出力形式 | .anim（Unity専用） | .fbx（汎用） |
+| 他エンジン互換 | なし | あり |
+| 必須パッケージ | なし | FBX Exporter |
+| リグタイプ | 元のまま | Generic固定 |
+| メニュー | Merge Timeline Animations | Export as FBX |
+
+---
+
+## 出力仕様（AnimationClip）
 
 ### 出力ファイル
 
@@ -159,6 +211,8 @@ Timeline上で下にあるトラックほど優先順位が高くなります。
 - マージ対象のトラックを選択する機能は提供していません（すべての有効なトラックが対象）
 - 時間範囲を指定してマージする機能は提供していません
 - 保存先フォルダは Assetsフォルダ直下に固定です
+- FBXエクスポートはGeneric形式のみ（Humanoid形式での出力は不可）
+- FBXエクスポートにはcom.unity.formats.fbxパッケージが必要です
 
 ---
 

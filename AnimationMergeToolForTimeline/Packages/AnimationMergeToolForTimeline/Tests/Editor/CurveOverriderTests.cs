@@ -1236,5 +1236,427 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region BlendShape Override処理 テスト（P11-006）
+
+        [Test]
+        public void IsSameProperty_同一のBlendShapeプロパティの場合trueを返す()
+        {
+            // Arrange
+            var binding1 = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.Smile"
+            };
+            var binding2 = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.Smile"
+            };
+
+            // Act
+            var result = _curveOverrider.IsSameProperty(binding1, binding2);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void IsSameProperty_異なるBlendShapeプロパティの場合falseを返す()
+        {
+            // Arrange
+            var binding1 = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.Smile"
+            };
+            var binding2 = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.eyeBlink_L"
+            };
+
+            // Act
+            var result = _curveOverrider.IsSameProperty(binding1, binding2);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void IsSameProperty_同一BlendShape名でもpathが異なる場合falseを返す()
+        {
+            // Arrange
+            var binding1 = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.Smile"
+            };
+            var binding2 = new EditorCurveBinding
+            {
+                path = "Face",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.Smile"
+            };
+
+            // Act
+            var result = _curveOverrider.IsSameProperty(binding1, binding2);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void GetBindingKey_BlendShapeプロパティの正しいキーを生成する()
+        {
+            // Arrange
+            var binding = new EditorCurveBinding
+            {
+                path = "Character/Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.eyeBlink_L"
+            };
+
+            // Act
+            var key = _curveOverrider.GetBindingKey(binding);
+
+            // Assert
+            Assert.AreEqual("Character/Body|UnityEngine.SkinnedMeshRenderer|blendShape.eyeBlink_L", key);
+        }
+
+        [Test]
+        public void DetectOverlappingProperties_重複するBlendShapeプロパティを検出できる()
+        {
+            // Arrange
+            var bindingSmile1 = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.Smile"
+            };
+            var bindingBlink1 = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.eyeBlink_L"
+            };
+            var bindingSmile2 = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.Smile"
+            };
+            var curve = AnimationCurve.Linear(0, 0, 1, 100);
+
+            var lowerPriorityPairs = new System.Collections.Generic.List<CurveBindingPair>
+            {
+                new CurveBindingPair(bindingSmile1, curve),
+                new CurveBindingPair(bindingBlink1, curve)
+            };
+
+            var higherPriorityPairs = new System.Collections.Generic.List<CurveBindingPair>
+            {
+                new CurveBindingPair(bindingSmile2, curve)  // Smileと重複
+            };
+
+            // Act
+            var overlapping = _curveOverrider.DetectOverlappingProperties(lowerPriorityPairs, higherPriorityPairs);
+
+            // Assert
+            Assert.AreEqual(1, overlapping.Count);
+            Assert.IsTrue(overlapping.Contains(_curveOverrider.GetBindingKey(bindingSmile1)));
+            Assert.IsFalse(overlapping.Contains(_curveOverrider.GetBindingKey(bindingBlink1)));
+        }
+
+        [Test]
+        public void DetectOverlappingProperties_複数のBlendShapeプロパティの重複を検出できる()
+        {
+            // Arrange
+            var bindingSmile = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.Smile"
+            };
+            var bindingBlink = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.eyeBlink_L"
+            };
+            var bindingMouth = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.MouthOpen"
+            };
+            var curve = AnimationCurve.Linear(0, 0, 1, 100);
+
+            var lowerPriorityPairs = new System.Collections.Generic.List<CurveBindingPair>
+            {
+                new CurveBindingPair(bindingSmile, curve),
+                new CurveBindingPair(bindingBlink, curve),
+                new CurveBindingPair(bindingMouth, curve)
+            };
+
+            var higherPriorityPairs = new System.Collections.Generic.List<CurveBindingPair>
+            {
+                new CurveBindingPair(bindingSmile, curve),
+                new CurveBindingPair(bindingMouth, curve)
+            };
+
+            // Act
+            var overlapping = _curveOverrider.DetectOverlappingProperties(lowerPriorityPairs, higherPriorityPairs);
+
+            // Assert
+            Assert.AreEqual(2, overlapping.Count);
+            Assert.IsTrue(overlapping.Contains(_curveOverrider.GetBindingKey(bindingSmile)));
+            Assert.IsTrue(overlapping.Contains(_curveOverrider.GetBindingKey(bindingMouth)));
+            Assert.IsFalse(overlapping.Contains(_curveOverrider.GetBindingKey(bindingBlink)));
+        }
+
+        [Test]
+        public void ApplyFullOverride_BlendShapeカーブを完全にOverrideできる()
+        {
+            // Arrange
+            // 低優先順位: Smile 0→50 (0-2秒)
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(2f, 50f);
+
+            // 高優先順位: Smile 100→0 (0-2秒、完全カバー)
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 100f);
+            higherCurve.AddKey(2f, 0f);
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(lowerCurve, higherCurve, 0f, 2f);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(100f, result.keys[0].value);  // 高優先順位の値
+            Assert.AreEqual(2f, result.keys[1].time);
+            Assert.AreEqual(0f, result.keys[1].value);    // 高優先順位の値
+        }
+
+        [Test]
+        public void ApplyFullOverride_BlendShapeカーブの部分的重なりでOverrideできる()
+        {
+            // Arrange
+            // 低優先順位: Smile 0→100 (0-4秒)
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(4f, 100f);
+
+            // 高優先順位: Smile 50→80 (1-2秒、部分的重なり)
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(1f, 50f);
+            higherCurve.AddKey(2f, 80f);
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(lowerCurve, higherCurve, 1f, 2f);
+
+            // Assert
+            // 低優先順位の0秒、4秒のキー + 高優先順位の1秒、2秒のキー
+            Assert.AreEqual(4, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(0f, result.keys[0].value);    // 低優先順位
+            Assert.AreEqual(1f, result.keys[1].time);
+            Assert.AreEqual(50f, result.keys[1].value);   // 高優先順位
+            Assert.AreEqual(2f, result.keys[2].time);
+            Assert.AreEqual(80f, result.keys[2].value);   // 高優先順位
+            Assert.AreEqual(4f, result.keys[3].time);
+            Assert.AreEqual(100f, result.keys[3].value);  // 低優先順位
+        }
+
+        [Test]
+        public void MergeMultipleTracks_複数トラックのBlendShapeカーブを優先順位順にマージできる()
+        {
+            // Arrange
+            // 最低優先順位（トラック1）: Smile 0→100 (0-4秒)
+            var track1Curve = new AnimationCurve();
+            track1Curve.AddKey(0f, 0f);
+            track1Curve.AddKey(4f, 100f);
+
+            // 中間優先順位（トラック2）: Smile 50→70 (1-3秒)
+            var track2Curve = new AnimationCurve();
+            track2Curve.AddKey(1f, 50f);
+            track2Curve.AddKey(3f, 70f);
+
+            // 最高優先順位（トラック3）: Smile 80 (1.5-2.5秒)
+            var track3Curve = new AnimationCurve();
+            track3Curve.AddKey(1.5f, 80f);
+            track3Curve.AddKey(2.5f, 80f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(track1Curve, 0f, 4f),
+                new CurveWithTimeRange(track2Curve, 1f, 3f),
+                new CurveWithTimeRange(track3Curve, 1.5f, 2.5f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            // 期待されるキー:
+            // 0秒: 0（トラック1）
+            // 1秒: 50（トラック2）
+            // 1.5秒: 80（トラック3）
+            // 2.5秒: 80（トラック3）
+            // 3秒: 70（トラック2）
+            // 4秒: 100（トラック1）
+            Assert.AreEqual(6, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(0f, result.keys[0].value);
+            Assert.AreEqual(1f, result.keys[1].time);
+            Assert.AreEqual(50f, result.keys[1].value);
+            Assert.AreEqual(1.5f, result.keys[2].time);
+            Assert.AreEqual(80f, result.keys[2].value);
+            Assert.AreEqual(2.5f, result.keys[3].time);
+            Assert.AreEqual(80f, result.keys[3].value);
+            Assert.AreEqual(3f, result.keys[4].time);
+            Assert.AreEqual(70f, result.keys[4].value);
+            Assert.AreEqual(4f, result.keys[5].time);
+            Assert.AreEqual(100f, result.keys[5].value);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_同一BlendShapeの完全重なりで高優先順位が採用される()
+        {
+            // Arrange
+            // 低優先順位: eyeBlink_L 0→100 (0-2秒)
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(1f, 100f);
+            lowerCurve.AddKey(2f, 0f);
+
+            // 高優先順位: eyeBlink_L 50→50 (0-2秒、完全重なり)
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 50f);
+            higherCurve.AddKey(2f, 50f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(lowerCurve, 0f, 2f),
+                new CurveWithTimeRange(higherCurve, 0f, 2f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            // 完全重なりの場合、高優先順位のキーのみ
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(50f, result.keys[0].value);
+            Assert.AreEqual(2f, result.keys[1].time);
+            Assert.AreEqual(50f, result.keys[1].value);
+        }
+
+        [Test]
+        public void ApplyFullOverride_BlendShapeカーブのOverride処理で元のカーブを変更しない()
+        {
+            // Arrange
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(1f, 100f);
+
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 50f);
+            higherCurve.AddKey(1f, 50f);
+
+            var originalLowerValue = lowerCurve.keys[1].value;
+            var originalHigherValue = higherCurve.keys[0].value;
+
+            // Act
+            var result = _curveOverrider.ApplyFullOverride(lowerCurve, higherCurve, 0f, 1f);
+
+            // Assert
+            // 元のカーブは変更されていないこと
+            Assert.AreEqual(100f, lowerCurve.keys[1].value);
+            Assert.AreEqual(50f, higherCurve.keys[0].value);
+            Assert.AreNotSame(lowerCurve, result);
+            Assert.AreNotSame(higherCurve, result);
+        }
+
+        [Test]
+        public void DetectOverlappingProperties_BlendShapeとTransformカーブは重複しない()
+        {
+            // Arrange
+            var bindingBlendShape = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(SkinnedMeshRenderer),
+                propertyName = "blendShape.Smile"
+            };
+            var bindingTransform = new EditorCurveBinding
+            {
+                path = "Body",
+                type = typeof(Transform),
+                propertyName = "m_LocalPosition.x"
+            };
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+
+            var lowerPriorityPairs = new System.Collections.Generic.List<CurveBindingPair>
+            {
+                new CurveBindingPair(bindingBlendShape, curve)
+            };
+
+            var higherPriorityPairs = new System.Collections.Generic.List<CurveBindingPair>
+            {
+                new CurveBindingPair(bindingTransform, curve)
+            };
+
+            // Act
+            var overlapping = _curveOverrider.DetectOverlappingProperties(lowerPriorityPairs, higherPriorityPairs);
+
+            // Assert
+            Assert.AreEqual(0, overlapping.Count);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_BlendShapeカーブの値が0から100の範囲で正しくマージされる()
+        {
+            // Arrange
+            // BlendShape値は通常0-100の範囲（パーセント）
+            // 低優先順位: MouthOpen 0→100 (0-1秒)
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(1f, 100f);
+
+            // 高優先順位: MouthOpen 25→75 (0.25-0.75秒)
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0.25f, 25f);
+            higherCurve.AddKey(0.75f, 75f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(lowerCurve, 0f, 1f),
+                new CurveWithTimeRange(higherCurve, 0.25f, 0.75f)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            Assert.AreEqual(4, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].time);
+            Assert.AreEqual(0f, result.keys[0].value);       // 低優先順位
+            Assert.AreEqual(0.25f, result.keys[1].time);
+            Assert.AreEqual(25f, result.keys[1].value);      // 高優先順位
+            Assert.AreEqual(0.75f, result.keys[2].time);
+            Assert.AreEqual(75f, result.keys[2].value);      // 高優先順位
+            Assert.AreEqual(1f, result.keys[3].time);
+            Assert.AreEqual(100f, result.keys[3].value);     // 低優先順位
+        }
+
+        #endregion
     }
 }

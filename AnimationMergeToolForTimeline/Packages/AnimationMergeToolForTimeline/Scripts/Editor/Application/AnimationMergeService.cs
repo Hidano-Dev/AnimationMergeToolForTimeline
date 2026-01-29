@@ -14,11 +14,13 @@ namespace AnimationMergeTool.Editor.Application
     /// アニメーション結合処理を統合するサービスクラス
     /// TrackAnalyzer → ClipMerger → ExtrapolationProcessor → BlendProcessor → CurveOverrider → Exporter
     /// の流れで処理をオーケストレーションする
+    /// AnimationClip (.anim) とFBX両方の出力形式をサポート
     /// </summary>
     public class AnimationMergeService
     {
         private readonly FileNameGenerator _fileNameGenerator;
         private readonly AnimationClipExporter _exporter;
+        private readonly FbxAnimationExporter _fbxExporter;
 
         /// <summary>
         /// コンストラクタ
@@ -28,6 +30,7 @@ namespace AnimationMergeTool.Editor.Application
             _fileNameGenerator = new FileNameGenerator();
             _fileNameGenerator.SetFileExistenceChecker(new AssetDatabaseFileExistenceChecker());
             _exporter = new AnimationClipExporter(_fileNameGenerator);
+            _fbxExporter = new FbxAnimationExporter();
         }
 
         /// <summary>
@@ -39,6 +42,20 @@ namespace AnimationMergeTool.Editor.Application
         {
             _fileNameGenerator = fileNameGenerator;
             _exporter = exporter;
+            _fbxExporter = new FbxAnimationExporter();
+        }
+
+        /// <summary>
+        /// コンストラクタ（完全な依存性注入用）
+        /// </summary>
+        /// <param name="fileNameGenerator">ファイル名生成器</param>
+        /// <param name="exporter">AnimationClipエクスポーター</param>
+        /// <param name="fbxExporter">FBXエクスポーター</param>
+        public AnimationMergeService(FileNameGenerator fileNameGenerator, AnimationClipExporter exporter, FbxAnimationExporter fbxExporter)
+        {
+            _fileNameGenerator = fileNameGenerator;
+            _exporter = exporter;
+            _fbxExporter = fbxExporter ?? new FbxAnimationExporter();
         }
 
         /// <summary>
@@ -199,11 +216,17 @@ namespace AnimationMergeTool.Editor.Application
         /// <summary>
         /// 指定されたAnimator用のトラックを結合する
         /// </summary>
+        /// <param name="timelineAsset">対象のTimelineAsset</param>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="tracks">トラックリスト</param>
+        /// <param name="outputDirectory">出力ディレクトリ</param>
+        /// <param name="saveToAsset">trueの場合.animファイルとして保存、falseの場合メモリ上にのみ生成</param>
         private MergeResult MergeTracksForAnimator(
             TimelineAsset timelineAsset,
             Animator animator,
             List<TrackInfo> tracks,
-            string outputDirectory)
+            string outputDirectory,
+            bool saveToAsset = true)
         {
             var result = new MergeResult(animator);
 
@@ -325,21 +348,34 @@ namespace AnimationMergeTool.Editor.Application
 
             result.AddLog($"カーブの統合完了: {finalCurves.Count}個のカーブ");
 
-            // AnimationClipを生成してエクスポート
+            // AnimationClipを生成
             var timelineAssetName = timelineAsset.name;
             var animatorName = animator != null ? animator.name : "NoAnimator";
 
-            var savedPath = _exporter.ExportToAsset(
-                result,
-                finalCurves,
-                timelineAssetName,
-                animatorName,
-                frameRate,
-                outputDirectory);
-
-            if (savedPath != null)
+            if (saveToAsset)
             {
-                result.AddLog($"出力完了: {savedPath}");
+                // .animファイルとして保存
+                var savedPath = _exporter.ExportToAsset(
+                    result,
+                    finalCurves,
+                    timelineAssetName,
+                    animatorName,
+                    frameRate,
+                    outputDirectory);
+
+                if (savedPath != null)
+                {
+                    result.AddLog($"出力完了: {savedPath}");
+                }
+            }
+            else
+            {
+                // メモリ上にAnimationClipのみ生成（ファイル保存しない）
+                var clip = _exporter.CreateAnimationClip(result, finalCurves, frameRate);
+                if (clip != null)
+                {
+                    result.AddLog("AnimationClipをメモリ上に生成しました。");
+                }
             }
 
             return result;
@@ -382,6 +418,232 @@ namespace AnimationMergeTool.Editor.Application
             public float EndTime;
             public int Priority;
         }
+
+        /// <summary>
+        /// PlayableDirectorからアニメーションをメモリ上で結合する（.animファイルを保存しない）
+        /// FBXエクスポート用に使用
+        /// </summary>
+        /// <param name="director">対象のPlayableDirector</param>
+        /// <returns>結合結果のリスト（Animator単位）</returns>
+        internal List<MergeResult> MergeFromPlayableDirectorInMemory(PlayableDirector director)
+        {
+            var results = new List<MergeResult>();
+
+            if (director == null)
+            {
+                Debug.LogError("[AnimationMergeTool] PlayableDirectorがnullです。");
+                return results;
+            }
+
+            var timelineAsset = director.playableAsset as TimelineAsset;
+            if (timelineAsset == null)
+            {
+                Debug.LogError("[AnimationMergeTool] PlayableDirectorにTimelineAssetが設定されていません。");
+                return results;
+            }
+
+            // PlayableDirectorからバインディング情報を取得
+            var animatorBindings = GetAnimatorBindings(director, timelineAsset);
+            if (animatorBindings.Count == 0)
+            {
+                Debug.LogError("[AnimationMergeTool] バインドされたAnimatorが見つかりません。");
+                return results;
+            }
+
+            // Animator単位で処理（saveToAsset=false）
+            foreach (var kvp in animatorBindings)
+            {
+                var animator = kvp.Key;
+                var tracks = kvp.Value;
+
+                var result = MergeTracksForAnimator(timelineAsset, animator, tracks, null, saveToAsset: false);
+                if (result != null)
+                {
+                    results.Add(result);
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// TimelineAssetからアニメーションをメモリ上で結合する（.animファイルを保存しない）
+        /// FBXエクスポート用に使用
+        /// </summary>
+        /// <param name="timelineAsset">対象のTimelineAsset</param>
+        /// <returns>結合結果のリスト</returns>
+        internal List<MergeResult> MergeFromTimelineAssetInMemory(TimelineAsset timelineAsset)
+        {
+            var results = new List<MergeResult>();
+
+            if (timelineAsset == null)
+            {
+                Debug.LogError("[AnimationMergeTool] TimelineAssetがnullです。");
+                return results;
+            }
+
+            var analyzer = new TrackAnalyzer(timelineAsset);
+            var allTracks = analyzer.GetAnimationTracksWithPriority();
+            var nonMutedTracks = analyzer.FilterNonMutedTracks(allTracks);
+
+            if (nonMutedTracks.Count == 0)
+            {
+                Debug.LogError("[AnimationMergeTool] 有効なAnimationTrackが見つかりません。");
+                return results;
+            }
+
+            var result = MergeTracksForAnimator(timelineAsset, null, nonMutedTracks, null, saveToAsset: false);
+            if (result != null)
+            {
+                results.Add(result);
+            }
+
+            return results;
+        }
+
+        #region FBXエクスポート統合 (P16-004)
+
+        /// <summary>
+        /// FBXエクスポート機能が利用可能かどうかを確認する
+        /// </summary>
+        /// <returns>FBX Exporterパッケージがインストールされている場合はtrue</returns>
+        public bool IsFbxExportAvailable()
+        {
+            return _fbxExporter.IsAvailable();
+        }
+
+        /// <summary>
+        /// MergeResultからFBXエクスポート用のデータを準備する
+        /// </summary>
+        /// <param name="mergeResult">マージ結果</param>
+        /// <returns>FBXエクスポート用データ</returns>
+        public FbxExportData PrepareFbxExportData(MergeResult mergeResult)
+        {
+            if (mergeResult == null || mergeResult.GeneratedClip == null)
+            {
+                return null;
+            }
+
+            return _fbxExporter.PrepareAllCurvesForExport(
+                mergeResult.TargetAnimator,
+                mergeResult.GeneratedClip);
+        }
+
+        /// <summary>
+        /// MergeResultをFBXファイルとしてエクスポートする
+        /// </summary>
+        /// <param name="mergeResult">マージ結果</param>
+        /// <param name="outputDirectory">出力ディレクトリ</param>
+        /// <param name="timelineAssetName">TimelineAsset名（ファイル名生成用）</param>
+        /// <returns>エクスポートが成功した場合はtrue</returns>
+        public bool ExportToFbx(MergeResult mergeResult, string outputDirectory, string timelineAssetName)
+        {
+            if (mergeResult == null || mergeResult.GeneratedClip == null)
+            {
+                Debug.LogError("[AnimationMergeTool] MergeResultまたはGeneratedClipがnullです。");
+                return false;
+            }
+
+            if (!IsFbxExportAvailable())
+            {
+                Debug.LogError("[AnimationMergeTool] FBX Exporterパッケージがインストールされていません。");
+                return false;
+            }
+
+            // FbxExportDataを準備
+            var exportData = PrepareFbxExportData(mergeResult);
+            if (exportData == null || !exportData.HasExportableData)
+            {
+                Debug.LogError("[AnimationMergeTool] エクスポート可能なデータがありません。");
+                return false;
+            }
+
+            // ファイルパスを生成
+            var animatorName = mergeResult.TargetAnimator != null ? mergeResult.TargetAnimator.name : "NoAnimator";
+            var outputPath = _fileNameGenerator.GenerateUniqueFilePath(
+                outputDirectory,
+                timelineAssetName,
+                animatorName,
+                ".fbx");
+
+            // エクスポート実行
+            var success = _fbxExporter.Export(exportData, outputPath);
+
+            if (success)
+            {
+                mergeResult.AddLog($"FBXエクスポート完了: {outputPath}");
+            }
+            else
+            {
+                mergeResult.AddErrorLog($"FBXエクスポートに失敗しました: {outputPath}");
+            }
+
+            return success;
+        }
+
+        /// <summary>
+        /// PlayableDirectorからアニメーションを結合し、FBXとしてエクスポートする
+        /// .animファイルは生成せず、FBXファイルのみを出力する
+        /// </summary>
+        /// <param name="director">対象のPlayableDirector</param>
+        /// <param name="outputDirectory">出力ディレクトリ（デフォルト: "Assets"）</param>
+        /// <returns>結合結果のリスト（Animator単位）</returns>
+        public List<MergeResult> MergeAndExportToFbx(PlayableDirector director, string outputDirectory = "Assets")
+        {
+            if (!IsFbxExportAvailable())
+            {
+                Debug.LogError("[AnimationMergeTool] FBX Exporterパッケージがインストールされていません。FBXエクスポートをスキップします。");
+                return new List<MergeResult>();
+            }
+
+            // メモリ上でマージ処理を実行（.animファイルは保存しない）
+            var results = MergeFromPlayableDirectorInMemory(director);
+
+            // 各結果をFBXとしてエクスポート
+            var timelineAssetName = (director?.playableAsset as TimelineAsset)?.name ?? "Unknown";
+            foreach (var result in results)
+            {
+                if (result.IsSuccess)
+                {
+                    ExportToFbx(result, outputDirectory, timelineAssetName);
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// TimelineAssetからアニメーションを結合し、FBXとしてエクスポートする
+        /// .animファイルは生成せず、FBXファイルのみを出力する
+        /// </summary>
+        /// <param name="timelineAsset">対象のTimelineAsset</param>
+        /// <param name="outputDirectory">出力ディレクトリ（デフォルト: "Assets"）</param>
+        /// <returns>結合結果のリスト</returns>
+        public List<MergeResult> MergeFromTimelineAssetAndExportToFbx(TimelineAsset timelineAsset, string outputDirectory = "Assets")
+        {
+            if (!IsFbxExportAvailable())
+            {
+                Debug.LogError("[AnimationMergeTool] FBX Exporterパッケージがインストールされていません。FBXエクスポートをスキップします。");
+                return new List<MergeResult>();
+            }
+
+            // メモリ上でマージ処理を実行（.animファイルは保存しない）
+            var results = MergeFromTimelineAssetInMemory(timelineAsset);
+
+            // 各結果をFBXとしてエクスポート
+            var timelineAssetName = timelineAsset?.name ?? "Unknown";
+            foreach (var result in results)
+            {
+                if (result.IsSuccess)
+                {
+                    ExportToFbx(result, outputDirectory, timelineAssetName);
+                }
+            }
+
+            return results;
+        }
+
+        #endregion
     }
 
 }

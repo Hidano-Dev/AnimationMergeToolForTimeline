@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="22" result="Passed" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.0493397">
+  <test-suite type="TestSuite" id="1000" name="AnimationMergeToolForTimeline" fullname="AnimationMergeToolForTimeline" runstate="Runnable" testcasecount="601" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.049340" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1619" name="AnimationMergeTool.Editor.Tests.dll" fullname="D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/Library/ScriptAssemblies/AnimationMergeTool.Editor.Tests.dll" runstate="Runnable" testcasecount="601" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.042648" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="536260" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1620" name="AnimationMergeTool" fullname="AnimationMergeTool" runstate="Runnable" testcasecount="601" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.039920" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1621" name="Editor" fullname="AnimationMergeTool.Editor" runstate="Runnable" testcasecount="601" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.038591" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1622" name="Tests" fullname="AnimationMergeTool.Editor.Tests" runstate="Runnable" testcasecount="601" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.037247" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1122" name="BlendShapeDetectorTests" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" testcasecount="22" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.029940" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1144" name="BlendShapePrefix_正しい値が定義されている" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.BlendShapePrefix_正しい値が定義されている" methodname="BlendShapePrefix_正しい値が定義されている" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1257519173" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.009165" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1132" name="DetectBlendShapeCurves_BlendShapeカーブのないクリップは空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.DetectBlendShapeCurves_BlendShapeカーブのないクリップは空のリストを返す" methodname="DetectBlendShapeCurves_BlendShapeカーブのないクリップは空のリストを返す" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1987159732" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.002696" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1133" name="DetectBlendShapeCurves_BlendShapeカーブを検出できる" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.DetectBlendShapeCurves_BlendShapeカーブを検出できる" methodname="DetectBlendShapeCurves_BlendShapeカーブを検出できる" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="898589490" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000888" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1136" name="DetectBlendShapeCurves_BlendShapeとマッスルカーブが混在する場合BlendShapeのみ検出" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.DetectBlendShapeCurves_BlendShapeとマッスルカーブが混在する場合BlendShapeのみ検出" methodname="DetectBlendShapeCurves_BlendShapeとマッスルカーブが混在する場合BlendShapeのみ検出" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="92552742" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000309" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1135" name="DetectBlendShapeCurves_BlendShapeと通常のカーブが混在する場合BlendShapeのみ検出" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.DetectBlendShapeCurves_BlendShapeと通常のカーブが混在する場合BlendShapeのみ検出" methodname="DetectBlendShapeCurves_BlendShapeと通常のカーブが混在する場合BlendShapeのみ検出" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1368897746" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000276" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1131" name="DetectBlendShapeCurves_nullを渡すと空のリストを返す" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.DetectBlendShapeCurves_nullを渡すと空のリストを返す" methodname="DetectBlendShapeCurves_nullを渡すと空のリストを返す" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="264165584" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000225" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1134" name="DetectBlendShapeCurves_複数のBlendShapeカーブを検出できる" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.DetectBlendShapeCurves_複数のBlendShapeカーブを検出できる" methodname="DetectBlendShapeCurves_複数のBlendShapeカーブを検出できる" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1813851476" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000294" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1140" name="GetBlendShapeName_BlendShapeプロパティから名前を取得できる" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.GetBlendShapeName_BlendShapeプロパティから名前を取得できる" methodname="GetBlendShapeName_BlendShapeプロパティから名前を取得できる" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1255944371" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000255" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1142" name="GetBlendShapeName_BlendShapeプロパティでない場合nullを返す" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.GetBlendShapeName_BlendShapeプロパティでない場合nullを返す" methodname="GetBlendShapeName_BlendShapeプロパティでない場合nullを返す" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1170072051" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000265" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1141" name="GetBlendShapeName_アンダースコアを含むBlendShape名を取得できる" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.GetBlendShapeName_アンダースコアを含むBlendShape名を取得できる" methodname="GetBlendShapeName_アンダースコアを含むBlendShape名を取得できる" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1933091863" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000192" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1143" name="GetBlendShapeName_型が異なる場合nullを返す" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.GetBlendShapeName_型が異なる場合nullを返す" methodname="GetBlendShapeName_型が異なる場合nullを返す" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="65269203" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000179" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1139" name="HasBlendShapeCurves_BlendShapeカーブがある場合trueを返す" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.HasBlendShapeCurves_BlendShapeカーブがある場合trueを返す" methodname="HasBlendShapeCurves_BlendShapeカーブがある場合trueを返す" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1594923242" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000456" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1138" name="HasBlendShapeCurves_BlendShapeカーブがない場合falseを返す" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.HasBlendShapeCurves_BlendShapeカーブがない場合falseを返す" methodname="HasBlendShapeCurves_BlendShapeカーブがない場合falseを返す" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="2085402996" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000281" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1137" name="HasBlendShapeCurves_nullを渡すとfalseを返す" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.HasBlendShapeCurves_nullを渡すとfalseを返す" methodname="HasBlendShapeCurves_nullを渡すとfalseを返す" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="914384492" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000151" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1127" name="IsBlendShapeProperty_Animator型はBlendShapeプロパティではない" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.IsBlendShapeProperty_Animator型はBlendShapeプロパティではない" methodname="IsBlendShapeProperty_Animator型はBlendShapeプロパティではない" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1299468828" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000170" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1124" name="IsBlendShapeProperty_BlendShapeEyeBlinkLはBlendShapeプロパティ" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.IsBlendShapeProperty_BlendShapeEyeBlinkLはBlendShapeプロパティ" methodname="IsBlendShapeProperty_BlendShapeEyeBlinkLはBlendShapeプロパティ" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1647344841" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000173" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1123" name="IsBlendShapeProperty_BlendShapeSmileはBlendShapeプロパティ" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.IsBlendShapeProperty_BlendShapeSmileはBlendShapeプロパティ" methodname="IsBlendShapeProperty_BlendShapeSmileはBlendShapeプロパティ" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1396176522" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000171" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1128" name="IsBlendShapeProperty_BlendShapeプレフィックスなしはBlendShapeプロパティではない" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.IsBlendShapeProperty_BlendShapeプレフィックスなしはBlendShapeプロパティではない" methodname="IsBlendShapeProperty_BlendShapeプレフィックスなしはBlendShapeプロパティではない" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="2056056708" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000183" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1126" name="IsBlendShapeProperty_Transform型はBlendShapeプロパティではない" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.IsBlendShapeProperty_Transform型はBlendShapeプロパティではない" methodname="IsBlendShapeProperty_Transform型はBlendShapeプロパティではない" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="708021908" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000166" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1125" name="IsBlendShapeProperty_ルートオブジェクトのBlendShapeはBlendShapeプロパティ" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.IsBlendShapeProperty_ルートオブジェクトのBlendShapeはBlendShapeプロパティ" methodname="IsBlendShapeProperty_ルートオブジェクトのBlendShapeはBlendShapeプロパティ" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="86065154" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000180" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1129" name="IsBlendShapeProperty_空のプロパティ名はBlendShapeプロパティではない" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.IsBlendShapeProperty_空のプロパティ名はBlendShapeプロパティではない" methodname="IsBlendShapeProperty_空のプロパティ名はBlendShapeプロパティではない" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1703372984" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000168" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1130" name="IsBlendShapeProperty_大文字小文字が異なるプレフィックスはBlendShapeプロパティではない" fullname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests.IsBlendShapeProperty_大文字小文字が異なるプレフィックスはBlendShapeプロパティではない" methodname="IsBlendShapeProperty_大文字小文字が異なるプレフィックスはBlendShapeプロパティではない" classname="AnimationMergeTool.Editor.Tests.BlendShapeDetectorTests" runstate="Runnable" seed="1046433600" result="Passed" start-time="2026-01-26 16:42:43Z" end-time="2026-01-26 16:42:43Z" duration="0.000182" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: D:\Personal\Repositries\AnimationMergeToolForTimeline\AnimationMergeToolForTimeline\TestResults_P11002.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

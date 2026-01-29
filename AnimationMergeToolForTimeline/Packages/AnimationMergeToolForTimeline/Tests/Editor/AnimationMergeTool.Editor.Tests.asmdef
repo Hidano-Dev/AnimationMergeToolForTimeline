@@ -20,6 +20,12 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.formats.fbx",
+            "expression": "",
+            "define": "UNITY_FORMATS_FBX"
+        }
+    ],
     "noEngineReferences": false
 }

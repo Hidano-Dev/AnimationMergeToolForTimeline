@@ -48,6 +48,8 @@ namespace AnimationMergeTool.Editor.Infrastructure
             _fileExistenceChecker = fileExistenceChecker;
         }
 
+        private const string DefaultExtension = ".anim";
+
         /// <summary>
         /// 基本ファイル名を生成する
         /// 形式: {TimelineAsset名}_{Animator名}_Merged.anim
@@ -57,11 +59,42 @@ namespace AnimationMergeTool.Editor.Infrastructure
         /// <returns>生成されたファイル名</returns>
         public string GenerateBaseName(string timelineAssetName, string animatorName)
         {
+            return GenerateBaseName(timelineAssetName, animatorName, DefaultExtension);
+        }
+
+        /// <summary>
+        /// 基本ファイル名を生成する（拡張子指定可能）
+        /// 形式: {TimelineAsset名}_{Animator名}_Merged.{拡張子}
+        /// </summary>
+        /// <param name="timelineAssetName">TimelineAssetの名前</param>
+        /// <param name="animatorName">Animatorの名前</param>
+        /// <param name="extension">ファイル拡張子（nullまたは空の場合は.animを使用）</param>
+        /// <returns>生成されたファイル名</returns>
+        public string GenerateBaseName(string timelineAssetName, string animatorName, string extension)
+        {
             // nullまたは空文字の場合は"Unknown"を使用
             var timeline = string.IsNullOrEmpty(timelineAssetName) ? "Unknown" : timelineAssetName;
             var animator = string.IsNullOrEmpty(animatorName) ? "Unknown" : animatorName;
 
-            return $"{timeline}_{animator}_Merged.anim";
+            // 拡張子の正規化（nullまたは空の場合はデフォルト、ドットがない場合は付与）
+            var normalizedExtension = NormalizeExtension(extension);
+
+            return $"{timeline}_{animator}_Merged{normalizedExtension}";
+        }
+
+        /// <summary>
+        /// 拡張子を正規化する
+        /// </summary>
+        /// <param name="extension">拡張子</param>
+        /// <returns>正規化された拡張子（先頭にドット付き）</returns>
+        private string NormalizeExtension(string extension)
+        {
+            if (string.IsNullOrEmpty(extension))
+            {
+                return DefaultExtension;
+            }
+
+            return extension.StartsWith(".") ? extension : "." + extension;
         }
 
         /// <summary>
@@ -74,14 +107,28 @@ namespace AnimationMergeTool.Editor.Infrastructure
         /// <returns>重複を回避したファイルパス</returns>
         public string GenerateUniqueFilePath(string directory, string timelineAssetName, string animatorName)
         {
+            return GenerateUniqueFilePath(directory, timelineAssetName, animatorName, DefaultExtension);
+        }
+
+        /// <summary>
+        /// 重複を回避したファイルパスを生成する（拡張子指定可能）
+        /// 既存ファイルがある場合は連番を付与する: (1), (2) ...
+        /// </summary>
+        /// <param name="directory">保存先ディレクトリ</param>
+        /// <param name="timelineAssetName">TimelineAssetの名前</param>
+        /// <param name="animatorName">Animatorの名前</param>
+        /// <param name="extension">ファイル拡張子（nullまたは空の場合は.animを使用）</param>
+        /// <returns>重複を回避したファイルパス</returns>
+        public string GenerateUniqueFilePath(string directory, string timelineAssetName, string animatorName, string extension)
+        {
             if (_fileExistenceChecker == null)
             {
                 throw new InvalidOperationException("ファイル存在確認機能が設定されていません。IFileExistenceCheckerを指定したコンストラクタを使用してください。");
             }
 
-            var baseName = GenerateBaseName(timelineAssetName, animatorName);
-            var nameWithoutExtension = baseName.Substring(0, baseName.Length - 5); // ".anim"を除去
-            var extension = ".anim";
+            var normalizedExtension = NormalizeExtension(extension);
+            var baseName = GenerateBaseName(timelineAssetName, animatorName, normalizedExtension);
+            var nameWithoutExtension = baseName.Substring(0, baseName.Length - normalizedExtension.Length);
 
             // ディレクトリパスの末尾スラッシュを正規化
             var normalizedDirectory = directory.TrimEnd('/', '\\');
@@ -97,7 +144,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
             var counter = 1;
             while (true)
             {
-                filePath = $"{normalizedDirectory}/{nameWithoutExtension}({counter}){extension}";
+                filePath = $"{normalizedDirectory}/{nameWithoutExtension}({counter}){normalizedExtension}";
                 if (!_fileExistenceChecker.Exists(filePath))
                 {
                     return filePath;

@@ -1,2 +1,0 @@
-#!/bin/bash
-"/c/Program Files/Unity/Hub/Editor/6000.0.64f1/Editor/Unity.exe" -batchmode -projectPath "D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline" -runTests -testPlatform EditMode -testResults "D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/TestResults.xml" -logFile "D:/Personal/Repositries/AnimationMergeToolForTimeline/AnimationMergeToolForTimeline/test_log.txt"

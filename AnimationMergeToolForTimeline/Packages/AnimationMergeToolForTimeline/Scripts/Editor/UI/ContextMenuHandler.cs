@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using AnimationMergeTool.Editor.Application;
+using AnimationMergeTool.Editor.Domain.Models;
+using AnimationMergeTool.Editor.Infrastructure;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -27,9 +29,24 @@ namespace AnimationMergeTool.Editor.UI
         public const string AssetsMenuPath = "Assets/Animation Merge Tool/Merge Timeline Animations";
 
         /// <summary>
+        /// FBXエクスポートメニュー項目のパス（Hierarchyビュー）
+        /// </summary>
+        public const string HierarchyFbxMenuPath = "GameObject/Animation Merge Tool/Export as FBX";
+
+        /// <summary>
+        /// FBXエクスポートメニュー項目のパス（Projectビュー）
+        /// </summary>
+        public const string AssetsFbxMenuPath = "Assets/Animation Merge Tool/Export as FBX";
+
+        /// <summary>
         /// メニューの優先順位
         /// </summary>
         private const int MenuPriority = 100;
+
+        /// <summary>
+        /// FBXメニューの優先順位
+        /// </summary>
+        private const int FbxMenuPriority = 101;
 
         /// <summary>
         /// AnimationMergeServiceインスタンス（テスト時に差し替え可能）
@@ -206,5 +223,242 @@ namespace AnimationMergeTool.Editor.UI
 
             return successCount > 0;
         }
+
+        #region FBXエクスポートメニュー
+
+        /// <summary>
+        /// HierarchyビューのFBXエクスポートメニューの有効状態を判定する
+        /// </summary>
+        /// <returns>PlayableDirectorが選択されている場合はtrue</returns>
+        public static bool CanExportFbxFromHierarchy()
+        {
+            return GetSelectedPlayableDirectors().Length > 0;
+        }
+
+        /// <summary>
+        /// ProjectビューのFBXエクスポートメニューの有効状態を判定する
+        /// </summary>
+        /// <returns>TimelineAssetが選択されている場合はtrue</returns>
+        public static bool CanExportFbxFromProject()
+        {
+            return GetSelectedTimelineAssets().Length > 0;
+        }
+
+        /// <summary>
+        /// 選択されたPlayableDirectorに対してFBXエクスポート処理を実行する
+        /// .animファイルは生成せず、FBXファイルのみを出力する
+        /// </summary>
+        /// <param name="directors">処理対象のPlayableDirector配列</param>
+        /// <returns>処理に成功した場合はtrue</returns>
+        public static bool ExportFbxForPlayableDirectors(PlayableDirector[] directors)
+        {
+            if (directors == null || directors.Length == 0)
+            {
+                Debug.LogError("[AnimationMergeTool] FBXエクスポート対象のPlayableDirectorがありません。");
+                return false;
+            }
+
+            // FBX Exporterパッケージのチェック
+            if (!FbxPackageChecker.CheckPackageAndShowDialogIfMissing())
+            {
+                return false;
+            }
+
+            var service = GetService();
+            var exporter = new FbxAnimationExporter();
+            var successCount = 0;
+
+            foreach (var director in directors)
+            {
+                if (director == null)
+                {
+                    continue;
+                }
+
+                // メモリ上でマージ処理を実行（.animファイルは保存しない）
+                var mergeResults = service.MergeFromPlayableDirectorInMemory(director);
+                if (mergeResults == null || mergeResults.Count == 0)
+                {
+                    continue;
+                }
+
+                // 各マージ結果をFBXとしてエクスポート
+                foreach (var result in mergeResults)
+                {
+                    if (result.GeneratedClip == null)
+                    {
+                        continue;
+                    }
+
+                    // FbxExportDataを作成
+                    var exportData = CreateFbxExportData(result);
+                    if (exportData == null || !exporter.CanExport(exportData))
+                    {
+                        continue;
+                    }
+
+                    // 出力パスを生成
+                    var outputPath = GenerateFbxOutputPath(director.name, result.TargetAnimator);
+                    if (string.IsNullOrEmpty(outputPath))
+                    {
+                        continue;
+                    }
+
+                    // FBXエクスポート実行
+                    if (exporter.Export(exportData, outputPath))
+                    {
+                        successCount++;
+                    }
+                }
+            }
+
+            return successCount > 0;
+        }
+
+        /// <summary>
+        /// 選択されたTimelineAssetに対してFBXエクスポート処理を実行する
+        /// .animファイルは生成せず、FBXファイルのみを出力する
+        /// </summary>
+        /// <param name="timelineAssets">処理対象のTimelineAsset配列</param>
+        /// <returns>処理に成功した場合はtrue</returns>
+        public static bool ExportFbxForTimelineAssets(TimelineAsset[] timelineAssets)
+        {
+            if (timelineAssets == null || timelineAssets.Length == 0)
+            {
+                Debug.LogError("[AnimationMergeTool] FBXエクスポート対象のTimelineAssetがありません。");
+                return false;
+            }
+
+            // FBX Exporterパッケージのチェック
+            if (!FbxPackageChecker.CheckPackageAndShowDialogIfMissing())
+            {
+                return false;
+            }
+
+            var service = GetService();
+            var exporter = new FbxAnimationExporter();
+            var successCount = 0;
+
+            foreach (var timelineAsset in timelineAssets)
+            {
+                if (timelineAsset == null)
+                {
+                    continue;
+                }
+
+                // メモリ上でマージ処理を実行（.animファイルは保存しない）
+                var mergeResults = service.MergeFromTimelineAssetInMemory(timelineAsset);
+                if (mergeResults == null || mergeResults.Count == 0)
+                {
+                    continue;
+                }
+
+                // 各マージ結果をFBXとしてエクスポート
+                foreach (var result in mergeResults)
+                {
+                    if (result.GeneratedClip == null)
+                    {
+                        continue;
+                    }
+
+                    // FbxExportDataを作成
+                    var exportData = CreateFbxExportData(result);
+                    if (exportData == null || !exporter.CanExport(exportData))
+                    {
+                        continue;
+                    }
+
+                    // 出力パスを生成
+                    var outputPath = GenerateFbxOutputPath(timelineAsset.name, result.TargetAnimator);
+                    if (string.IsNullOrEmpty(outputPath))
+                    {
+                        continue;
+                    }
+
+                    // FBXエクスポート実行
+                    if (exporter.Export(exportData, outputPath))
+                    {
+                        successCount++;
+                    }
+                }
+            }
+
+            return successCount > 0;
+        }
+
+        /// <summary>
+        /// HierarchyビューのコンテキストメニューからFBXエクスポート処理を実行する
+        /// </summary>
+        [MenuItem(HierarchyFbxMenuPath, false, FbxMenuPriority)]
+        private static void ExecuteFbxExportFromHierarchyMenu()
+        {
+            var directors = GetSelectedPlayableDirectors();
+            ExportFbxForPlayableDirectors(directors);
+        }
+
+        /// <summary>
+        /// HierarchyビューのFBXエクスポートメニューの有効状態を判定する
+        /// PlayableDirectorが選択されている場合のみ有効
+        /// </summary>
+        /// <returns>PlayableDirectorが選択されている場合はtrue</returns>
+        [MenuItem(HierarchyFbxMenuPath, true)]
+        private static bool ValidateExecuteFbxExportFromHierarchyMenu()
+        {
+            return CanExportFbxFromHierarchy();
+        }
+
+        /// <summary>
+        /// ProjectビューのコンテキストメニューからFBXエクスポート処理を実行する
+        /// </summary>
+        [MenuItem(AssetsFbxMenuPath, false, FbxMenuPriority)]
+        private static void ExecuteFbxExportFromProjectMenu()
+        {
+            var timelineAssets = GetSelectedTimelineAssets();
+            ExportFbxForTimelineAssets(timelineAssets);
+        }
+
+        /// <summary>
+        /// ProjectビューのFBXエクスポートメニューの有効状態を判定する
+        /// TimelineAssetが選択されている場合のみ有効
+        /// </summary>
+        /// <returns>TimelineAssetが選択されている場合はtrue</returns>
+        [MenuItem(AssetsFbxMenuPath, true)]
+        private static bool ValidateExecuteFbxExportFromProjectMenu()
+        {
+            return CanExportFbxFromProject();
+        }
+
+        /// <summary>
+        /// MergeResultからFbxExportDataを作成する
+        /// FbxAnimationExporter.PrepareAllCurvesForExportを使用して統一されたカーブ抽出ロジックを適用する
+        /// </summary>
+        /// <param name="result">マージ結果</param>
+        /// <returns>FBXエクスポートデータ</returns>
+        internal static FbxExportData CreateFbxExportData(MergeResult result)
+        {
+            if (result == null || result.GeneratedClip == null)
+            {
+                return null;
+            }
+
+            // FbxAnimationExporterの統一されたカーブ抽出ロジックを使用
+            var exporter = new FbxAnimationExporter();
+            return exporter.PrepareAllCurvesForExport(result.TargetAnimator, result.GeneratedClip);
+        }
+
+        /// <summary>
+        /// FBX出力パスを生成する
+        /// </summary>
+        /// <param name="baseName">基本名</param>
+        /// <param name="animator">対象Animator</param>
+        /// <returns>出力パス</returns>
+        private static string GenerateFbxOutputPath(string baseName, Animator animator)
+        {
+            var animatorName = animator != null ? animator.name : "NoAnimator";
+            var fileName = $"{baseName}_{animatorName}_Merged.fbx";
+            return $"Assets/{fileName}";
+        }
+
+        #endregion
     }
 }

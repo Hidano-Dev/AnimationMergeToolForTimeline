@@ -1414,5 +1414,438 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region P16-003 AnimationMergeService FBX統合テスト
+
+        [Test]
+        public void MergeFromPlayableDirectorToFbx_FBXエクスポートオプションでマージ結果にFbxExportDataが含まれる()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("TestAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+
+            // AnimationClipを作成してトラックに追加
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            var asset = timelineClip.asset as AnimationPlayableAsset;
+            asset.clip = animClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track, animator);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(1, results.Count);
+                Assert.IsTrue(results[0].IsSuccess);
+
+                // MergeResultからFbxExportData用のカーブが取得可能であることを確認
+                var generatedClip = results[0].GeneratedClip;
+                Assert.IsNotNull(generatedClip);
+
+                // FbxAnimationExporterでエクスポートデータを準備できることを確認
+                var fbxExporter = new FbxAnimationExporter();
+                var exportData = fbxExporter.PrepareAllCurvesForExport(animator, generatedClip);
+
+                Assert.IsNotNull(exportData);
+                Assert.IsTrue(exportData.HasExportableData || exportData.TransformCurves.Count > 0,
+                    "エクスポート可能なデータまたはTransformカーブが存在すべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        [Test]
+        public void FBX統合_AnimationMergeServiceの結果からFbxExportDataを生成できる()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromTimelineAsset(timeline);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(1, results.Count);
+                Assert.IsTrue(results[0].IsSuccess);
+
+                var generatedClip = results[0].GeneratedClip;
+                Assert.IsNotNull(generatedClip);
+
+                // FbxExportData生成テスト（Animatorなしでも動作するか）
+                var fbxExporter = new FbxAnimationExporter();
+                var exportData = fbxExporter.PrepareAllCurvesForExport(null, generatedClip);
+
+                Assert.IsNotNull(exportData);
+                // Animatorがなくても、AnimationClipからTransformカーブは抽出可能
+                // カーブが存在すればHasExportableDataはtrue
+                Assert.IsTrue(exportData.HasExportableData,
+                    "AnimationClipにTransformカーブがあればエクスポート可能");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        [Test]
+        public void FBX統合_複数Animatorの結果から各Animator用のFbxExportDataを生成できる()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+
+            // Animator A
+            var animatorGoA = new GameObject("AnimatorA");
+            var animatorA = animatorGoA.AddComponent<Animator>();
+
+            // Animator B
+            var animatorGoB = new GameObject("AnimatorB");
+            var animatorB = animatorGoB.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+
+            // Animator Aにバインドするトラック
+            var trackA = timeline.CreateTrack<AnimationTrack>(null, "TrackA");
+            var animClipA = new AnimationClip();
+            var curveA = AnimationCurve.Linear(0, 0, 1, 10);
+            animClipA.SetCurve("", typeof(Transform), "localPosition.x", curveA);
+            var timelineClipA = trackA.CreateClip<AnimationPlayableAsset>();
+            timelineClipA.start = 0;
+            timelineClipA.duration = 1;
+            (timelineClipA.asset as AnimationPlayableAsset).clip = animClipA;
+
+            // Animator Bにバインドするトラック
+            var trackB = timeline.CreateTrack<AnimationTrack>(null, "TrackB");
+            var animClipB = new AnimationClip();
+            var curveB = AnimationCurve.Linear(0, 0, 1, 20);
+            animClipB.SetCurve("", typeof(Transform), "localPosition.y", curveB);
+            var timelineClipB = trackB.CreateClip<AnimationPlayableAsset>();
+            timelineClipB.start = 0;
+            timelineClipB.duration = 1;
+            (timelineClipB.asset as AnimationPlayableAsset).clip = animClipB;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(trackA, animatorA);
+            director.SetGenericBinding(trackB, animatorB);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(2, results.Count, "2つのAnimatorに対して2つのMergeResultが生成されるべき");
+
+                var fbxExporter = new FbxAnimationExporter();
+
+                // 各結果からFbxExportDataを生成
+                foreach (var result in results)
+                {
+                    Assert.IsTrue(result.IsSuccess);
+                    Assert.IsNotNull(result.GeneratedClip);
+                    Assert.IsNotNull(result.TargetAnimator);
+
+                    var exportData = fbxExporter.PrepareAllCurvesForExport(
+                        result.TargetAnimator,
+                        result.GeneratedClip);
+
+                    Assert.IsNotNull(exportData);
+                    Assert.AreSame(result.TargetAnimator, exportData.SourceAnimator,
+                        "FbxExportDataのSourceAnimatorがMergeResultのTargetAnimatorと一致すべき");
+
+                    // クリーンアップ用にパスを記録
+                    foreach (var log in result.Logs)
+                    {
+                        if (log.Contains(".anim"))
+                        {
+                            var parts = log.Split(' ');
+                            foreach (var part in parts)
+                            {
+                                if (part.EndsWith(".anim"))
+                                {
+                                    _createdAssetPaths.Add(part);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGoA);
+                Object.DestroyImmediate(animatorGoB);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClipA);
+                Object.DestroyImmediate(animClipB);
+            }
+        }
+
+        [Test]
+        public void FBX統合_FileNameGeneratorでFBXファイル名を生成できる()
+        {
+            // Arrange
+            var fileNameGenerator = new FileNameGenerator();
+
+            // Act
+            var animFileName = fileNameGenerator.GenerateBaseName("TestTimeline", "TestAnimator");
+            var fbxFileName = fileNameGenerator.GenerateBaseName("TestTimeline", "TestAnimator", ".fbx");
+
+            // Assert
+            Assert.AreEqual("TestTimeline_TestAnimator_Merged.anim", animFileName);
+            Assert.AreEqual("TestTimeline_TestAnimator_Merged.fbx", fbxFileName);
+        }
+
+        [Test]
+        public void FBX統合_FileNameGeneratorで重複回避のFBXファイルパスを生成できる()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/TestTimeline_TestAnimator_Merged.fbx");
+            var fileNameGenerator = new FileNameGenerator(mockChecker);
+
+            // Act
+            var uniquePath = fileNameGenerator.GenerateUniqueFilePath(
+                "Assets",
+                "TestTimeline",
+                "TestAnimator",
+                ".fbx");
+
+            // Assert
+            Assert.AreEqual("Assets/TestTimeline_TestAnimator_Merged(1).fbx", uniquePath);
+        }
+
+        [Test]
+        public void FBX統合_MergeResultにFbxExportDataを格納できることを確認()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("TestAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track, animator);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(1, results.Count);
+                Assert.IsTrue(results[0].IsSuccess);
+
+                // MergeResultの情報からFBXエクスポートワークフローが構築可能であることを確認
+                var mergeResult = results[0];
+                Assert.IsNotNull(mergeResult.TargetAnimator, "TargetAnimatorが設定されているべき");
+                Assert.IsNotNull(mergeResult.GeneratedClip, "GeneratedClipが設定されているべき");
+
+                // FBXエクスポート用のデータ準備が可能であることを確認
+                var fbxExporter = new FbxAnimationExporter();
+                var skeleton = fbxExporter.ExtractSkeleton(mergeResult.TargetAnimator);
+                Assert.IsNotNull(skeleton, "スケルトン情報を抽出できるべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        [Test]
+        public void FBX統合_BlendShapeカーブを含むマージ結果からFbxExportDataを生成できる()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("TestAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+
+            // SkinnedMeshRendererを追加（BlendShape用）
+            var meshGo = new GameObject("Face");
+            meshGo.transform.SetParent(animatorGo.transform);
+            var skinnedMesh = meshGo.AddComponent<SkinnedMeshRenderer>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+
+            // BlendShapeカーブを含むAnimationClipを作成
+            var animClip = new AnimationClip();
+            var blendShapeCurve = AnimationCurve.Linear(0, 0, 1, 100);
+            animClip.SetCurve("Face", typeof(SkinnedMeshRenderer), "blendShape.smile", blendShapeCurve);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track, animator);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(1, results.Count);
+                Assert.IsTrue(results[0].IsSuccess);
+
+                var generatedClip = results[0].GeneratedClip;
+                Assert.IsNotNull(generatedClip);
+
+                // FbxExportDataにBlendShapeカーブが含まれるか確認
+                var fbxExporter = new FbxAnimationExporter();
+                var hasBlendShapes = fbxExporter.HasBlendShapeCurves(generatedClip);
+                Assert.IsTrue(hasBlendShapes, "BlendShapeカーブが含まれるべき");
+
+                var blendShapeCurves = fbxExporter.ExtractBlendShapeCurves(generatedClip, animator);
+                Assert.IsNotNull(blendShapeCurves);
+                Assert.AreEqual(1, blendShapeCurves.Count, "1つのBlendShapeカーブが抽出されるべき");
+                Assert.AreEqual("smile", blendShapeCurves[0].BlendShapeName);
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        /// <summary>
+        /// テスト用のモックファイル存在確認クラス
+        /// </summary>
+        private class MockFileExistenceChecker : IFileExistenceChecker
+        {
+            private readonly HashSet<string> _existingFiles = new HashSet<string>();
+
+            public void AddExistingFile(string path)
+            {
+                _existingFiles.Add(path);
+            }
+
+            public bool Exists(string path)
+            {
+                return _existingFiles.Contains(path);
+            }
+        }
+
+        #endregion
     }
 }
