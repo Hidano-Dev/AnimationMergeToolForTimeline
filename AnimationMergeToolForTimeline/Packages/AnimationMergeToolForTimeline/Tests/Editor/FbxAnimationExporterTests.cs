@@ -2833,5 +2833,263 @@ namespace AnimationMergeTool.Editor.Tests
 #endif
 
         #endregion
+
+        #region P17-010: 低レベルAPIによるBlendShapeカーブ書き込みテスト
+
+#if UNITY_FORMATS_FBX
+        [Test]
+        public void LowLevelApi_FBXファイルを読み込んでBlendShapeカーブを追加できる()
+        {
+            // Arrange - BlendShapeカーブを含むFBXをまずエクスポートし、その後低レベルAPIで書き込みを検証
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "LowLevelBlendShapeTest";
+
+            // BlendShapeカーブを追加
+            var smileBinding = EditorCurveBinding.FloatCurve(
+                "Face", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, smileBinding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+            var outputPath = "Assets/TestP17010_LowLevel_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act - エクスポート（内部でWriteBlendShapeCurvesToFbxが呼ばれる）
+                var exportResult = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(exportResult, "FBXエクスポートが成功すること");
+
+                // Assert - 再インポートしてBlendShapeカーブが含まれることを確認
+                AssetDatabase.Refresh();
+                var importedObjects = AssetDatabase.LoadAllAssetsAtPath(outputPath);
+                Assert.IsNotNull(importedObjects, "インポートされたアセットが存在すること");
+
+                AnimationClip importedClip = null;
+                foreach (var obj in importedObjects)
+                {
+                    if (obj is AnimationClip animClip && !animClip.name.StartsWith("__preview__"))
+                    {
+                        importedClip = animClip;
+                        break;
+                    }
+                }
+
+                Assert.IsNotNull(importedClip, "再インポートされたFBXにAnimationClipが含まれること");
+
+                var bindings = AnimationUtility.GetCurveBindings(importedClip);
+                bool hasBlendShapeCurve = false;
+                foreach (var b in bindings)
+                {
+                    if (b.propertyName.StartsWith("blendShape."))
+                    {
+                        hasBlendShapeCurve = true;
+                        break;
+                    }
+                }
+                Assert.IsTrue(hasBlendShapeCurve,
+                    "低レベルAPIで書き込んだBlendShapeカーブが再インポートで検出されること");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void LowLevelApi_複数のBlendShapeカーブを同時に書き込める()
+        {
+            // Arrange - 複数BlendShapeカーブを持つクリップ
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "LowLevelMultiBlendShape";
+
+            var smileBinding = EditorCurveBinding.FloatCurve(
+                "Face", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, smileBinding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            var blinkBinding = EditorCurveBinding.FloatCurve(
+                "Face", typeof(SkinnedMeshRenderer), "blendShape.Blink");
+            AnimationUtility.SetEditorCurve(clip, blinkBinding, AnimationCurve.Linear(0f, 50f, 1f, 0f));
+
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+            var outputPath = "Assets/TestP17010_MultiBS_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                var exportResult = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(exportResult, "FBXエクスポートが成功すること");
+
+                // Assert - 再インポートして複数のBlendShapeカーブが含まれることを確認
+                AssetDatabase.Refresh();
+                var importedObjects = AssetDatabase.LoadAllAssetsAtPath(outputPath);
+
+                AnimationClip importedClip = null;
+                foreach (var obj in importedObjects)
+                {
+                    if (obj is AnimationClip animClip && !animClip.name.StartsWith("__preview__"))
+                    {
+                        importedClip = animClip;
+                        break;
+                    }
+                }
+
+                Assert.IsNotNull(importedClip, "再インポートされたFBXにAnimationClipが含まれること");
+
+                var bindings = AnimationUtility.GetCurveBindings(importedClip);
+                int blendShapeCurveCount = 0;
+                foreach (var b in bindings)
+                {
+                    if (b.propertyName.StartsWith("blendShape."))
+                    {
+                        blendShapeCurveCount++;
+                    }
+                }
+                Assert.GreaterOrEqual(blendShapeCurveCount, 2,
+                    "複数のBlendShapeカーブが再インポートで検出されること");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void LowLevelApi_既存のTransformアニメーションを壊さない()
+        {
+            // Arrange - TransformカーブとBlendShapeカーブの両方を持つクリップ
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "LowLevelTransformPreserve";
+
+            // Transformカーブを追加
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+            clip.SetCurve("", typeof(Transform), "localPosition.y", AnimationCurve.Linear(0f, 0f, 1f, 2f));
+
+            // BlendShapeカーブを追加
+            var smileBinding = EditorCurveBinding.FloatCurve(
+                "Face", typeof(SkinnedMeshRenderer), "blendShape.Smile");
+            AnimationUtility.SetEditorCurve(clip, smileBinding, AnimationCurve.Linear(0f, 0f, 1f, 100f));
+
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+            var outputPath = "Assets/TestP17010_TransformPreserve_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                var exportResult = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(exportResult, "FBXエクスポートが成功すること");
+
+                // Assert - Transformカーブが維持されていることを確認
+                AssetDatabase.Refresh();
+                var importedObjects = AssetDatabase.LoadAllAssetsAtPath(outputPath);
+
+                AnimationClip importedClip = null;
+                foreach (var obj in importedObjects)
+                {
+                    if (obj is AnimationClip animClip && !animClip.name.StartsWith("__preview__"))
+                    {
+                        importedClip = animClip;
+                        break;
+                    }
+                }
+
+                Assert.IsNotNull(importedClip, "再インポートされたFBXにAnimationClipが含まれること");
+
+                var bindings = AnimationUtility.GetCurveBindings(importedClip);
+                bool hasTransformCurve = false;
+                foreach (var b in bindings)
+                {
+                    if (b.type == typeof(Transform))
+                    {
+                        hasTransformCurve = true;
+                        break;
+                    }
+                }
+                Assert.IsTrue(hasTransformCurve,
+                    "BlendShapeカーブ追記後もTransformカーブが維持されていること");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void LowLevelApi_BlendShapeカーブが空の場合は何もしない()
+        {
+            // Arrange - BlendShapeカーブなし、Transformカーブのみのクリップ
+            var exporter = new FbxAnimationExporter();
+            var clip = new AnimationClip();
+            clip.name = "LowLevelEmptyBlendShape";
+
+            // Transformカーブのみ追加
+            clip.SetCurve("", typeof(Transform), "localPosition.x", AnimationCurve.Linear(0f, 0f, 1f, 1f));
+
+            var exportData = exporter.PrepareAllCurvesForExport(_testAnimator, clip);
+            var outputPath = "Assets/TestP17010_EmptyBS_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act - BlendShapeカーブなしでもエクスポートが成功すること
+                var exportResult = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(exportResult, "BlendShapeカーブがなくてもFBXエクスポートが成功すること");
+
+                // Assert - FBXファイルが正常に生成されていること
+                Assert.IsTrue(
+                    System.IO.File.Exists(outputPath) || AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null,
+                    "FBXファイルが生成されていること");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void LowLevelApi_WriteBlendShapeCurvesToFbx_空リストではtrueを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+            var emptyList = new List<BlendShapeCurveData>();
+
+            // Act - 空のリストを渡す
+            var result = exporter.WriteBlendShapeCurvesToFbx("Assets/dummy.fbx", emptyList);
+
+            // Assert - 空リストでは何もせずtrueを返す
+            Assert.IsTrue(result, "空のBlendShapeカーブリストではtrueを返すこと");
+        }
+
+        [Test]
+        public void LowLevelApi_WriteBlendShapeCurvesToFbx_nullではtrueを返す()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // Act - nullを渡す
+            var result = exporter.WriteBlendShapeCurvesToFbx("Assets/dummy.fbx", null);
+
+            // Assert - nullでは何もせずtrueを返す
+            Assert.IsTrue(result, "nullのBlendShapeカーブリストではtrueを返すこと");
+        }
+#endif
+
+        #endregion
     }
 }

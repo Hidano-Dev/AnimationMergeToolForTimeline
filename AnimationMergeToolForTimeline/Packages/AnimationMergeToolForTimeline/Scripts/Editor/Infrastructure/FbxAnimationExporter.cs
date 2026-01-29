@@ -6,6 +6,7 @@ using AnimationMergeTool.Editor.Domain;
 using AnimationMergeTool.Editor.Domain.Models;
 #if UNITY_FORMATS_FBX
 using UnityEditor.Formats.Fbx.Exporter;
+using Autodesk.Fbx;
 #endif
 
 namespace AnimationMergeTool.Editor.Infrastructure
@@ -185,6 +186,8 @@ namespace AnimationMergeTool.Editor.Infrastructure
             Animator targetAnimator = null;
             bool isTemporaryObject = false;
             GameObject exportTarget = null;
+            List<GameObject> tempBlendShapeObjects = null;
+            List<Mesh> tempMeshes = null;
 
             try
             {
@@ -204,6 +207,10 @@ namespace AnimationMergeTool.Editor.Infrastructure
                     Debug.LogError("エクスポート対象のGameObjectを取得できませんでした。");
                     return false;
                 }
+
+                // BlendShapeカーブが参照するSkinnedMeshRendererが存在しない場合、一時的に作成する
+                tempBlendShapeObjects = CreateTemporaryBlendShapeObjects(
+                    exportTarget, exportData, out tempMeshes);
 
                 // エクスポート用AnimationClipを作成
                 AnimationClip exportClip = CreateExportAnimationClip(exportData);
@@ -256,6 +263,22 @@ namespace AnimationMergeTool.Editor.Infrastructure
                     return false;
                 }
 
+                // BlendShapeカーブの低レベルAPI書き込み（P17-012）
+                // ModelExporter.ExportObject()はBlendShapeジオメトリを出力するが、
+                // アニメーションカーブは出力しないため、Autodesk.Fbx APIで追記する
+                if (exportData.BlendShapeCurves != null && exportData.BlendShapeCurves.Count > 0)
+                {
+                    var blendShapeWriteSuccess = WriteBlendShapeCurvesToFbx(
+                        outputPath,
+                        exportData.BlendShapeCurves);
+
+                    if (!blendShapeWriteSuccess)
+                    {
+                        Debug.LogWarning(
+                            $"BlendShapeアニメーションの書き込みに失敗しました: {outputPath}");
+                    }
+                }
+
                 // アセットデータベースを更新
                 AssetDatabase.Refresh();
 
@@ -279,6 +302,30 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 if (!string.IsNullOrEmpty(tempDirPath))
                 {
                     AssetDatabase.DeleteAsset(tempDirPath);
+                }
+
+                // 一時BlendShapeオブジェクトを削除
+                if (tempBlendShapeObjects != null)
+                {
+                    foreach (var obj in tempBlendShapeObjects)
+                    {
+                        if (obj != null)
+                        {
+                            Object.DestroyImmediate(obj);
+                        }
+                    }
+                }
+
+                // 一時Meshを削除
+                if (tempMeshes != null)
+                {
+                    foreach (var mesh in tempMeshes)
+                    {
+                        if (mesh != null)
+                        {
+                            Object.DestroyImmediate(mesh);
+                        }
+                    }
                 }
 
                 // 一時オブジェクトを削除
@@ -397,6 +444,176 @@ namespace AnimationMergeTool.Editor.Infrastructure
             }
 
             return tempObject;
+        }
+
+        /// <summary>
+        /// BlendShapeカーブが参照するパスに対応するSkinnedMeshRendererが
+        /// エクスポート対象のGameObject階層に存在しない場合、一時的なダミーオブジェクトを作成する。
+        /// FBXエクスポーターがBlendShapeアニメーションカーブを正しく出力するために必要。
+        /// </summary>
+        /// <param name="exportTarget">エクスポート対象のルートGameObject</param>
+        /// <param name="exportData">エクスポートデータ</param>
+        /// <param name="tempMeshes">作成した一時Meshのリスト（cleanup用、out引数）</param>
+        /// <returns>作成した一時GameObjectのリスト（cleanup用）</returns>
+        private List<GameObject> CreateTemporaryBlendShapeObjects(
+            GameObject exportTarget, FbxExportData exportData, out List<Mesh> tempMeshes)
+        {
+            var createdObjects = new List<GameObject>();
+            tempMeshes = new List<Mesh>();
+
+            if (exportData.BlendShapeCurves == null || exportData.BlendShapeCurves.Count == 0)
+            {
+                return createdObjects;
+            }
+
+            // パス別にBlendShape名をグループ化
+            var pathToBlendShapes = new Dictionary<string, List<string>>();
+            foreach (var curveData in exportData.BlendShapeCurves)
+            {
+                if (!pathToBlendShapes.ContainsKey(curveData.Path))
+                {
+                    pathToBlendShapes[curveData.Path] = new List<string>();
+                }
+
+                if (!pathToBlendShapes[curveData.Path].Contains(curveData.BlendShapeName))
+                {
+                    pathToBlendShapes[curveData.Path].Add(curveData.BlendShapeName);
+                }
+            }
+
+            foreach (var kvp in pathToBlendShapes)
+            {
+                var path = kvp.Key;
+                var blendShapeNames = kvp.Value;
+
+                // パスが空の場合はexportTarget自体を対象とする
+                Transform targetTransform;
+                if (string.IsNullOrEmpty(path))
+                {
+                    targetTransform = exportTarget.transform;
+                }
+                else
+                {
+                    targetTransform = exportTarget.transform.Find(path);
+                }
+
+                // 既にSkinnedMeshRendererが存在し、必要なBlendShapeを持っているか確認
+                if (targetTransform != null)
+                {
+                    var existingRenderer = targetTransform.GetComponent<SkinnedMeshRenderer>();
+                    if (existingRenderer != null && existingRenderer.sharedMesh != null)
+                    {
+                        // 既存のMeshが全てのBlendShapeを持っているか確認
+                        bool allFound = true;
+                        foreach (var shapeName in blendShapeNames)
+                        {
+                            if (existingRenderer.sharedMesh.GetBlendShapeIndex(shapeName) < 0)
+                            {
+                                allFound = false;
+                                break;
+                            }
+                        }
+
+                        if (allFound)
+                        {
+                            continue; // 既に必要なBlendShapeが全て存在する
+                        }
+                    }
+                }
+
+                // パスに対応する階層が存在しない場合は作成する
+                GameObject leafObject;
+                if (targetTransform == null)
+                {
+                    leafObject = CreateHierarchyForPath(exportTarget, path, createdObjects);
+                }
+                else
+                {
+                    leafObject = targetTransform.gameObject;
+                }
+
+                // SkinnedMeshRendererを追加（既に存在しない場合）
+                var renderer = leafObject.GetComponent<SkinnedMeshRenderer>();
+                if (renderer == null)
+                {
+                    renderer = leafObject.AddComponent<SkinnedMeshRenderer>();
+                }
+
+                // ダミーMeshを作成し、必要なBlendShapeを追加
+                var mesh = new Mesh();
+                mesh.name = $"TempBlendShapeMesh_{path}";
+
+                // 最低限の頂点データが必要（BlendShapeFrameの追加に必要）
+                mesh.vertices = new Vector3[] { Vector3.zero, Vector3.right, Vector3.up };
+                mesh.normals = new Vector3[] { Vector3.up, Vector3.up, Vector3.up };
+                mesh.triangles = new int[] { 0, 1, 2 };
+
+                // デルタ頂点は非ゼロである必要がある
+                // FBX SDKはデルタがすべてゼロのBlendShapeを空として扱い、エクスポート時にスキップするため
+                var deltaVertices = new Vector3[]
+                {
+                    new Vector3(0f, 0.001f, 0f),
+                    new Vector3(0f, 0.001f, 0f),
+                    new Vector3(0f, 0.001f, 0f)
+                };
+
+                foreach (var shapeName in blendShapeNames)
+                {
+                    mesh.AddBlendShapeFrame(shapeName, 100f, deltaVertices, null, null);
+                }
+
+                renderer.sharedMesh = mesh;
+                tempMeshes.Add(mesh);
+            }
+
+            return createdObjects;
+        }
+
+        /// <summary>
+        /// 指定されたパスに対応するGameObject階層を作成する。
+        /// 例: "Body/Face" → exportTarget/Body/Face を作成。
+        /// 途中のオブジェクトも含めて作成し、最も浅い新規作成オブジェクトをcreatedObjectsに追加する。
+        /// </summary>
+        /// <param name="root">ルートGameObject</param>
+        /// <param name="path">作成するパス（"/"区切り）</param>
+        /// <param name="createdObjects">作成したルートレベルの一時オブジェクトリスト</param>
+        /// <returns>パスの末端のGameObject</returns>
+        private GameObject CreateHierarchyForPath(GameObject root, string path, List<GameObject> createdObjects)
+        {
+            var segments = path.Split('/');
+            var currentTransform = root.transform;
+            GameObject firstCreated = null;
+
+            foreach (var segment in segments)
+            {
+                if (string.IsNullOrEmpty(segment))
+                {
+                    continue;
+                }
+
+                var child = currentTransform.Find(segment);
+                if (child == null)
+                {
+                    var newObject = new GameObject(segment);
+                    newObject.transform.SetParent(currentTransform, false);
+                    child = newObject.transform;
+
+                    if (firstCreated == null)
+                    {
+                        firstCreated = newObject;
+                    }
+                }
+
+                currentTransform = child;
+            }
+
+            // 最初に作成したオブジェクトをcleanupリストに追加
+            if (firstCreated != null)
+            {
+                createdObjects.Add(firstCreated);
+            }
+
+            return currentTransform.gameObject;
         }
 
         #region Transformカーブ出力機能 (P13-006, P13-007)
@@ -965,6 +1182,327 @@ namespace AnimationMergeTool.Editor.Infrastructure
             // 通常のエクスポート処理を実行
             return Export(exportData, outputPath);
         }
+
+        #endregion
+
+        #region Autodesk.Fbx低レベルAPIによるBlendShapeカーブ書き込み (P17-011)
+
+#if UNITY_FORMATS_FBX
+        /// <summary>
+        /// FBXファイルにBlendShapeアニメーションカーブを追記する。
+        /// ModelExporter.ExportObject()で出力済みのFBXファイルを再オープンし、
+        /// 既存のBlendShapeChannelのDeformPercentプロパティにアニメーションカーブを接続する。
+        /// </summary>
+        /// <param name="fbxPath">対象FBXファイルパス（Assetsからの相対パス）</param>
+        /// <param name="blendShapeCurves">BlendShapeカーブデータ</param>
+        /// <returns>成功時true</returns>
+        internal bool WriteBlendShapeCurvesToFbx(
+            string fbxPath,
+            IReadOnlyList<BlendShapeCurveData> blendShapeCurves)
+        {
+            if (blendShapeCurves == null || blendShapeCurves.Count == 0)
+            {
+                return true; // 書き込むカーブがないため成功扱い
+            }
+
+            // FBXファイルの絶対パスを取得
+            var absolutePath = System.IO.Path.GetFullPath(fbxPath);
+            if (!System.IO.File.Exists(absolutePath))
+            {
+                Debug.LogError($"FBXファイルが見つかりません: {absolutePath}");
+                return false;
+            }
+
+            // FbxManagerの作成
+            using (var fbxManager = FbxManager.Create())
+            {
+                if (fbxManager == null)
+                {
+                    Debug.LogError("FbxManagerの作成に失敗しました。");
+                    return false;
+                }
+
+                // IOSettings作成
+                var ioSettings = FbxIOSettings.Create(fbxManager, Autodesk.Fbx.Globals.IOSROOT);
+                fbxManager.SetIOSettings(ioSettings);
+
+                // FBXファイルの読み込み
+                var fbxScene = FbxScene.Create(fbxManager, "BlendShapeScene");
+                if (fbxScene == null)
+                {
+                    Debug.LogError("FbxSceneの作成に失敗しました。");
+                    return false;
+                }
+
+                var fbxImporter = FbxImporter.Create(fbxManager, "BlendShapeImporter");
+                if (!fbxImporter.Initialize(absolutePath))
+                {
+                    Debug.LogError($"FBXファイルの読み込み初期化に失敗しました: {absolutePath}");
+                    fbxImporter.Destroy();
+                    return false;
+                }
+
+                if (!fbxImporter.Import(fbxScene))
+                {
+                    Debug.LogError($"FBXファイルのインポートに失敗しました: {absolutePath}");
+                    fbxImporter.Destroy();
+                    return false;
+                }
+                fbxImporter.Destroy();
+
+                // 既存のFbxAnimStackを取得、なければ作成
+                FbxAnimStack fbxAnimStack = fbxScene.GetCurrentAnimationStack();
+                if (fbxAnimStack == null)
+                {
+                    // AnimStackが存在しない場合は新規作成
+                    fbxAnimStack = FbxAnimStack.Create(fbxScene, "Take 001");
+                }
+
+                // FbxAnimLayerを取得、なければ作成
+                FbxAnimLayer fbxAnimLayer = null;
+                if (fbxAnimStack.GetMemberCount() > 0)
+                {
+                    fbxAnimLayer = fbxAnimStack.GetAnimLayerMember(0);
+                }
+                if (fbxAnimLayer == null)
+                {
+                    fbxAnimLayer = FbxAnimLayer.Create(fbxScene, "Base Layer");
+                    fbxAnimStack.AddMember(fbxAnimLayer);
+                }
+
+                // BlendShapeカーブの書き込み
+                var rootNode = fbxScene.GetRootNode();
+                int writtenCount = 0;
+
+                // パス別にBlendShapeカーブをグループ化
+                var pathGroups = new Dictionary<string, List<BlendShapeCurveData>>();
+                foreach (var curveData in blendShapeCurves)
+                {
+                    if (curveData.Curve == null) continue;
+
+                    if (!pathGroups.ContainsKey(curveData.Path))
+                    {
+                        pathGroups[curveData.Path] = new List<BlendShapeCurveData>();
+                    }
+                    pathGroups[curveData.Path].Add(curveData);
+                }
+
+                foreach (var group in pathGroups)
+                {
+                    var path = group.Key;
+                    var curves = group.Value;
+
+                    // パスからFbxNodeを検索
+                    var targetNode = FindFbxNodeByPath(rootNode, path);
+                    if (targetNode == null)
+                    {
+                        Debug.LogWarning($"BlendShapeカーブのパスに対応するFBXノードが見つかりません: {path}");
+                        continue;
+                    }
+
+                    // ノードのBlendShapeチャネルを取得
+                    var blendShapeChannels = CollectBlendShapeChannels(targetNode);
+                    if (blendShapeChannels.Count == 0)
+                    {
+                        Debug.LogWarning($"FBXノードにBlendShapeチャネルが見つかりません: {targetNode.GetName()}");
+                        continue;
+                    }
+
+                    foreach (var curveData in curves)
+                    {
+                        // BlendShape名に一致するチャネルを検索
+                        FbxBlendShapeChannel targetChannel = null;
+                        foreach (var channel in blendShapeChannels)
+                        {
+                            if (channel.GetName() == curveData.BlendShapeName)
+                            {
+                                targetChannel = channel;
+                                break;
+                            }
+                        }
+
+                        if (targetChannel == null)
+                        {
+                            Debug.LogWarning(
+                                $"BlendShapeチャネルが見つかりません: {curveData.BlendShapeName} (ノード: {targetNode.GetName()})");
+                            continue;
+                        }
+
+                        // DeformPercentプロパティにアニメーションカーブを設定
+                        var deformPercent = targetChannel.DeformPercent;
+                        if (!deformPercent.IsValid())
+                        {
+                            Debug.LogWarning(
+                                $"DeformPercentプロパティが無効です: {curveData.BlendShapeName}");
+                            continue;
+                        }
+
+                        // FbxAnimCurveを作成してDeformPercentに接続
+                        var fbxAnimCurve = deformPercent.GetCurve(fbxAnimLayer, true);
+                        if (fbxAnimCurve == null)
+                        {
+                            Debug.LogWarning(
+                                $"FbxAnimCurveの作成に失敗しました: {curveData.BlendShapeName}");
+                            continue;
+                        }
+
+                        // キーフレームを書き込み
+                        WriteAnimationKeys(curveData.Curve, fbxAnimCurve);
+                        writtenCount++;
+                    }
+                }
+
+                if (writtenCount == 0)
+                {
+                    Debug.LogWarning("書き込み可能なBlendShapeカーブがありませんでした。");
+                    return false;
+                }
+
+                // FBXファイルを保存
+                var fbxExporter = FbxExporter.Create(fbxManager, "BlendShapeExporter");
+                if (!fbxExporter.Initialize(absolutePath))
+                {
+                    Debug.LogError($"FBXエクスポーターの初期化に失敗しました: {absolutePath}");
+                    fbxExporter.Destroy();
+                    return false;
+                }
+
+                // バイナリ形式で保存
+                if (!fbxExporter.Export(fbxScene))
+                {
+                    Debug.LogError($"FBXファイルの保存に失敗しました: {absolutePath}");
+                    fbxExporter.Destroy();
+                    return false;
+                }
+                fbxExporter.Destroy();
+
+                Debug.Log($"BlendShapeアニメーションカーブを{writtenCount}個書き込みました: {fbxPath}");
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// パス文字列からFBXノードを検索する。
+        /// パスが空の場合はルートノードの最初の子ノードを返す。
+        /// パスの最後のセグメントに一致するノードを再帰的に検索する。
+        /// </summary>
+        private FbxNode FindFbxNodeByPath(FbxNode rootNode, string path)
+        {
+            if (rootNode == null) return null;
+
+            if (string.IsNullOrEmpty(path))
+            {
+                // パスが空の場合、ルートノードの直下の子ノードを返す
+                // （FBXエクスポートではルートの子がエクスポート対象のルートになる）
+                if (rootNode.GetChildCount() > 0)
+                {
+                    return rootNode.GetChild(0);
+                }
+                return rootNode;
+            }
+
+            // パスの最後のセグメントを取得（例: "Body/Face" → "Face"）
+            var segments = path.Split('/');
+            var targetName = segments[segments.Length - 1];
+
+            // 再帰的にノードを検索
+            return FindFbxNodeRecursive(rootNode, targetName);
+        }
+
+        /// <summary>
+        /// FBXノードツリーを再帰的に検索して、指定された名前のノードを見つける
+        /// </summary>
+        private FbxNode FindFbxNodeRecursive(FbxNode node, string name)
+        {
+            if (node == null) return null;
+
+            // FindChildメソッドで再帰検索
+            var found = node.FindChild(name, true);
+            return found;
+        }
+
+        /// <summary>
+        /// FbxNodeに関連するBlendShapeチャネルをすべて収集する
+        /// </summary>
+        private List<FbxBlendShapeChannel> CollectBlendShapeChannels(FbxNode node)
+        {
+            var channels = new List<FbxBlendShapeChannel>();
+
+            if (node == null) return channels;
+
+            // ノードのMeshを取得
+            var mesh = node.GetMesh();
+            if (mesh == null) return channels;
+
+            // BlendShapeタイプのDeformer数を取得
+            int blendShapeCount = mesh.GetDeformerCount(FbxDeformer.EDeformerType.eBlendShape);
+            for (int i = 0; i < blendShapeCount; i++)
+            {
+                var blendShape = mesh.GetBlendShapeDeformer(i);
+                if (blendShape == null) continue;
+
+                int channelCount = blendShape.GetBlendShapeChannelCount();
+                for (int j = 0; j < channelCount; j++)
+                {
+                    var channel = blendShape.GetBlendShapeChannel(j);
+                    if (channel != null)
+                    {
+                        channels.Add(channel);
+                    }
+                }
+            }
+
+            return channels;
+        }
+
+        /// <summary>
+        /// UnityのAnimationCurveからFbxAnimCurveにキーフレームを書き込む
+        /// </summary>
+        private void WriteAnimationKeys(AnimationCurve uniCurve, FbxAnimCurve fbxCurve)
+        {
+            fbxCurve.KeyModifyBegin();
+            try
+            {
+                for (int i = 0; i < uniCurve.length; i++)
+                {
+                    var keyframe = uniCurve[i];
+                    var fbxTime = FbxTime.FromSecondDouble(keyframe.time);
+                    int keyIndex = fbxCurve.KeyAdd(fbxTime);
+
+                    // 補間モードの設定
+                    FbxAnimCurveDef.EInterpolationType interpMode =
+                        FbxAnimCurveDef.EInterpolationType.eInterpolationCubic;
+
+                    var rightTangent = AnimationUtility.GetKeyRightTangentMode(uniCurve, i);
+                    switch (rightTangent)
+                    {
+                        case AnimationUtility.TangentMode.Linear:
+                            interpMode = FbxAnimCurveDef.EInterpolationType.eInterpolationLinear;
+                            break;
+                        case AnimationUtility.TangentMode.Constant:
+                            interpMode = FbxAnimCurveDef.EInterpolationType.eInterpolationConstant;
+                            break;
+                    }
+
+                    fbxCurve.KeySet(keyIndex,
+                        fbxTime,
+                        keyframe.value,
+                        interpMode,
+                        FbxAnimCurveDef.ETangentMode.eTangentBreak,
+                        keyframe.outTangent,
+                        i < uniCurve.length - 1 ? uniCurve[i + 1].inTangent : 0f,
+                        FbxAnimCurveDef.EWeightedMode.eWeightedAll,
+                        keyframe.outWeight,
+                        i < uniCurve.length - 1 ? uniCurve[i + 1].inWeight : 0f
+                    );
+                }
+            }
+            finally
+            {
+                fbxCurve.KeyModifyEnd();
+            }
+        }
+#endif
 
         #endregion
 
