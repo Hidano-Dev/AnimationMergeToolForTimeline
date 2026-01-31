@@ -286,6 +286,15 @@ namespace AnimationMergeTool.Editor.Application
                 // 統合されたクリップからカーブを取得
                 var mergedCurveBindingPairs = clipMerger.GetAnimationCurves(mergedTrackClip);
 
+                // パス自動補正（Animatorが利用可能な場合のみ）
+                if (animator != null)
+                {
+                    var pathCorrector = new CurvePathCorrector();
+                    var correctionResult = pathCorrector.CorrectPaths(
+                        mergedCurveBindingPairs, animator.transform);
+                    mergedCurveBindingPairs = correctionResult.CorrectedPairs;
+                }
+
                 foreach (var pair in mergedCurveBindingPairs)
                 {
                     var bindingKey = curveOverrider.GetBindingKey(pair.Binding);
