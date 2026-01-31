@@ -1493,11 +1493,21 @@ namespace AnimationMergeTool.Editor.Infrastructure
                             break;
                     }
 
+                    // outTangentがInfinityの場合はステップ補間として扱う
+                    // Unityでは Infinity タンジェント = 瞬時変化（離散的な値の切り替え）
+                    if (float.IsInfinity(keyframe.outTangent) || float.IsNaN(keyframe.outTangent))
+                    {
+                        interpMode = FbxAnimCurveDef.EInterpolationType.eInterpolationConstant;
+                    }
+
                     // タンジェントモード: キーごとに左右独立かどうかを判定
+                    // eTangentBreak: 左右独立でユーザー指定値を使用
+                    // eTangentUser: 左右統一でユーザー指定値を使用
+                    // ※eTangentAutoはFBX SDKがタンジェントを自動計算し、渡した値を無視するため使わない
                     bool isBroken = AnimationUtility.GetKeyBroken(uniCurve, i);
                     var tangentMode = isBroken
                         ? FbxAnimCurveDef.ETangentMode.eTangentBreak
-                        : FbxAnimCurveDef.ETangentMode.eTangentAuto;
+                        : FbxAnimCurveDef.ETangentMode.eTangentUser;
 
                     // ウェイトモード: 現在キーのOutと次キーのInに基づいて判定
                     bool hasOutWeight = (keyframe.weightedMode & WeightedMode.Out) != 0;
