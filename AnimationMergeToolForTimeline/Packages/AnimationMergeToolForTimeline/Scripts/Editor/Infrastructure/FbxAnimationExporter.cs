@@ -1456,6 +1456,15 @@ namespace AnimationMergeTool.Editor.Infrastructure
         }
 
         /// <summary>
+        /// Infinity・NaNを安全な値（0f）に置換するヘルパー
+        /// FBX SDKにInfinity/NaNを渡すとC++ Runtime Errorが発生するため
+        /// </summary>
+        private static float SanitizeFloat(float value)
+        {
+            return float.IsInfinity(value) || float.IsNaN(value) ? 0f : value;
+        }
+
+        /// <summary>
         /// UnityのAnimationCurveからFbxAnimCurveにキーフレームを書き込む
         /// </summary>
         private void WriteAnimationKeys(AnimationCurve uniCurve, FbxAnimCurve fbxCurve)
@@ -1484,16 +1493,51 @@ namespace AnimationMergeTool.Editor.Infrastructure
                             break;
                     }
 
+                    // タンジェントモード: キーごとに左右独立かどうかを判定
+                    bool isBroken = AnimationUtility.GetKeyBroken(uniCurve, i);
+                    var tangentMode = isBroken
+                        ? FbxAnimCurveDef.ETangentMode.eTangentBreak
+                        : FbxAnimCurveDef.ETangentMode.eTangentAuto;
+
+                    // ウェイトモード: 現在キーのOutと次キーのInに基づいて判定
+                    bool hasOutWeight = (keyframe.weightedMode & WeightedMode.Out) != 0;
+                    bool hasNextInWeight = false;
+                    if (i < uniCurve.length - 1)
+                    {
+                        hasNextInWeight = (uniCurve[i + 1].weightedMode & WeightedMode.In) != 0;
+                    }
+
+                    FbxAnimCurveDef.EWeightedMode weightedMode;
+                    if (hasOutWeight && hasNextInWeight)
+                        weightedMode = FbxAnimCurveDef.EWeightedMode.eWeightedAll;
+                    else if (hasOutWeight)
+                        weightedMode = FbxAnimCurveDef.EWeightedMode.eWeightedRight;
+                    else if (hasNextInWeight)
+                        weightedMode = FbxAnimCurveDef.EWeightedMode.eWeightedNextLeft;
+                    else
+                        weightedMode = FbxAnimCurveDef.EWeightedMode.eWeightedNone;
+
+                    // 値・タンジェント・ウェイトをサニタイズしてFBX SDKに渡す
+                    float safeValue = SanitizeFloat(keyframe.value);
+                    float safeOutTangent = SanitizeFloat(keyframe.outTangent);
+                    float safeNextInTangent = i < uniCurve.length - 1
+                        ? SanitizeFloat(uniCurve[i + 1].inTangent)
+                        : 0f;
+                    float safeOutWeight = SanitizeFloat(keyframe.outWeight);
+                    float safeNextInWeight = i < uniCurve.length - 1
+                        ? SanitizeFloat(uniCurve[i + 1].inWeight)
+                        : 0f;
+
                     fbxCurve.KeySet(keyIndex,
                         fbxTime,
-                        keyframe.value,
+                        safeValue,
                         interpMode,
-                        FbxAnimCurveDef.ETangentMode.eTangentBreak,
-                        keyframe.outTangent,
-                        i < uniCurve.length - 1 ? uniCurve[i + 1].inTangent : 0f,
-                        FbxAnimCurveDef.EWeightedMode.eWeightedAll,
-                        keyframe.outWeight,
-                        i < uniCurve.length - 1 ? uniCurve[i + 1].inWeight : 0f
+                        tangentMode,
+                        safeOutTangent,
+                        safeNextInTangent,
+                        weightedMode,
+                        safeOutWeight,
+                        safeNextInWeight
                     );
                 }
             }
