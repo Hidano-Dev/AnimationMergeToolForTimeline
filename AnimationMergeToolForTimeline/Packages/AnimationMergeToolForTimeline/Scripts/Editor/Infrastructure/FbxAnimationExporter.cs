@@ -188,6 +188,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
             GameObject exportTarget = null;
             List<GameObject> tempBlendShapeObjects = null;
             List<Mesh> tempMeshes = null;
+            Dictionary<SkinnedMeshRenderer, Mesh> replacedMeshes = null;
 
             try
             {
@@ -210,7 +211,7 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
                 // BlendShapeカーブが参照するSkinnedMeshRendererが存在しない場合、一時的に作成する
                 tempBlendShapeObjects = CreateTemporaryBlendShapeObjects(
-                    exportTarget, exportData, out tempMeshes);
+                    exportTarget, exportData, out tempMeshes, out replacedMeshes);
 
                 // エクスポート用AnimationClipを作成
                 AnimationClip exportClip = CreateExportAnimationClip(exportData);
@@ -253,9 +254,20 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 targetAnimator.runtimeAnimatorController = tempController;
 
                 // FBXエクスポート実行
-                // ExportModelSettingsSerializeは内部クラスのため、設定なしのオーバーロードを使用
-                // BlendShape・スキンメッシュアニメーションはデフォルト設定でエクスポートされる
-                string result = ModelExporter.ExportObject(outputPath, exportTarget);
+                // ExportModelOptionsを明示的に指定し、Maya互換ネーミングを無効化する
+                // デフォルトのUseMayaCompatibleNames=trueでは日本語マテリアル名がアンダースコアに変換され、
+                // 再インポート時にマテリアルマッチングが失敗するため
+                var exportOptions = new ExportModelOptions
+                {
+                    ExportFormat = ExportFormat.Binary,
+                    ModelAnimIncludeOption = Include.ModelAndAnim,
+                    UseMayaCompatibleNames = false,
+                    KeepInstances = false,
+                    EmbedTextures = false,
+                    ExportUnrendered = true,
+                    ObjectPosition = ObjectPosition.LocalCentered,
+                };
+                string result = ModelExporter.ExportObject(outputPath, exportTarget, exportOptions);
 
                 if (string.IsNullOrEmpty(result))
                 {
@@ -302,6 +314,18 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 if (!string.IsNullOrEmpty(tempDirPath))
                 {
                     AssetDatabase.DeleteAsset(tempDirPath);
+                }
+
+                // 差し替えたsharedMeshを元に戻す
+                if (replacedMeshes != null)
+                {
+                    foreach (var kvp in replacedMeshes)
+                    {
+                        if (kvp.Key != null)
+                        {
+                            kvp.Key.sharedMesh = kvp.Value;
+                        }
+                    }
                 }
 
                 // 一時BlendShapeオブジェクトを削除
@@ -454,12 +478,15 @@ namespace AnimationMergeTool.Editor.Infrastructure
         /// <param name="exportTarget">エクスポート対象のルートGameObject</param>
         /// <param name="exportData">エクスポートデータ</param>
         /// <param name="tempMeshes">作成した一時Meshのリスト（cleanup用、out引数）</param>
+        /// <param name="replacedMeshes">差し替えた既存SkinnedMeshRendererの元のsharedMesh（復元用、out引数）</param>
         /// <returns>作成した一時GameObjectのリスト（cleanup用）</returns>
         private List<GameObject> CreateTemporaryBlendShapeObjects(
-            GameObject exportTarget, FbxExportData exportData, out List<Mesh> tempMeshes)
+            GameObject exportTarget, FbxExportData exportData, out List<Mesh> tempMeshes,
+            out Dictionary<SkinnedMeshRenderer, Mesh> replacedMeshes)
         {
             var createdObjects = new List<GameObject>();
             tempMeshes = new List<Mesh>();
+            replacedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
 
             if (exportData.BlendShapeCurves == null || exportData.BlendShapeCurves.Count == 0)
             {
@@ -560,6 +587,12 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 foreach (var shapeName in blendShapeNames)
                 {
                     mesh.AddBlendShapeFrame(shapeName, 100f, deltaVertices, null, null);
+                }
+
+                // 既存RendererのsharedMeshを差し替える場合、元のメッシュを保存（後で復元するため）
+                if (renderer.sharedMesh != null && renderer.sharedMesh != mesh)
+                {
+                    replacedMeshes[renderer] = renderer.sharedMesh;
                 }
 
                 renderer.sharedMesh = mesh;
