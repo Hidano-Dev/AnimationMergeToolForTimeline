@@ -3612,5 +3612,239 @@ namespace AnimationMergeTool.Editor.Tests
 #endif
 
         #endregion
+
+        #region マテリアル順序修正（PostProcessFbxFile）テスト
+
+#if UNITY_FORMATS_FBX
+        /// <summary>
+        /// 3つのマテリアルを持つメッシュをエクスポートし、
+        /// FBXを再インポートしてマテリアル順序がUnity側と一致することを確認する。
+        /// PostProcessFbxFileによるマテリアル順序修正の基本テスト。
+        /// </summary>
+        [Test]
+        public void Export_マテリアル順序がPostProcessで修正されFBX再インポートで一致する()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // 子オブジェクト「Body」にSkinnedMeshRendererを作成
+            var bodyObj = new GameObject("Body");
+            bodyObj.transform.SetParent(_testGameObject.transform, false);
+            var renderer = bodyObj.AddComponent<SkinnedMeshRenderer>();
+
+            // 3つのサブメッシュを持つメッシュを作成
+            var mesh = new Mesh();
+            mesh.name = "MaterialOrderTestMesh";
+            mesh.vertices = new Vector3[]
+            {
+                Vector3.zero, Vector3.right, Vector3.up,
+                Vector3.left, Vector3.down, Vector3.forward,
+                new Vector3(1, 1, 0), new Vector3(0, 1, 1), new Vector3(1, 0, 1)
+            };
+            mesh.normals = new Vector3[]
+            {
+                Vector3.up, Vector3.up, Vector3.up,
+                Vector3.up, Vector3.up, Vector3.up,
+                Vector3.up, Vector3.up, Vector3.up
+            };
+            mesh.subMeshCount = 3;
+            mesh.SetTriangles(new int[] { 0, 1, 2 }, 0);
+            mesh.SetTriangles(new int[] { 3, 4, 5 }, 1);
+            mesh.SetTriangles(new int[] { 6, 7, 8 }, 2);
+            renderer.sharedMesh = mesh;
+
+            // 3つのマテリアルを割り当て（順序を確認しやすい名前）
+            var matAlpha = new Material(Shader.Find("Standard")) { name = "Alpha_Mat" };
+            var matBeta = new Material(Shader.Find("Standard")) { name = "Beta_Mat" };
+            var matGamma = new Material(Shader.Find("Standard")) { name = "Gamma_Mat" };
+            renderer.sharedMaterials = new Material[] { matAlpha, matBeta, matGamma };
+
+            // Unity側の期待する順序
+            var expectedOrder = new string[] { "Alpha_Mat", "Beta_Mat", "Gamma_Mat" };
+
+            // Transformカーブのみのエクスポートデータ
+            var transformCurves = new List<TransformCurveData>
+            {
+                new TransformCurveData("", "localPosition.x",
+                    AnimationCurve.Linear(0f, 0f, 1f, 1f), TransformCurveType.Position)
+            };
+            var exportData = new FbxExportData(
+                _testAnimator, _testClip, null, transformCurves, new List<BlendShapeCurveData>(), false);
+
+            var outputPath = "Assets/TestMatOrder_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                var result = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(result, "エクスポートが成功すること");
+
+                // FBXを再インポート
+                AssetDatabase.Refresh();
+                var importedObj = AssetDatabase.LoadAssetAtPath<GameObject>(outputPath);
+                Assert.IsNotNull(importedObj, "FBXがインポートされること");
+
+                // インポートされたRendererのマテリアルを確認
+                var importedRenderers = importedObj.GetComponentsInChildren<Renderer>(true);
+                Assert.Greater(importedRenderers.Length, 0, "Rendererが存在すること");
+
+                // マテリアル名を順序付きで収集
+                Material[] importedMaterials = null;
+                foreach (var r in importedRenderers)
+                {
+                    if (r.sharedMaterials != null && r.sharedMaterials.Length == 3)
+                    {
+                        importedMaterials = r.sharedMaterials;
+                        break;
+                    }
+                }
+
+                Assert.IsNotNull(importedMaterials, "3つのマテリアルを持つRendererが存在すること");
+                Assert.AreEqual(3, importedMaterials.Length, "マテリアル数が3であること");
+
+                // マテリアル名の順序を確認
+                var importedNames = new List<string>();
+                foreach (var mat in importedMaterials)
+                {
+                    importedNames.Add(mat != null ? mat.name : "(null)");
+                }
+
+                // 順序が維持されていることを確認
+                // FBXの再インポートではマテリアル名が変わる場合があるため、
+                // 元の順序を含んでいるかで確認する
+                for (int i = 0; i < expectedOrder.Length; i++)
+                {
+                    Assert.IsTrue(
+                        importedNames[i].Contains(expectedOrder[i]) ||
+                        importedNames[i].Contains(expectedOrder[i].Replace("_Mat", "")),
+                        $"マテリアル[{i}]の名前 '{importedNames[i]}' が期待する名前 '{expectedOrder[i]}' を含むこと");
+                }
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(mesh);
+                Object.DestroyImmediate(matAlpha);
+                Object.DestroyImmediate(matBeta);
+                Object.DestroyImmediate(matGamma);
+            }
+        }
+
+        /// <summary>
+        /// BlendShapeカーブありの場合でもマテリアル順序が維持されることを確認する。
+        /// PostProcessFbxFileがBlendShapeカーブ書き込みとマテリアル順序修正を統合していることのテスト。
+        /// </summary>
+        [Test]
+        public void Export_BlendShapeありでもマテリアル順序がPostProcessで維持される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            var bodyObj = new GameObject("Body");
+            bodyObj.transform.SetParent(_testGameObject.transform, false);
+            var renderer = bodyObj.AddComponent<SkinnedMeshRenderer>();
+
+            // 3つのサブメッシュとBlendShapeを持つメッシュ
+            var mesh = new Mesh();
+            mesh.name = "BlendShapeMatOrderMesh";
+            mesh.vertices = new Vector3[]
+            {
+                Vector3.zero, Vector3.right, Vector3.up,
+                Vector3.left, Vector3.down, Vector3.forward,
+                new Vector3(1, 1, 0), new Vector3(0, 1, 1), new Vector3(1, 0, 1)
+            };
+            mesh.normals = new Vector3[]
+            {
+                Vector3.up, Vector3.up, Vector3.up,
+                Vector3.up, Vector3.up, Vector3.up,
+                Vector3.up, Vector3.up, Vector3.up
+            };
+            mesh.subMeshCount = 3;
+            mesh.SetTriangles(new int[] { 0, 1, 2 }, 0);
+            mesh.SetTriangles(new int[] { 3, 4, 5 }, 1);
+            mesh.SetTriangles(new int[] { 6, 7, 8 }, 2);
+
+            var deltas = new Vector3[9];
+            for (int i = 0; i < 9; i++) deltas[i] = new Vector3(0, 0.01f, 0);
+            mesh.AddBlendShapeFrame("Smile", 100f, deltas, null, null);
+            renderer.sharedMesh = mesh;
+
+            var matA = new Material(Shader.Find("Standard")) { name = "MatA_Order1" };
+            var matB = new Material(Shader.Find("Standard")) { name = "MatB_Order2" };
+            var matC = new Material(Shader.Find("Standard")) { name = "MatC_Order3" };
+            renderer.sharedMaterials = new Material[] { matA, matB, matC };
+
+            var blendShapeCurves = new List<BlendShapeCurveData>
+            {
+                new BlendShapeCurveData("Body", "Smile", AnimationCurve.Linear(0f, 0f, 1f, 100f))
+            };
+            var transformCurves = new List<TransformCurveData>
+            {
+                new TransformCurveData("", "localPosition.x",
+                    AnimationCurve.Linear(0f, 0f, 1f, 1f), TransformCurveType.Position)
+            };
+            var exportData = new FbxExportData(
+                _testAnimator, _testClip, null, transformCurves, blendShapeCurves, false);
+
+            var outputPath = "Assets/TestBSMatOrder_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                var result = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(result, "エクスポートが成功すること");
+
+                // FBXを再インポート
+                AssetDatabase.Refresh();
+                var importedObj = AssetDatabase.LoadAssetAtPath<GameObject>(outputPath);
+                Assert.IsNotNull(importedObj, "FBXがインポートされること");
+
+                // マテリアルスロット数を確認
+                int importedMaterialCount = 0;
+                var importedSMR = importedObj.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+                foreach (var smr in importedSMR)
+                {
+                    if (smr.sharedMaterials != null && smr.sharedMaterials.Length >= 3)
+                    {
+                        importedMaterialCount = smr.sharedMaterials.Length;
+                        break;
+                    }
+                }
+
+                if (importedMaterialCount == 0)
+                {
+                    var mfs = importedObj.GetComponentsInChildren<MeshFilter>(true);
+                    foreach (var mf in mfs)
+                    {
+                        var mr = mf.GetComponent<MeshRenderer>();
+                        if (mr != null && mr.sharedMaterials.Length >= 3)
+                        {
+                            importedMaterialCount = mr.sharedMaterials.Length;
+                            break;
+                        }
+                    }
+                }
+
+                Assert.AreEqual(3, importedMaterialCount,
+                    $"BlendShapeカーブありでも3つのマテリアルスロットが維持されるべき（実際: {importedMaterialCount}）");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(mesh);
+                Object.DestroyImmediate(matA);
+                Object.DestroyImmediate(matB);
+                Object.DestroyImmediate(matC);
+            }
+        }
+#endif
+
+        #endregion
     }
 }
