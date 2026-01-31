@@ -566,33 +566,58 @@ namespace AnimationMergeTool.Editor.Infrastructure
                     renderer = leafObject.AddComponent<SkinnedMeshRenderer>();
                 }
 
-                // ダミーMeshを作成し、必要なBlendShapeを追加
-                var mesh = new Mesh();
-                mesh.name = $"TempBlendShapeMesh_{path}";
+                Mesh mesh;
 
-                // 最低限の頂点データが必要（BlendShapeFrameの追加に必要）
-                mesh.vertices = new Vector3[] { Vector3.zero, Vector3.right, Vector3.up };
-                mesh.normals = new Vector3[] { Vector3.up, Vector3.up, Vector3.up };
-                mesh.triangles = new int[] { 0, 1, 2 };
-
-                // デルタ頂点は非ゼロである必要がある
-                // FBX SDKはデルタがすべてゼロのBlendShapeを空として扱い、エクスポート時にスキップするため
-                var deltaVertices = new Vector3[]
+                if (renderer.sharedMesh != null)
                 {
-                    new Vector3(0f, 0.001f, 0f),
-                    new Vector3(0f, 0.001f, 0f),
-                    new Vector3(0f, 0.001f, 0f)
-                };
+                    // 既存メッシュがある場合: クローンして不足BlendShapeを追加
+                    // 元のメッシュ構造（頂点・サブメッシュ・マテリアルスロット対応）を保持するため
+                    mesh = Object.Instantiate(renderer.sharedMesh);
+                    mesh.name = $"TempClonedMesh_{path}";
 
-                foreach (var shapeName in blendShapeNames)
-                {
-                    mesh.AddBlendShapeFrame(shapeName, 100f, deltaVertices, null, null);
-                }
+                    // 不足しているBlendShapeのみを追加
+                    var vertexCount = mesh.vertexCount;
+                    var deltaVertices = new Vector3[vertexCount];
+                    for (int i = 0; i < vertexCount; i++)
+                    {
+                        deltaVertices[i] = new Vector3(0f, 0.001f, 0f);
+                    }
 
-                // 既存RendererのsharedMeshを差し替える場合、元のメッシュを保存（後で復元するため）
-                if (renderer.sharedMesh != null && renderer.sharedMesh != mesh)
-                {
+                    foreach (var shapeName in blendShapeNames)
+                    {
+                        if (mesh.GetBlendShapeIndex(shapeName) < 0)
+                        {
+                            mesh.AddBlendShapeFrame(shapeName, 100f, deltaVertices, null, null);
+                        }
+                    }
+
+                    // 元のメッシュを保存（後で復元するため）
                     replacedMeshes[renderer] = renderer.sharedMesh;
+                }
+                else
+                {
+                    // 既存メッシュがない場合: ダミーMeshを新規作成
+                    mesh = new Mesh();
+                    mesh.name = $"TempBlendShapeMesh_{path}";
+
+                    // 最低限の頂点データが必要（BlendShapeFrameの追加に必要）
+                    mesh.vertices = new Vector3[] { Vector3.zero, Vector3.right, Vector3.up };
+                    mesh.normals = new Vector3[] { Vector3.up, Vector3.up, Vector3.up };
+                    mesh.triangles = new int[] { 0, 1, 2 };
+
+                    // デルタ頂点は非ゼロである必要がある
+                    // FBX SDKはデルタがすべてゼロのBlendShapeを空として扱い、エクスポート時にスキップするため
+                    var deltaVertices = new Vector3[]
+                    {
+                        new Vector3(0f, 0.001f, 0f),
+                        new Vector3(0f, 0.001f, 0f),
+                        new Vector3(0f, 0.001f, 0f)
+                    };
+
+                    foreach (var shapeName in blendShapeNames)
+                    {
+                        mesh.AddBlendShapeFrame(shapeName, 100f, deltaVertices, null, null);
+                    }
                 }
 
                 renderer.sharedMesh = mesh;

@@ -3091,5 +3091,526 @@ namespace AnimationMergeTool.Editor.Tests
 #endif
 
         #endregion
+
+        #region マテリアルスロット順序・sharedMesh復元テスト
+
+#if UNITY_FORMATS_FBX
+        /// <summary>
+        /// SkinnedMeshRendererに不足しているBlendShapeがある場合、
+        /// エクスポート後にsharedMeshが元に復元されることを確認する
+        /// </summary>
+        [Test]
+        public void Export_BlendShapeカーブで既存Meshが差し替えられた後sharedMeshが復元される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // 子オブジェクト「Body」にSkinnedMeshRendererを作成
+            var bodyObj = new GameObject("Body");
+            bodyObj.transform.SetParent(_testGameObject.transform, false);
+            var renderer = bodyObj.AddComponent<SkinnedMeshRenderer>();
+
+            // BlendShape「Smile」を持つメッシュを作成（「Blink」は持っていない）
+            var originalMesh = new Mesh();
+            originalMesh.name = "OriginalBodyMesh";
+            originalMesh.vertices = new Vector3[]
+            {
+                Vector3.zero, Vector3.right, Vector3.up, Vector3.forward
+            };
+            originalMesh.normals = new Vector3[]
+            {
+                Vector3.up, Vector3.up, Vector3.up, Vector3.up
+            };
+            originalMesh.triangles = new int[] { 0, 1, 2, 1, 2, 3 };
+            var deltas = new Vector3[]
+            {
+                new Vector3(0, 0.01f, 0),
+                new Vector3(0, 0.01f, 0),
+                new Vector3(0, 0.01f, 0),
+                new Vector3(0, 0.01f, 0)
+            };
+            originalMesh.AddBlendShapeFrame("Smile", 100f, deltas, null, null);
+            renderer.sharedMesh = originalMesh;
+
+            // 「Blink」BlendShapeカーブを含むエクスポートデータ
+            // → 既存Meshには「Blink」が無いため、ダミーMeshに差し替えが発生する
+            var blendShapeCurves = new List<BlendShapeCurveData>
+            {
+                new BlendShapeCurveData("Body", "Blink", AnimationCurve.Linear(0f, 0f, 1f, 100f))
+            };
+            var transformCurves = new List<TransformCurveData>
+            {
+                new TransformCurveData("", "localPosition.x",
+                    AnimationCurve.Linear(0f, 0f, 1f, 1f), TransformCurveType.Position)
+            };
+            var exportData = new FbxExportData(
+                _testAnimator, _testClip, null, transformCurves, blendShapeCurves, false);
+
+            var outputPath = "Assets/TestMeshRestore_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                exporter.Export(exportData, outputPath);
+
+                // Assert - sharedMeshが元のメッシュに復元されていること
+                Assert.AreEqual(originalMesh, renderer.sharedMesh,
+                    "エクスポート後にsharedMeshが元のメッシュに復元されるべき");
+                Assert.AreEqual("OriginalBodyMesh", renderer.sharedMesh.name,
+                    "復元されたメッシュ名が元と一致するべき");
+                Assert.AreEqual(4, renderer.sharedMesh.vertexCount,
+                    "復元されたメッシュの頂点数が元と一致するべき");
+                Assert.AreEqual(1, renderer.sharedMesh.blendShapeCount,
+                    "復元されたメッシュのBlendShape数が元と一致するべき");
+                Assert.AreEqual("Smile", renderer.sharedMesh.GetBlendShapeName(0),
+                    "復元されたメッシュのBlendShape名が元と一致するべき");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(originalMesh);
+            }
+        }
+
+        /// <summary>
+        /// 日本語名のマテリアルが、Maya互換ネーミング変換されずにFBXに出力されることを確認する
+        /// UseMayaCompatibleNames=falseの効果を検証する
+        /// </summary>
+        [Test]
+        public void Export_日本語マテリアル名がMaya互換変換されずFBXに出力される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // 子オブジェクト「Body」にSkinnedMeshRendererを作成
+            var bodyObj = new GameObject("Body");
+            bodyObj.transform.SetParent(_testGameObject.transform, false);
+            var renderer = bodyObj.AddComponent<SkinnedMeshRenderer>();
+
+            // 複数のサブメッシュを持つメッシュを作成
+            var mesh = new Mesh();
+            mesh.name = "BodyMesh";
+            mesh.vertices = new Vector3[]
+            {
+                Vector3.zero, Vector3.right, Vector3.up,
+                Vector3.left, Vector3.down, Vector3.forward
+            };
+            mesh.normals = new Vector3[]
+            {
+                Vector3.up, Vector3.up, Vector3.up,
+                Vector3.up, Vector3.up, Vector3.up
+            };
+            mesh.subMeshCount = 3;
+            mesh.SetTriangles(new int[] { 0, 1, 2 }, 0);
+            mesh.SetTriangles(new int[] { 3, 4, 5 }, 1);
+            mesh.SetTriangles(new int[] { 0, 3, 5 }, 2);
+            renderer.sharedMesh = mesh;
+
+            // 日本語名のマテリアルを作成
+            var mat1 = new Material(Shader.Find("Standard")) { name = "身体" };
+            var mat2 = new Material(Shader.Find("Standard")) { name = "顔" };
+            var mat3 = new Material(Shader.Find("Standard")) { name = "髪" };
+            renderer.sharedMaterials = new Material[] { mat1, mat2, mat3 };
+
+            // Transformカーブのみのエクスポートデータ（BlendShapeなし → Mesh差し替えは発生しない）
+            var transformCurves = new List<TransformCurveData>
+            {
+                new TransformCurveData("", "localPosition.x",
+                    AnimationCurve.Linear(0f, 0f, 1f, 1f), TransformCurveType.Position)
+            };
+            var exportData = new FbxExportData(
+                _testAnimator, _testClip, null, transformCurves, new List<BlendShapeCurveData>(), false);
+
+            var outputPath = "Assets/TestJpnMat_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                var result = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(result, "エクスポートが成功すること");
+
+                // FBXを再インポートして確認
+                AssetDatabase.Refresh();
+                var importedObj = AssetDatabase.LoadAssetAtPath<GameObject>(outputPath);
+                Assert.IsNotNull(importedObj, "FBXがGameObjectとしてインポートされること");
+
+                // インポートされたオブジェクトからRendererを取得
+                var importedRenderers = importedObj.GetComponentsInChildren<Renderer>(true);
+                Assert.Greater(importedRenderers.Length, 0, "Rendererが存在すること");
+
+                // マテリアル名を収集
+                var materialNames = new List<string>();
+                foreach (var r in importedRenderers)
+                {
+                    foreach (var mat in r.sharedMaterials)
+                    {
+                        if (mat != null)
+                        {
+                            materialNames.Add(mat.name);
+                        }
+                    }
+                }
+
+                // 日本語マテリアル名が保持されているか確認
+                // Maya互換変換されている場合、「身体」→「__」のようにアンダースコアに変換される
+                bool hasJapaneseNames = false;
+                foreach (var name in materialNames)
+                {
+                    // アンダースコアのみの名前は変換された可能性が高い
+                    if (!string.IsNullOrEmpty(name) && name.Replace("_", "").Length > 0)
+                    {
+                        // 日本語文字を含むか、または元の日本語名に基づく名前があるか
+                        hasJapaneseNames = true;
+                    }
+                }
+
+                // マテリアル名が全てアンダースコアのみになっていないことを確認
+                bool allUnderscoreOnly = true;
+                foreach (var name in materialNames)
+                {
+                    if (!string.IsNullOrEmpty(name) && name.Replace("_", "").Replace(" ", "").Length > 0)
+                    {
+                        allUnderscoreOnly = false;
+                        break;
+                    }
+                }
+
+                Assert.IsFalse(allUnderscoreOnly,
+                    $"マテリアル名が全てアンダースコアのみに変換されていないこと。実際の名前: [{string.Join(", ", materialNames)}]");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(mesh);
+                Object.DestroyImmediate(mat1);
+                Object.DestroyImmediate(mat2);
+                Object.DestroyImmediate(mat3);
+            }
+        }
+
+        /// <summary>
+        /// 複数サブメッシュを持つメッシュのエクスポート時に、
+        /// BlendShapeダミーMesh差し替えによってメッシュ構造が壊れないことを確認する。
+        /// 既存RendererのMeshがダミー（3頂点1三角形）に差し替えられると、
+        /// エクスポートされるFBXのsubmesh数が1になり、マテリアルスロットが崩れる。
+        /// </summary>
+        [Test]
+        public void Export_BlendShapeダミーMesh差し替え時も元のメッシュのsubmesh構造がFBXに出力される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // 子オブジェクト「Body」にSkinnedMeshRendererを作成
+            var bodyObj = new GameObject("Body");
+            bodyObj.transform.SetParent(_testGameObject.transform, false);
+            var renderer = bodyObj.AddComponent<SkinnedMeshRenderer>();
+
+            // 3つのサブメッシュとBlendShape「Smile」を持つメッシュを作成
+            var originalMesh = new Mesh();
+            originalMesh.name = "MultiSubmeshMesh";
+            originalMesh.vertices = new Vector3[]
+            {
+                Vector3.zero, Vector3.right, Vector3.up,
+                Vector3.left, Vector3.down, Vector3.forward,
+                new Vector3(1, 1, 0), new Vector3(0, 1, 1), new Vector3(1, 0, 1)
+            };
+            originalMesh.normals = new Vector3[]
+            {
+                Vector3.up, Vector3.up, Vector3.up,
+                Vector3.up, Vector3.up, Vector3.up,
+                Vector3.up, Vector3.up, Vector3.up
+            };
+            originalMesh.subMeshCount = 3;
+            originalMesh.SetTriangles(new int[] { 0, 1, 2 }, 0);
+            originalMesh.SetTriangles(new int[] { 3, 4, 5 }, 1);
+            originalMesh.SetTriangles(new int[] { 6, 7, 8 }, 2);
+
+            var deltas = new Vector3[9];
+            for (int i = 0; i < 9; i++) deltas[i] = new Vector3(0, 0.01f, 0);
+            originalMesh.AddBlendShapeFrame("Smile", 100f, deltas, null, null);
+            renderer.sharedMesh = originalMesh;
+
+            // 3つの日本語マテリアルを割り当て
+            var mat1 = new Material(Shader.Find("Standard")) { name = "身体" };
+            var mat2 = new Material(Shader.Find("Standard")) { name = "顔" };
+            var mat3 = new Material(Shader.Find("Standard")) { name = "髪" };
+            renderer.sharedMaterials = new Material[] { mat1, mat2, mat3 };
+
+            // 「Blink」BlendShapeカーブ（既存Meshには無い）
+            // → ダミーMesh差し替えが発生し、元の3-submesh構造が失われる可能性がある
+            var blendShapeCurves = new List<BlendShapeCurveData>
+            {
+                new BlendShapeCurveData("Body", "Blink", AnimationCurve.Linear(0f, 0f, 1f, 100f))
+            };
+            var transformCurves = new List<TransformCurveData>
+            {
+                new TransformCurveData("", "localPosition.x",
+                    AnimationCurve.Linear(0f, 0f, 1f, 1f), TransformCurveType.Position)
+            };
+            var exportData = new FbxExportData(
+                _testAnimator, _testClip, null, transformCurves, blendShapeCurves, false);
+
+            var outputPath = "Assets/TestSubmesh_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                var result = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(result, "エクスポートが成功すること");
+
+                // FBXを再インポート
+                AssetDatabase.Refresh();
+                var importedObj = AssetDatabase.LoadAssetAtPath<GameObject>(outputPath);
+                Assert.IsNotNull(importedObj, "FBXがインポートされること");
+
+                // インポートされたメッシュのsubmesh数を確認
+                var importedRenderers = importedObj.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+                // MeshRendererも確認（FBXインポーターがSkinnedでなくMeshRendererにする場合）
+                var importedMeshRenderers = importedObj.GetComponentsInChildren<MeshRenderer>(true);
+                var importedMeshFilters = importedObj.GetComponentsInChildren<MeshFilter>(true);
+
+                // いずれかのRendererからメッシュを取得
+                Mesh importedMesh = null;
+                int importedMaterialCount = 0;
+
+                // SkinnedMeshRendererから探す
+                foreach (var smr in importedRenderers)
+                {
+                    if (smr.sharedMesh != null && smr.sharedMesh.subMeshCount > 0)
+                    {
+                        importedMesh = smr.sharedMesh;
+                        importedMaterialCount = smr.sharedMaterials.Length;
+                        break;
+                    }
+                }
+
+                // MeshFilterから探す
+                if (importedMesh == null)
+                {
+                    foreach (var mf in importedMeshFilters)
+                    {
+                        if (mf.sharedMesh != null && mf.sharedMesh.subMeshCount > 0)
+                        {
+                            importedMesh = mf.sharedMesh;
+                            var mr = mf.GetComponent<MeshRenderer>();
+                            if (mr != null)
+                            {
+                                importedMaterialCount = mr.sharedMaterials.Length;
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                Assert.IsNotNull(importedMesh, "インポートされたFBXにメッシュが存在すること");
+
+                // サブメッシュ数が3であることを確認（ダミーMeshだと1になる）
+                Assert.AreEqual(3, importedMesh.subMeshCount,
+                    $"元のメッシュと同じ3つのサブメッシュが保持されるべき（実際: {importedMesh.subMeshCount}）。" +
+                    "ダミーMeshに差し替えられた場合、サブメッシュは1つになる");
+
+                // マテリアルスロット数が3であることを確認
+                Assert.AreEqual(3, importedMaterialCount,
+                    $"3つのマテリアルスロットが保持されるべき（実際: {importedMaterialCount}）");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(originalMesh);
+                Object.DestroyImmediate(mat1);
+                Object.DestroyImmediate(mat2);
+                Object.DestroyImmediate(mat3);
+            }
+        }
+
+        /// <summary>
+        /// BlendShapeカーブがない場合（Mesh差し替えが発生しない場合）に
+        /// マテリアルスロットの順序が正しく維持されることを確認するベースラインテスト
+        /// </summary>
+        [Test]
+        public void Export_BlendShapeなしの場合マテリアルスロット順が維持される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // 子オブジェクト「Body」にSkinnedMeshRendererを作成
+            var bodyObj = new GameObject("Body");
+            bodyObj.transform.SetParent(_testGameObject.transform, false);
+            var renderer = bodyObj.AddComponent<SkinnedMeshRenderer>();
+
+            // 3つのサブメッシュを持つメッシュ
+            var mesh = new Mesh();
+            mesh.name = "BaselineMesh";
+            mesh.vertices = new Vector3[]
+            {
+                Vector3.zero, Vector3.right, Vector3.up,
+                Vector3.left, Vector3.down, Vector3.forward,
+                new Vector3(1, 1, 0), new Vector3(0, 1, 1), new Vector3(1, 0, 1)
+            };
+            mesh.normals = new Vector3[]
+            {
+                Vector3.up, Vector3.up, Vector3.up,
+                Vector3.up, Vector3.up, Vector3.up,
+                Vector3.up, Vector3.up, Vector3.up
+            };
+            mesh.subMeshCount = 3;
+            mesh.SetTriangles(new int[] { 0, 1, 2 }, 0);
+            mesh.SetTriangles(new int[] { 3, 4, 5 }, 1);
+            mesh.SetTriangles(new int[] { 6, 7, 8 }, 2);
+            renderer.sharedMesh = mesh;
+
+            // 3つのマテリアルを割り当て（順序が重要）
+            var matA = new Material(Shader.Find("Standard")) { name = "MatA_First" };
+            var matB = new Material(Shader.Find("Standard")) { name = "MatB_Second" };
+            var matC = new Material(Shader.Find("Standard")) { name = "MatC_Third" };
+            renderer.sharedMaterials = new Material[] { matA, matB, matC };
+
+            // BlendShapeカーブなしのエクスポートデータ
+            var transformCurves = new List<TransformCurveData>
+            {
+                new TransformCurveData("", "localPosition.x",
+                    AnimationCurve.Linear(0f, 0f, 1f, 1f), TransformCurveType.Position)
+            };
+            var exportData = new FbxExportData(
+                _testAnimator, _testClip, null, transformCurves, new List<BlendShapeCurveData>(), false);
+
+            var outputPath = "Assets/TestBaseline_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".fbx";
+
+            try
+            {
+                // Act
+                var result = exporter.Export(exportData, outputPath);
+                Assert.IsTrue(result, "エクスポートが成功すること");
+
+                // FBXを再インポート
+                AssetDatabase.Refresh();
+                var importedObj = AssetDatabase.LoadAssetAtPath<GameObject>(outputPath);
+                Assert.IsNotNull(importedObj, "FBXがインポートされること");
+
+                // メッシュとマテリアルを確認
+                Mesh importedMesh = null;
+                Material[] importedMaterials = null;
+
+                var importedSMR = importedObj.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+                foreach (var smr in importedSMR)
+                {
+                    if (smr.sharedMesh != null)
+                    {
+                        importedMesh = smr.sharedMesh;
+                        importedMaterials = smr.sharedMaterials;
+                        break;
+                    }
+                }
+
+                if (importedMesh == null)
+                {
+                    var mfs = importedObj.GetComponentsInChildren<MeshFilter>(true);
+                    foreach (var mf in mfs)
+                    {
+                        if (mf.sharedMesh != null)
+                        {
+                            importedMesh = mf.sharedMesh;
+                            var mr = mf.GetComponent<MeshRenderer>();
+                            if (mr != null) importedMaterials = mr.sharedMaterials;
+                            break;
+                        }
+                    }
+                }
+
+                Assert.IsNotNull(importedMesh, "インポートされたメッシュが存在すること");
+                Assert.AreEqual(3, importedMesh.subMeshCount,
+                    "BlendShapeなしの場合、3つのサブメッシュが維持されること");
+                Assert.IsNotNull(importedMaterials, "マテリアル配列が取得できること");
+                Assert.AreEqual(3, importedMaterials.Length,
+                    "3つのマテリアルスロットが維持されること");
+            }
+            finally
+            {
+                if (AssetDatabase.LoadAssetAtPath<Object>(outputPath) != null)
+                {
+                    AssetDatabase.DeleteAsset(outputPath);
+                }
+                Object.DestroyImmediate(mesh);
+                Object.DestroyImmediate(matA);
+                Object.DestroyImmediate(matB);
+                Object.DestroyImmediate(matC);
+            }
+        }
+
+        /// <summary>
+        /// エクスポートが例外で失敗した場合でも、sharedMeshが復元されることを確認する
+        /// </summary>
+        [Test]
+        public void Export_エクスポート失敗時もsharedMeshが復元される()
+        {
+            // Arrange
+            var exporter = new FbxAnimationExporter();
+
+            // 子オブジェクトにSkinnedMeshRendererを作成
+            var bodyObj = new GameObject("Body");
+            bodyObj.transform.SetParent(_testGameObject.transform, false);
+            var renderer = bodyObj.AddComponent<SkinnedMeshRenderer>();
+
+            var originalMesh = new Mesh();
+            originalMesh.name = "OriginalMesh";
+            originalMesh.vertices = new Vector3[] { Vector3.zero, Vector3.right, Vector3.up, Vector3.forward };
+            originalMesh.normals = new Vector3[] { Vector3.up, Vector3.up, Vector3.up, Vector3.up };
+            originalMesh.triangles = new int[] { 0, 1, 2, 1, 2, 3 };
+            // Smileは持っているがBlinkは持っていない
+            var deltas = new Vector3[]
+            {
+                new Vector3(0, 0.01f, 0), new Vector3(0, 0.01f, 0),
+                new Vector3(0, 0.01f, 0), new Vector3(0, 0.01f, 0)
+            };
+            originalMesh.AddBlendShapeFrame("Smile", 100f, deltas, null, null);
+            renderer.sharedMesh = originalMesh;
+
+            // BlendShapeカーブ（Blink → Mesh差し替えが発生する）
+            var blendShapeCurves = new List<BlendShapeCurveData>
+            {
+                new BlendShapeCurveData("Body", "Blink", AnimationCurve.Linear(0f, 0f, 1f, 100f))
+            };
+            var transformCurves = new List<TransformCurveData>
+            {
+                new TransformCurveData("", "localPosition.x",
+                    AnimationCurve.Linear(0f, 0f, 1f, 1f), TransformCurveType.Position)
+            };
+            var exportData = new FbxExportData(
+                _testAnimator, _testClip, null, transformCurves, blendShapeCurves, false);
+
+            // 無効なパスでエクスポートを試み、失敗させる
+            var invalidPath = "Z:/NonExistent/Directory/test.fbx";
+
+            try
+            {
+                // Act - エラーログが出力されることを期待
+                LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex(".*"));
+                exporter.Export(exportData, invalidPath);
+
+                // Assert - エクスポートが失敗しても、sharedMeshが復元されていること
+                Assert.AreEqual(originalMesh, renderer.sharedMesh,
+                    "エクスポート失敗時もsharedMeshが元に復元されるべき");
+                Assert.AreEqual("OriginalMesh", renderer.sharedMesh.name,
+                    "復元されたメッシュ名が正しいこと");
+                Assert.AreEqual(4, renderer.sharedMesh.vertexCount,
+                    "復元されたメッシュの頂点数が正しいこと");
+            }
+            finally
+            {
+                Object.DestroyImmediate(originalMesh);
+            }
+        }
+#endif
+
+        #endregion
     }
 }
