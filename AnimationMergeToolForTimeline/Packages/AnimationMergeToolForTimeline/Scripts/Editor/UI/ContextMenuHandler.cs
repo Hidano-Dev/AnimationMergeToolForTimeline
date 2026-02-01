@@ -54,11 +54,24 @@ namespace AnimationMergeTool.Editor.UI
         internal static AnimationMergeService ServiceInstance { get; set; }
 
         /// <summary>
+        /// FileNameGeneratorインスタンス（テスト時に差し替え可能）
+        /// </summary>
+        internal static FileNameGenerator FileNameGeneratorInstance { get; set; }
+
+        /// <summary>
         /// サービスインスタンスを取得または作成する
         /// </summary>
         private static AnimationMergeService GetService()
         {
             return ServiceInstance ?? new AnimationMergeService();
+        }
+
+        /// <summary>
+        /// FileNameGeneratorインスタンスを取得または作成する
+        /// </summary>
+        private static FileNameGenerator GetFileNameGenerator()
+        {
+            return FileNameGeneratorInstance ?? new FileNameGenerator(new AssetDatabaseFileExistenceChecker());
         }
 
         /// <summary>
@@ -448,6 +461,7 @@ namespace AnimationMergeTool.Editor.UI
 
         /// <summary>
         /// FBX出力パスを生成する
+        /// FR-087: 同名ファイルが存在する場合は連番を付与して重複を回避する
         /// </summary>
         /// <param name="baseName">基本名</param>
         /// <param name="animator">対象Animator</param>
@@ -455,8 +469,8 @@ namespace AnimationMergeTool.Editor.UI
         private static string GenerateFbxOutputPath(string baseName, Animator animator)
         {
             var animatorName = animator != null ? animator.name : "NoAnimator";
-            var fileName = $"{baseName}_{animatorName}_Merged.fbx";
-            return $"Assets/{fileName}";
+            var generator = GetFileNameGenerator();
+            return generator.GenerateUniqueFilePath("Assets", baseName, animatorName, ".fbx");
         }
 
         #endregion
