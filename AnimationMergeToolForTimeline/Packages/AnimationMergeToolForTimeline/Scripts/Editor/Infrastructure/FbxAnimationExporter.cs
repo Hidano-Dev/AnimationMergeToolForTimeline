@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -632,12 +633,9 @@ namespace AnimationMergeTool.Editor.Infrastructure
                         deltaVertices[i] = new Vector3(0f, 0.001f, 0f);
                     }
 
-                    foreach (var shapeName in blendShapeNames)
+                    foreach (var shapeName in blendShapeNames.Where(name => mesh.GetBlendShapeIndex(name) < 0))
                     {
-                        if (mesh.GetBlendShapeIndex(shapeName) < 0)
-                        {
-                            mesh.AddBlendShapeFrame(shapeName, 100f, deltaVertices, null, null);
-                        }
+                        mesh.AddBlendShapeFrame(shapeName, 100f, deltaVertices, null, null);
                     }
 
                     // 元のメッシュを保存（後で復元するため）
