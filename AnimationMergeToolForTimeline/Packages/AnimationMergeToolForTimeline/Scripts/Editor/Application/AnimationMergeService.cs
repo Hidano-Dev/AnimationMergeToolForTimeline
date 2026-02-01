@@ -533,6 +533,16 @@ namespace AnimationMergeTool.Editor.Application
                 return null;
             }
 
+            // Humanoidリグの場合はマッスルカーブ→Generic変換を使用
+            if (mergeResult.TargetAnimator != null &&
+                mergeResult.TargetAnimator.isHuman &&
+                mergeResult.GeneratedClip.isHumanMotion)
+            {
+                return _fbxExporter.PrepareHumanoidForExport(
+                    mergeResult.TargetAnimator,
+                    mergeResult.GeneratedClip);
+            }
+
             return _fbxExporter.PrepareAllCurvesForExport(
                 mergeResult.TargetAnimator,
                 mergeResult.GeneratedClip);
