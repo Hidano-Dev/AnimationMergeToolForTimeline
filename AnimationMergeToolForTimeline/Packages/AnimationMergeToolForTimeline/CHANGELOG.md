@@ -5,6 +5,52 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.0.0/) に基づいており、
 このプロジェクトは [Semantic Versioning](https://semver.org/spec/v2.0.0.html) に準拠しています。
 
+## [1.0.0] - 2026-02-01
+
+### Added
+
+- **FBXエクスポート機能**
+  - コンテキストメニューから「Export as FBX」で実行可能
+  - スケルトン（ボーン階層）をFBXに含めて出力
+  - Transformアニメーション（Position/Rotation/Scale）の出力
+  - BlendShape（モーフターゲット）アニメーションの出力
+  - ルートモーションの出力
+  - Humanoidリグのマッスルカーブを自動的にTransform回転カーブに変換して出力
+  - Generic形式での出力（他エンジン・DCCツールとの互換性を確保）
+  - FBX Exporterパッケージ未インストール時のエラーダイアログ表示
+  - 同名FBXファイル存在時の連番付与
+
+- **BlendShapeアニメーション対応**
+  - AnimationClip出力・FBXエクスポートの両方でBlendShapeカーブに対応
+
+- **パス補正機能**
+  - AnimationClip内のプロパティパスの不一致を自動補正
+
+### Fixed
+
+- ループのExtrapolation処理の不具合を修正
+- OverrideTrackのマージ処理の不具合を修正
+- FBXにメッシュが含まれない不具合を修正
+- Materialの順番が変わる不具合を修正
+- タンジェント（接線）のエラーを修正
+- 特定条件下でクラッシュする場合がある不具合を修正
+- HumanoidモーションのFBX出力時の挙動を修正
+- Humanoid時にルートのTransformがおかしくなる不具合を修正
+- HumanoidをFBXにした際にHipsの動きが極端に小さくなる不具合を修正
+
+### Changed
+
+- パッケージバージョンを1.0.0に更新
+- 依存パッケージにcom.unity.formats.fbx 5.1.1を追加
+
+### 制約事項
+
+- マージ対象のトラック選択機能は未実装
+- 時間範囲指定によるマージ機能は未実装
+- 保存先はAssetsフォルダ直下に固定
+- FBXエクスポートはGeneric形式のみ（Humanoid形式での出力は不可）
+- FBXエクスポートにはcom.unity.formats.fbxパッケージが必要
+
 ## [0.1.0-preview.1] - 2026-01-26
 
 ### Added
