@@ -1,9 +1,13 @@
+using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using AnimationMergeTool.Editor.Domain.Models;
+using AnimationMergeTool.Editor.Infrastructure;
 using AnimationMergeTool.Editor.UI;
 
 namespace AnimationMergeTool.Editor.Tests
@@ -595,6 +599,133 @@ namespace AnimationMergeTool.Editor.Tests
                 Object.DestroyImmediate(clip);
                 Object.DestroyImmediate(go);
             }
+        }
+
+        #endregion
+
+        #region FBX出力パス重複回避 テスト (FR-087)
+
+        [TearDown]
+        public void TearDown()
+        {
+            // テスト後にFileNameGeneratorInstanceをリセット
+            ContextMenuHandler.FileNameGeneratorInstance = null;
+        }
+
+        /// <summary>
+        /// リフレクションでprivateメソッドGenerateFbxOutputPathを呼び出すヘルパー
+        /// </summary>
+        private static string InvokeGenerateFbxOutputPath(string baseName, Animator animator)
+        {
+            var method = typeof(ContextMenuHandler).GetMethod(
+                "GenerateFbxOutputPath",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(method, "GenerateFbxOutputPathメソッドが見つかりません");
+            return (string)method.Invoke(null, new object[] { baseName, animator });
+        }
+
+        [Test]
+        public void GenerateFbxOutputPath_ファイルが存在しない場合基本ファイル名を返す()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            ContextMenuHandler.FileNameGeneratorInstance = new FileNameGenerator(mockChecker);
+
+            var go = new GameObject("TestAnimator");
+            var animator = go.AddComponent<Animator>();
+
+            try
+            {
+                // Act
+                var result = InvokeGenerateFbxOutputPath("MyTimeline", animator);
+
+                // Assert
+                Assert.AreEqual("Assets/MyTimeline_TestAnimator_Merged.fbx", result);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void GenerateFbxOutputPath_同名ファイルが存在する場合連番を付与する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_TestAnimator_Merged.fbx");
+            ContextMenuHandler.FileNameGeneratorInstance = new FileNameGenerator(mockChecker);
+
+            var go = new GameObject("TestAnimator");
+            var animator = go.AddComponent<Animator>();
+
+            try
+            {
+                // Act
+                var result = InvokeGenerateFbxOutputPath("MyTimeline", animator);
+
+                // Assert
+                Assert.AreEqual("Assets/MyTimeline_TestAnimator_Merged(1).fbx", result);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void GenerateFbxOutputPath_複数の同名ファイルが存在する場合次の連番を付与する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_TestAnimator_Merged.fbx");
+            mockChecker.AddExistingFile("Assets/MyTimeline_TestAnimator_Merged(1).fbx");
+            ContextMenuHandler.FileNameGeneratorInstance = new FileNameGenerator(mockChecker);
+
+            var go = new GameObject("TestAnimator");
+            var animator = go.AddComponent<Animator>();
+
+            try
+            {
+                // Act
+                var result = InvokeGenerateFbxOutputPath("MyTimeline", animator);
+
+                // Assert
+                Assert.AreEqual("Assets/MyTimeline_TestAnimator_Merged(2).fbx", result);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void GenerateFbxOutputPath_Animatorがnullの場合NoAnimatorを使用する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            ContextMenuHandler.FileNameGeneratorInstance = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = InvokeGenerateFbxOutputPath("MyTimeline", null);
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_NoAnimator_Merged.fbx", result);
+        }
+
+        [Test]
+        public void GenerateFbxOutputPath_Animatorがnullで同名ファイルが存在する場合連番を付与する()
+        {
+            // Arrange
+            var mockChecker = new MockFileExistenceChecker();
+            mockChecker.AddExistingFile("Assets/MyTimeline_NoAnimator_Merged.fbx");
+            ContextMenuHandler.FileNameGeneratorInstance = new FileNameGenerator(mockChecker);
+
+            // Act
+            var result = InvokeGenerateFbxOutputPath("MyTimeline", null);
+
+            // Assert
+            Assert.AreEqual("Assets/MyTimeline_NoAnimator_Merged(1).fbx", result);
         }
 
         #endregion
