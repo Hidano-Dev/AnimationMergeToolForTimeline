@@ -10,8 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 プロジェクトの詳細な仕様は以下のドキュメントを参照してください：
 
-- `AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline/Docs/要件定義書.md` - 正式な要件定義書
-- `AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline/Docs/開発計画書.md` - 開発計画書
+- `Docs/要件定義書.md` - 正式な要件定義書
+- `Docs/開発計画書.md` - 開発計画書
 
 **重要**: 開発を開始する前に、必ず要件定義書を確認してください。
 

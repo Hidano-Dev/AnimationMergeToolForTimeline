@@ -474,6 +474,72 @@ namespace AnimationMergeTool.Editor.Tests
             Object.DestroyImmediate(clip);
         }
 
+        [Test]
+        public void ConvertMuscleCurvesToRotation_戻り値の型がPositionとRotation両方のCurveTypeを含めることが可能()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+
+            // TransformCurveDataはPosition型とRotation型の両方を持てることを確認
+            var positionCurve = new TransformCurveData("Hips", "localPosition.x", new AnimationCurve(), TransformCurveType.Position);
+            var rotationCurve = new TransformCurveData("Hips", "localRotation.x", new AnimationCurve(), TransformCurveType.Rotation);
+
+            var list = new List<TransformCurveData> { positionCurve, rotationCurve };
+
+            // Assert
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual(TransformCurveType.Position, list[0].CurveType);
+            Assert.AreEqual(TransformCurveType.Rotation, list[1].CurveType);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_Genericリグの場合_Positionカーブが生成されない()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var root = CreateNonHumanoidBoneHierarchy();
+            var animator = root.GetComponent<Animator>();
+            var clip = new AnimationClip();
+            clip.frameRate = 60f;
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            clip.SetCurve("Hips", typeof(Transform), "localPosition.x", curve);
+
+            // Act
+            var result = converter.ConvertMuscleCurvesToRotation(animator, clip);
+
+            // Assert
+            // GenericリグではGetBoneTransformがnullを返すため、hipsPositionCurvesは初期化されない
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+
+            // Positionカーブが含まれていないことを明示的に確認
+            Assert.IsFalse(result.Exists(c => c.CurveType == TransformCurveType.Position),
+                "GenericリグではPositionカーブが生成されるべきではない");
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
+        [Test]
+        public void ConvertMuscleCurvesToRotation_Animatorがnullの場合_Positionカーブが生成されない()
+        {
+            // Arrange
+            var converter = new HumanoidToGenericConverter();
+            var clip = new AnimationClip();
+
+            // Act
+            var result = converter.ConvertMuscleCurvesToRotation(null, clip);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+            Assert.IsFalse(result.Exists(c => c.CurveType == TransformCurveType.Position),
+                "AnimatorがnullではPositionカーブが生成されるべきではない");
+
+            // クリーンアップ
+            Object.DestroyImmediate(clip);
+        }
+
         #endregion
 
         #region ConvertRootMotionCurves テスト - P14-007

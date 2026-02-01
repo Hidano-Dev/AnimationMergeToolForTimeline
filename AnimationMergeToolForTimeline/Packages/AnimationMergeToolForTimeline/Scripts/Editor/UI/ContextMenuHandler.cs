@@ -454,8 +454,14 @@ namespace AnimationMergeTool.Editor.UI
                 return null;
             }
 
-            // FbxAnimationExporterの統一されたカーブ抽出ロジックを使用
             var exporter = new FbxAnimationExporter();
+
+            // Humanoidリグの場合はマッスルカーブ→Generic変換を使用
+            if (result.TargetAnimator != null && result.TargetAnimator.isHuman)
+            {
+                return exporter.PrepareHumanoidForExport(result.TargetAnimator, result.GeneratedClip);
+            }
+
             return exporter.PrepareAllCurvesForExport(result.TargetAnimator, result.GeneratedClip);
         }
 

@@ -1,7 +1,7 @@
 # Animation Merge Tool for Timeline
 
 [![Unity 6000.0.64f1](https://img.shields.io/badge/Unity-6000.0.64f1-blue.svg)](https://unity.com/)
-[![Version](https://img.shields.io/badge/Version-0.1.0--preview.1-green.svg)](./AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline/package.json)
+[![Version](https://img.shields.io/badge/Version-1.0.0-green.svg)](./AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline/package.json)
 
 UnityのTimeline上で複数トラックにまたがり構成されたAnimationTrackの内容をマージし、単一のAnimationClipアセットとして出力するエディタ拡張ツールです。
 
@@ -29,7 +29,28 @@ Timelineを再生したときと同じ状態のアニメーションを単一の
 
 ## インストール方法
 
-### 方法1: Git URL経由でインストール（推奨）
+### 方法1: npm レジストリ経由でインストール（推奨）
+
+プロジェクトの `Packages/manifest.json` に以下のScoped Registryを追加し、`dependencies` にパッケージを追加してください:
+
+```json
+{
+  "scopedRegistries": [
+    {
+      "name": "Hidano",
+      "url": "https://registry.npmjs.com",
+      "scopes": [
+        "com.hidano"
+      ]
+    }
+  ],
+  "dependencies": {
+    "com.hidano.animation-merge-tool": "1.0.0"
+  }
+}
+```
+
+### 方法2: Git URL経由でインストール
 
 1. Unity Package Managerを開く（Window > Package Manager）
 2. 左上の「+」ボタンをクリック
@@ -40,21 +61,9 @@ Timelineを再生したときと同じ状態のアニメーションを単一の
 https://github.com/hidano/AnimationMergeToolForTimeline.git?path=AnimationMergeToolForTimeline/Packages/AnimationMergeToolForTimeline
 ```
 
-### 方法2: パッケージフォルダを直接配置
+### 方法3: パッケージフォルダを直接配置
 
 `Packages/AnimationMergeToolForTimeline` フォルダをプロジェクトの `Packages` ディレクトリに配置してください。
-
-### 方法3: manifest.json経由でインストール
-
-プロジェクトの `Packages/manifest.json` に以下を追加:
-
-```json
-{
-  "dependencies": {
-    "com.hidano.animation-merge-tool": "file:AnimationMergeToolForTimeline"
-  }
-}
-```
 
 ---
 
@@ -247,4 +256,5 @@ MIT License
 
 | バージョン | 日付 | 変更内容 |
 |------------|------|----------|
-| 0.1.0-preview.1 | 2026-01-27 | 初版リリース |
+| 1.0.0 | 2026-02-01 | 正式リリース（FBXエクスポート機能追加、各種バグ修正） |
+| 0.1.0-preview.1 | 2026-01-27 | プレビュー版リリース |

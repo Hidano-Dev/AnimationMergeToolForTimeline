@@ -1847,5 +1847,165 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region P16-004 PrepareFbxExportData Humanoid判定テスト
+
+        [Test]
+        public void PrepareFbxExportData_nullのMergeResult_nullを返す()
+        {
+            // Act
+            var result = _service.PrepareFbxExportData(null);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void PrepareFbxExportData_GeneratedClipがnull_nullを返す()
+        {
+            // Arrange
+            var animatorGo = new GameObject("TestAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+            var mergeResult = new MergeResult(animator);
+            // GeneratedClipを設定しない（null）
+
+            try
+            {
+                // Act
+                var result = _service.PrepareFbxExportData(mergeResult);
+
+                // Assert
+                Assert.IsNull(result);
+            }
+            finally
+            {
+                Object.DestroyImmediate(animatorGo);
+            }
+        }
+
+        [Test]
+        public void PrepareFbxExportData_GenericAnimatorの場合_PrepareAllCurvesForExportが使用される()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("TestAnimator");
+            var animator = animatorGo.AddComponent<Animator>();
+            // avatarを設定しない = Generic扱い（isHuman == false）
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track, animator);
+
+            try
+            {
+                // MergeResultを取得
+                var results = _service.MergeFromPlayableDirector(director);
+                Assert.AreEqual(1, results.Count);
+                Assert.IsTrue(results[0].IsSuccess);
+                Assert.IsFalse(animator.isHuman, "テスト前提: AnimatorはGenericであるべき");
+
+                // Act
+                var exportData = _service.PrepareFbxExportData(results[0]);
+
+                // Assert
+                Assert.IsNotNull(exportData);
+                // GenericリグなのでIsHumanoidはfalse
+                Assert.IsFalse(exportData.IsHumanoid,
+                    "GenericリグではPrepareAllCurvesForExportが使用され、IsHumanoidはfalseであるべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        [Test]
+        public void PrepareFbxExportData_Animatorがnullの場合_PrepareAllCurvesForExportが使用される()
+        {
+            // Arrange
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+
+            var animClip = new AnimationClip();
+            var curve = AnimationCurve.Linear(0, 0, 1, 1);
+            animClip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            try
+            {
+                // MergeResultを取得（Animatorなし）
+                var results = _service.MergeFromTimelineAsset(timeline);
+                Assert.AreEqual(1, results.Count);
+                Assert.IsTrue(results[0].IsSuccess);
+                Assert.IsNull(results[0].TargetAnimator, "テスト前提: TargetAnimatorはnullであるべき");
+
+                // Act
+                var exportData = _service.PrepareFbxExportData(results[0]);
+
+                // Assert
+                Assert.IsNotNull(exportData);
+                // Animatorがnullの場合、Humanoid分岐に入らずPrepareAllCurvesForExportが使用される
+                Assert.IsFalse(exportData.IsHumanoid,
+                    "Animatorがnullの場合はPrepareAllCurvesForExportが使用されるべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        #endregion
     }
 }

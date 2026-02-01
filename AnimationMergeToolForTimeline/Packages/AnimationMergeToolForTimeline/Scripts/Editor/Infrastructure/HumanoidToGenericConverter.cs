@@ -66,12 +66,13 @@ namespace AnimationMergeTool.Editor.Infrastructure
         }
 
         /// <summary>
-        /// マッスルカーブをRotationカーブに変換する
+        /// マッスルカーブをRotation・Positionカーブに変換する
         /// タスク P14-006: マッスルカーブ→Rotation変換の実装
+        /// Hipsボーンの場合はlocalPositionカーブも含む（Body位置）
         /// </summary>
         /// <param name="animator">対象のAnimator</param>
         /// <param name="humanoidClip">変換元のAnimationClip</param>
-        /// <returns>変換されたRotationカーブのリスト</returns>
+        /// <returns>変換されたRotation・Positionカーブのリスト</returns>
         public List<TransformCurveData> ConvertMuscleCurvesToRotation(
             Animator animator,
             AnimationClip humanoidClip)
@@ -109,6 +110,14 @@ namespace AnimationMergeTool.Editor.Infrastructure
             // 各ボーンのカーブを準備
             var boneRotationCurves = new Dictionary<HumanBodyBones, RotationCurveSet>();
 
+            // Hips用のPositionカーブを準備
+            PositionCurveSet hipsPositionCurves = null;
+            Transform hipsTransformRef = animator.GetBoneTransform(HumanBodyBones.Hips);
+            if (hipsTransformRef != null)
+            {
+                hipsPositionCurves = new PositionCurveSet();
+            }
+
             // 有効なボーンを列挙
             foreach (HumanBodyBones bone in Enum.GetValues(typeof(HumanBodyBones)))
             {
@@ -126,6 +135,28 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 boneRotationCurves[bone] = new RotationCurveSet();
             }
 
+            // Animatorの元の状態を保存（サンプリング後に復元するため）
+            var animatorOriginalPos = animator.transform.localPosition;
+            var animatorOriginalRot = animator.transform.localRotation;
+
+            // Hipsの親のワールド座標系を参照として保存
+            // SampleAnimationはルートモーション（RootT/RootQ）をAnimator.transformに適用するため、
+            // HipsのlocalPositionにはルートモーションが含まれない。
+            // T=0時のHips親のワールド行列を参照として保存し、各フレームでHipsのワールド座標を
+            // この参照空間に変換することで、ルートモーションを含んだ正しいlocalPositionが得られる。
+            var hipsParentRefWorldToLocal = Matrix4x4.identity;
+            var hipsParentRefWorldRotInverse = Quaternion.identity;
+            if (hipsTransformRef != null)
+            {
+                humanoidClip.SampleAnimation(animator.gameObject, 0);
+                Transform hipsParent = hipsTransformRef.parent;
+                if (hipsParent != null)
+                {
+                    hipsParentRefWorldToLocal = hipsParent.worldToLocalMatrix;
+                    hipsParentRefWorldRotInverse = Quaternion.Inverse(hipsParent.rotation);
+                }
+            }
+
             // 各フレームをサンプリング
             for (float time = 0; time <= duration + sampleInterval * 0.5f; time += sampleInterval)
             {
@@ -134,6 +165,17 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
                 // クリップをサンプリング
                 humanoidClip.SampleAnimation(animator.gameObject, sampleTime);
+
+                // Hipsの位置を記録（ルートモーションを含む）
+                if (hipsPositionCurves != null && hipsTransformRef != null)
+                {
+                    // Hipsのワールド座標位置を取得し、T=0時の親のローカル空間に変換する
+                    // これによりルートモーション（Animator.transformに適用される）を含んだ
+                    // 正しいlocalPositionが得られる
+                    Vector3 hipsWorldPos = hipsTransformRef.position;
+                    Vector3 hipsLocalPos = hipsParentRefWorldToLocal.MultiplyPoint3x4(hipsWorldPos);
+                    hipsPositionCurves.AddKey(sampleTime, hipsLocalPos);
+                }
 
                 // 各ボーンの回転を記録
                 foreach (var kvp in boneRotationCurves)
@@ -144,9 +186,30 @@ namespace AnimationMergeTool.Editor.Infrastructure
                         continue;
                     }
 
-                    Quaternion rotation = boneTransform.localRotation;
+                    Quaternion rotation;
+                    if (kvp.Key == HumanBodyBones.Hips)
+                    {
+                        // Hipsの回転はルートモーション回転を含める必要がある
+                        // ワールド回転をT=0時の親空間の回転に変換する
+                        rotation = hipsParentRefWorldRotInverse * boneTransform.rotation;
+                    }
+                    else
+                    {
+                        rotation = boneTransform.localRotation;
+                    }
                     kvp.Value.AddKey(sampleTime, rotation);
                 }
+            }
+
+            // Animatorの状態を復元
+            animator.transform.localPosition = animatorOriginalPos;
+            animator.transform.localRotation = animatorOriginalRot;
+
+            // Hips Positionカーブを結果に追加
+            if (hipsPositionCurves != null)
+            {
+                string hipsPath = GetTransformPath(animator, HumanBodyBones.Hips) ?? string.Empty;
+                result.AddRange(hipsPositionCurves.ToTransformCurveDataList(hipsPath));
             }
 
             // カーブをTransformCurveDataに変換
@@ -193,6 +256,33 @@ namespace AnimationMergeTool.Editor.Infrastructure
                     new TransformCurveData(path, "localRotation.y", Y, TransformCurveType.Rotation),
                     new TransformCurveData(path, "localRotation.z", Z, TransformCurveType.Rotation),
                     new TransformCurveData(path, "localRotation.w", W, TransformCurveType.Rotation)
+                };
+            }
+        }
+
+        /// <summary>
+        /// Positionカーブ（localPosition.x/y/z）を管理する内部クラス
+        /// </summary>
+        private class PositionCurveSet
+        {
+            public AnimationCurve X { get; } = new AnimationCurve();
+            public AnimationCurve Y { get; } = new AnimationCurve();
+            public AnimationCurve Z { get; } = new AnimationCurve();
+
+            public void AddKey(float time, Vector3 position)
+            {
+                X.AddKey(time, position.x);
+                Y.AddKey(time, position.y);
+                Z.AddKey(time, position.z);
+            }
+
+            public List<TransformCurveData> ToTransformCurveDataList(string path)
+            {
+                return new List<TransformCurveData>
+                {
+                    new TransformCurveData(path, "localPosition.x", X, TransformCurveType.Position),
+                    new TransformCurveData(path, "localPosition.y", Y, TransformCurveType.Position),
+                    new TransformCurveData(path, "localPosition.z", Z, TransformCurveType.Position)
                 };
             }
         }
