@@ -534,9 +534,9 @@ namespace AnimationMergeTool.Editor.Application
             }
 
             // Humanoidリグの場合はマッスルカーブ→Generic変換を使用
+            // マージ後クリップはisHumanMotionがfalseになり得るため、animator.isHumanで判定
             if (mergeResult.TargetAnimator != null &&
-                mergeResult.TargetAnimator.isHuman &&
-                mergeResult.GeneratedClip.isHumanMotion)
+                mergeResult.TargetAnimator.isHuman)
             {
                 return _fbxExporter.PrepareHumanoidForExport(
                     mergeResult.TargetAnimator,

@@ -983,9 +983,11 @@ namespace AnimationMergeTool.Editor.Infrastructure
             var transformCurves = new List<TransformCurveData>();
 
             // Humanoidアニメーションの場合、マッスルカーブをRotationカーブに変換
-            if (isHumanoid && _humanoidConverter.IsHumanoidClip(humanoidClip))
+            // isHumanoidClipチェックはマージ後クリップでfalseになり得るため、
+            // animator.isHumanで判定し、SampleAnimationでボーン変換を行う
+            if (isHumanoid)
             {
-                // マッスルカーブを変換
+                // マッスルカーブを変換（SampleAnimationで各ボーンのlocalRotation/localPositionを記録）
                 var muscleCurves = _humanoidConverter.ConvertMuscleCurvesToRotation(animator, humanoidClip);
                 transformCurves.AddRange(muscleCurves);
 
