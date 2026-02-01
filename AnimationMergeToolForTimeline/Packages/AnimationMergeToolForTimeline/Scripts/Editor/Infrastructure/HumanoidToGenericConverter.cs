@@ -135,6 +135,28 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 boneRotationCurves[bone] = new RotationCurveSet();
             }
 
+            // Animatorの元の状態を保存（サンプリング後に復元するため）
+            var animatorOriginalPos = animator.transform.localPosition;
+            var animatorOriginalRot = animator.transform.localRotation;
+
+            // Hipsの親のワールド座標系を参照として保存
+            // SampleAnimationはルートモーション（RootT/RootQ）をAnimator.transformに適用するため、
+            // HipsのlocalPositionにはルートモーションが含まれない。
+            // T=0時のHips親のワールド行列を参照として保存し、各フレームでHipsのワールド座標を
+            // この参照空間に変換することで、ルートモーションを含んだ正しいlocalPositionが得られる。
+            var hipsParentRefWorldToLocal = Matrix4x4.identity;
+            var hipsParentRefWorldRotInverse = Quaternion.identity;
+            if (hipsTransformRef != null)
+            {
+                humanoidClip.SampleAnimation(animator.gameObject, 0);
+                Transform hipsParent = hipsTransformRef.parent;
+                if (hipsParent != null)
+                {
+                    hipsParentRefWorldToLocal = hipsParent.worldToLocalMatrix;
+                    hipsParentRefWorldRotInverse = Quaternion.Inverse(hipsParent.rotation);
+                }
+            }
+
             // 各フレームをサンプリング
             for (float time = 0; time <= duration + sampleInterval * 0.5f; time += sampleInterval)
             {
@@ -144,10 +166,15 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 // クリップをサンプリング
                 humanoidClip.SampleAnimation(animator.gameObject, sampleTime);
 
-                // Hipsの位置を記録
+                // Hipsの位置を記録（ルートモーションを含む）
                 if (hipsPositionCurves != null && hipsTransformRef != null)
                 {
-                    hipsPositionCurves.AddKey(sampleTime, hipsTransformRef.localPosition);
+                    // Hipsのワールド座標位置を取得し、T=0時の親のローカル空間に変換する
+                    // これによりルートモーション（Animator.transformに適用される）を含んだ
+                    // 正しいlocalPositionが得られる
+                    Vector3 hipsWorldPos = hipsTransformRef.position;
+                    Vector3 hipsLocalPos = hipsParentRefWorldToLocal.MultiplyPoint3x4(hipsWorldPos);
+                    hipsPositionCurves.AddKey(sampleTime, hipsLocalPos);
                 }
 
                 // 各ボーンの回転を記録
@@ -159,10 +186,24 @@ namespace AnimationMergeTool.Editor.Infrastructure
                         continue;
                     }
 
-                    Quaternion rotation = boneTransform.localRotation;
+                    Quaternion rotation;
+                    if (kvp.Key == HumanBodyBones.Hips)
+                    {
+                        // Hipsの回転はルートモーション回転を含める必要がある
+                        // ワールド回転をT=0時の親空間の回転に変換する
+                        rotation = hipsParentRefWorldRotInverse * boneTransform.rotation;
+                    }
+                    else
+                    {
+                        rotation = boneTransform.localRotation;
+                    }
                     kvp.Value.AddKey(sampleTime, rotation);
                 }
             }
+
+            // Animatorの状態を復元
+            animator.transform.localPosition = animatorOriginalPos;
+            animator.transform.localRotation = animatorOriginalRot;
 
             // Hips Positionカーブを結果に追加
             if (hipsPositionCurves != null)
