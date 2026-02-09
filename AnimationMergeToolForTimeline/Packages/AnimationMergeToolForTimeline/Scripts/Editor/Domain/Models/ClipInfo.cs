@@ -19,6 +19,18 @@ namespace AnimationMergeTool.Editor.Domain.Models
         public AnimationClip AnimationClip { get; }
 
         /// <summary>
+        /// シーンオフセット位置（AnimationPlayableAsset.position）
+        /// Hierarchy上で手動設定されたPosition値
+        /// </summary>
+        public Vector3 SceneOffsetPosition { get; }
+
+        /// <summary>
+        /// シーンオフセット回転（AnimationPlayableAsset.rotation）
+        /// Hierarchy上で手動設定されたRotation値
+        /// </summary>
+        public Quaternion SceneOffsetRotation { get; }
+
+        /// <summary>
         /// 開始時間（秒）
         /// </summary>
         public double StartTime => TimelineClip?.start ?? 0;
@@ -81,10 +93,32 @@ namespace AnimationMergeTool.Editor.Domain.Models
         /// <param name="timelineClip">TimelineClip参照</param>
         /// <param name="animationClip">AnimationClip参照</param>
         public ClipInfo(TimelineClip timelineClip, AnimationClip animationClip)
+            : this(timelineClip, animationClip, Vector3.zero, Quaternion.identity)
+        {
+        }
+
+        /// <summary>
+        /// コンストラクタ（シーンオフセット付き）
+        /// </summary>
+        /// <param name="timelineClip">TimelineClip参照</param>
+        /// <param name="animationClip">AnimationClip参照</param>
+        /// <param name="sceneOffsetPosition">シーンオフセット位置</param>
+        /// <param name="sceneOffsetRotation">シーンオフセット回転</param>
+        public ClipInfo(TimelineClip timelineClip, AnimationClip animationClip,
+            Vector3 sceneOffsetPosition, Quaternion sceneOffsetRotation)
         {
             TimelineClip = timelineClip;
             AnimationClip = animationClip;
+            SceneOffsetPosition = sceneOffsetPosition;
+            SceneOffsetRotation = sceneOffsetRotation;
         }
+
+        /// <summary>
+        /// シーンオフセットが設定されているかどうか
+        /// </summary>
+        public bool HasSceneOffset =>
+            SceneOffsetPosition != Vector3.zero ||
+            SceneOffsetRotation != Quaternion.identity;
 
         /// <summary>
         /// クリップが有効かどうか（TimelineClipとAnimationClipが両方存在する）

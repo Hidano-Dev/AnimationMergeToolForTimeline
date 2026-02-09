@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace AnimationMergeTool.Editor.Infrastructure
 {
@@ -49,6 +50,55 @@ namespace AnimationMergeTool.Editor.Infrastructure
         }
 
         private const string DefaultExtension = ".anim";
+
+        /// <summary>
+        /// Animatorの階層を考慮した名前を生成する
+        /// 親Animatorが存在する場合: "親Animator名_子Animator名"
+        /// 親Animatorが存在しない場合: "Animator名"
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <returns>階層を考慮したAnimator名</returns>
+        public static string GetHierarchicalAnimatorName(Animator animator)
+        {
+            if (animator == null)
+            {
+                return "NoAnimator";
+            }
+
+            var parentAnimator = FindParentAnimator(animator);
+            if (parentAnimator != null)
+            {
+                return $"{parentAnimator.gameObject.name}_{animator.gameObject.name}";
+            }
+
+            return animator.gameObject.name;
+        }
+
+        /// <summary>
+        /// Hierarchy内で最も近い親のAnimatorを探す
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <returns>親Animator（存在しない場合はnull）</returns>
+        private static Animator FindParentAnimator(Animator animator)
+        {
+            if (animator == null)
+            {
+                return null;
+            }
+
+            var parent = animator.transform.parent;
+            while (parent != null)
+            {
+                var parentAnimator = parent.GetComponent<Animator>();
+                if (parentAnimator != null)
+                {
+                    return parentAnimator;
+                }
+                parent = parent.parent;
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// 基本ファイル名を生成する
