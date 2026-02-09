@@ -5,6 +5,27 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.0.0/) に基づいており、
 このプロジェクトは [Semantic Versioning](https://semver.org/spec/v2.0.0.html) に準拠しています。
 
+## [1.1.0] - 2026-02-09
+
+### Added
+
+- **シーンオフセット反映機能**
+  - AnimationPlayableAssetのPosition/Rotationオフセットをマージ結果に反映
+  - Hierarchy上で手動変更したオフセットが書き出しモーションに正しく適用される
+  - Transform（m_LocalPosition/m_LocalRotation）とHumanoidルートモーション（RootT/RootQ）の両方に対応
+  - SceneOffsetApplierクラスを新規追加
+
+- **ファイル名への親Animator階層反映**
+  - 子AnimatorがHierarchy内で親Animatorを持つ場合、ファイル名が「親Animator名_子Animator名」形式になる
+  - 親Animatorがない場合は従来通りのAnimator名を使用
+  - .anim出力・FBX出力の両方に適用
+
+### Changed
+
+- ClipInfoにSceneOffsetPosition/SceneOffsetRotationプロパティを追加
+- ClipMerger.Merge()内で時間オフセット適用後にシーンオフセットを適用するよう変更
+- FileNameGeneratorにGetHierarchicalAnimatorName()静的メソッドを追加
+
 ## [1.0.0] - 2026-02-01
 
 ### Added
