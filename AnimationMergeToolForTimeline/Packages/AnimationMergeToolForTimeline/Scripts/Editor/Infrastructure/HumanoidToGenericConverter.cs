@@ -166,6 +166,30 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 }
             }
 
+            // マージ済みクリップの場合、isHumanMotion=falseのため
+            // SampleAnimationがRootT/RootQをAnimator.transformに適用しない。
+            // RootT/RootQカーブを事前に取得し、サンプリング後に手動で適用する。
+            var rootTxCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x"));
+            var rootTyCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.y"));
+            var rootTzCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.z"));
+            var rootQxCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.x"));
+            var rootQyCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.y"));
+            var rootQzCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.z"));
+            var rootQwCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.w"));
+            bool hasRootTCurves = rootTxCurve != null || rootTyCurve != null || rootTzCurve != null;
+            bool hasRootQCurves = rootQxCurve != null || rootQyCurve != null ||
+                                  rootQzCurve != null || rootQwCurve != null;
+            // Humanoidクリップの場合はSampleAnimationが自動でRootT/RootQを適用するため不要
+            bool needsManualRootMotion = !humanoidClip.isHumanMotion &&
+                                         (hasRootTCurves || hasRootQCurves);
+
             // 各フレームをサンプリング
             for (float time = 0; time <= duration + sampleInterval * 0.5f; time += sampleInterval)
             {
@@ -174,6 +198,27 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
                 // クリップをサンプリング
                 humanoidClip.SampleAnimation(animator.gameObject, sampleTime);
+
+                // マージ済みクリップ（isHumanMotion=false）の場合、SampleAnimationが
+                // RootT/RootQをAnimator.transformに適用しないため、手動で適用する
+                if (needsManualRootMotion)
+                {
+                    if (hasRootTCurves)
+                    {
+                        animator.transform.localPosition = new Vector3(
+                            rootTxCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootTyCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootTzCurve?.Evaluate(sampleTime) ?? 0f);
+                    }
+                    if (hasRootQCurves)
+                    {
+                        animator.transform.localRotation = new Quaternion(
+                            rootQxCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootQyCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootQzCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootQwCurve?.Evaluate(sampleTime) ?? 1f);
+                    }
+                }
 
                 // Hipsの位置を記録（ルートモーションを含む）
                 if (hipsPositionCurves != null && hipsTransformRef != null)
