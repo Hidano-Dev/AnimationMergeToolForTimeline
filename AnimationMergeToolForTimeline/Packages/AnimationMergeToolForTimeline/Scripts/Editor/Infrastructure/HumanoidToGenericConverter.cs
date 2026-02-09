@@ -142,16 +142,25 @@ namespace AnimationMergeTool.Editor.Infrastructure
             // Hipsの親のワールド座標系を参照として保存
             // SampleAnimationはルートモーション（RootT/RootQ）をAnimator.transformに適用するため、
             // HipsのlocalPositionにはルートモーションが含まれない。
-            // T=0時のHips親のワールド行列を参照として保存し、各フレームでHipsのワールド座標を
-            // この参照空間に変換することで、ルートモーションを含んだ正しいlocalPositionが得られる。
+            // Animator.transformを原点にリセットした状態でリファレンスを取得し、
+            // 各フレームでHipsのワールド座標をこの参照空間に変換することで、
+            // ルートモーション全体（シーンオフセット含む）を含んだ正しいlocalPositionが得られる。
+            //
+            // 注意: 以前はSampleAnimation(T=0)後にリファレンスを取得していたが、
+            // この方法ではRootT(0)に含まれるシーンオフセットがリファレンスに含まれ、
+            // 各フレームの結果から差し引かれてオフセットが消失していた。
             var hipsParentRefWorldToLocal = Matrix4x4.identity;
             var hipsParentRefWorldRotInverse = Quaternion.identity;
             if (hipsTransformRef != null)
             {
-                humanoidClip.SampleAnimation(animator.gameObject, 0);
                 Transform hipsParent = hipsTransformRef.parent;
                 if (hipsParent != null)
                 {
+                    // Animatorの位置/回転を原点にリセットしてリファレンスを取得する。
+                    // これにより、SampleAnimationで適用されるRootT/RootQ（シーンオフセット含む）が
+                    // リファレンスに含まれず、出力にルートモーション全体が保持される。
+                    animator.transform.localPosition = Vector3.zero;
+                    animator.transform.localRotation = Quaternion.identity;
                     hipsParentRefWorldToLocal = hipsParent.worldToLocalMatrix;
                     hipsParentRefWorldRotInverse = Quaternion.Inverse(hipsParent.rotation);
                 }

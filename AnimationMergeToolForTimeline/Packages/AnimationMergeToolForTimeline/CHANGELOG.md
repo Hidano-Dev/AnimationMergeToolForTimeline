@@ -5,6 +5,15 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.0.0/) に基づいており、
 このプロジェクトは [Semantic Versioning](https://semver.org/spec/v2.0.0.html) に準拠しています。
 
+## [1.1.2] - 2026-02-09
+
+### Fixed
+
+- FBXエクスポート時にシーンオフセットのPosition値がルートモーションに反映されず、Hipsボーンに不正に合成される不具合を修正
+  - HumanoidToGenericConverter.ConvertMuscleCurvesToRotation()のリファレンス行列取得方法を変更
+  - SampleAnimation(T=0)後の状態ではなく、Animator原点状態でリファレンスを取得するよう修正
+  - これにより、RootTカーブに加算されたシーンオフセットがFBX出力に正しく保持される
+
 ## [1.1.1] - 2026-02-09
 
 ### Fixed
