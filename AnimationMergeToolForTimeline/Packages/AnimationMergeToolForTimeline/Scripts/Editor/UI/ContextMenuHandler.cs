@@ -474,7 +474,7 @@ namespace AnimationMergeTool.Editor.UI
         /// <returns>出力パス</returns>
         private static string GenerateFbxOutputPath(string baseName, Animator animator)
         {
-            var animatorName = animator != null ? animator.name : "NoAnimator";
+            var animatorName = FileNameGenerator.GetHierarchicalAnimatorName(animator);
             var generator = GetFileNameGenerator();
             return generator.GenerateUniqueFilePath("Assets", baseName, animatorName, ".fbx");
         }

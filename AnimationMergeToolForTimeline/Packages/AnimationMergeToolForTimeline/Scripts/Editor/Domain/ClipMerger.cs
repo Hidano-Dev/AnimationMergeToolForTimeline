@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using AnimationMergeTool.Editor.Domain.Models;
 using UnityEditor;
 using UnityEngine;
@@ -109,26 +110,40 @@ namespace AnimationMergeTool.Editor.Domain
                 // ClipInfoからすべてのカーブを取得
                 var curveBindingPairs = GetAnimationCurves(clipInfo.AnimationClip);
 
+                // 時間オフセットを適用したカーブリストを作成
+                var timeOffsetPairs = new List<CurveBindingPair>();
                 foreach (var pair in curveBindingPairs)
                 {
-                    // 時間オフセットを適用
                     var offsetCurve = ApplyTimeOffset(pair.Curve, clipInfo);
-                    if (offsetCurve == null || offsetCurve.keys.Length == 0)
+                    if (offsetCurve != null && offsetCurve.keys.Length > 0)
                     {
-                        continue;
+                        timeOffsetPairs.Add(new CurveBindingPair(pair.Binding, offsetCurve));
                     }
+                }
 
+                // シーンオフセット（Position/Rotation）を適用
+                if (clipInfo.HasSceneOffset)
+                {
+                    var sceneOffsetApplier = new SceneOffsetApplier();
+                    timeOffsetPairs = sceneOffsetApplier.Apply(
+                        timeOffsetPairs,
+                        clipInfo.SceneOffsetPosition,
+                        clipInfo.SceneOffsetRotation);
+                }
+
+                foreach (var pair in timeOffsetPairs)
+                {
                     // バインディングを一意に識別する文字列キーを生成
                     var bindingKey = GetBindingKey(pair.Binding);
 
                     // 同じバインディングのカーブが既にある場合はキーフレームを統合
                     if (mergedCurves.TryGetValue(bindingKey, out var existingData))
                     {
-                        MergeCurveKeys(existingData.Curve, offsetCurve);
+                        MergeCurveKeys(existingData.Curve, pair.Curve);
                     }
                     else
                     {
-                        mergedCurves[bindingKey] = new MergedCurveData(pair.Binding, offsetCurve);
+                        mergedCurves[bindingKey] = new MergedCurveData(pair.Binding, pair.Curve);
                     }
                 }
             }

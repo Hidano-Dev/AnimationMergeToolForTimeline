@@ -359,7 +359,7 @@ namespace AnimationMergeTool.Editor.Application
 
             // AnimationClipを生成
             var timelineAssetName = timelineAsset.name;
-            var animatorName = animator != null ? animator.name : "NoAnimator";
+            var animatorName = FileNameGenerator.GetHierarchicalAnimatorName(animator);
 
             if (saveToAsset)
             {
@@ -410,7 +410,12 @@ namespace AnimationMergeTool.Editor.Application
                     continue;
                 }
 
-                clipInfos.Add(new ClipInfo(timelineClip, animationPlayableAsset.clip));
+                // AnimationPlayableAssetからシーンオフセット（Position/Rotation）を取得
+                var offsetPosition = animationPlayableAsset.position;
+                var offsetRotation = animationPlayableAsset.rotation;
+
+                clipInfos.Add(new ClipInfo(timelineClip, animationPlayableAsset.clip,
+                    offsetPosition, offsetRotation));
             }
 
             return clipInfos;
@@ -578,7 +583,7 @@ namespace AnimationMergeTool.Editor.Application
             }
 
             // ファイルパスを生成
-            var animatorName = mergeResult.TargetAnimator != null ? mergeResult.TargetAnimator.name : "NoAnimator";
+            var animatorName = FileNameGenerator.GetHierarchicalAnimatorName(mergeResult.TargetAnimator);
             var outputPath = _fileNameGenerator.GenerateUniqueFilePath(
                 outputDirectory,
                 timelineAssetName,
