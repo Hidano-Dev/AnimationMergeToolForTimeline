@@ -357,6 +357,24 @@ namespace AnimationMergeTool.Editor.Application
 
             result.AddLog($"カーブの統合完了: {finalCurves.Count}個のカーブ");
 
+            // AnimatorのTransformオフセットをルートカーブに適用
+            // Hierarchy上でAnimatorのGameObjectが親から移動・回転されている場合、
+            // その分をアニメーションのルートカーブに反映する
+            if (animator != null)
+            {
+                var animatorPosition = animator.transform.localPosition;
+                var animatorRotation = animator.transform.localRotation;
+
+                if (animatorPosition != Vector3.zero || animatorRotation != Quaternion.identity)
+                {
+                    var sceneOffsetApplier = new SceneOffsetApplier();
+                    finalCurves = sceneOffsetApplier.Apply(
+                        finalCurves, animatorPosition, animatorRotation);
+                    result.AddLog(
+                        $"AnimatorのTransformオフセットを適用: Position={animatorPosition}, Rotation={animatorRotation.eulerAngles}");
+                }
+            }
+
             // AnimationClipを生成
             var timelineAssetName = timelineAsset.name;
             var animatorName = FileNameGenerator.GetHierarchicalAnimatorName(animator);

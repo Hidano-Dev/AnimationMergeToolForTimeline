@@ -5,6 +5,14 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.0.0/) に基づいており、
 このプロジェクトは [Semantic Versioning](https://semver.org/spec/v2.0.0.html) に準拠しています。
 
+## [1.1.1] - 2026-02-09
+
+### Fixed
+
+- AnimatorのGameObjectをHierarchy上で親オブジェクトから移動・回転させた際のオフセットがマージ結果に反映されない不具合を修正
+  - AnimatorのTransform（localPosition/localRotation）をルートカーブに適用する処理を追加
+  - Transform（m_LocalPosition/m_LocalRotation）とHumanoidルートモーション（RootT/RootQ）の両方に対応
+
 ## [1.1.0] - 2026-02-09
 
 ### Added

@@ -1848,6 +1848,293 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region AnimatorのTransformオフセット反映テスト
+
+        [Test]
+        public void MergeFromPlayableDirector_AnimatorのlocalPositionがルートカーブに反映される()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+
+            // 親オブジェクトの下にAnimatorを配置し、位置をオフセット
+            var parentGo = new GameObject("Parent");
+            var animatorGo = new GameObject("TestAnimator");
+            animatorGo.transform.SetParent(parentGo.transform);
+            animatorGo.transform.localPosition = new Vector3(5f, 0f, 0f);
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+
+            // ルートPositionカーブを持つAnimationClipを作成（値は0）
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "m_LocalPosition.x",
+                new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, 0)));
+            animClip.SetCurve("", typeof(Transform), "m_LocalPosition.y",
+                new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, 0)));
+            animClip.SetCurve("", typeof(Transform), "m_LocalPosition.z",
+                new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, 0)));
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track, animator);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(1, results.Count);
+                Assert.IsTrue(results[0].IsSuccess);
+
+                var generatedClip = results[0].GeneratedClip;
+                Assert.IsNotNull(generatedClip);
+
+                // ルートPositionのXカーブを取得して、Animatorのオフセット(5)が加算されていることを確認
+                var bindings = AnimationUtility.GetCurveBindings(generatedClip);
+                EditorCurveBinding? posXBinding = null;
+                foreach (var b in bindings)
+                {
+                    if (b.path == "" && b.propertyName == "m_LocalPosition.x" && b.type == typeof(Transform))
+                    {
+                        posXBinding = b;
+                        break;
+                    }
+                }
+
+                Assert.IsTrue(posXBinding.HasValue, "m_LocalPosition.xのルートカーブが存在すべき");
+                var posXCurve = AnimationUtility.GetEditorCurve(generatedClip, posXBinding.Value);
+                Assert.IsNotNull(posXCurve);
+
+                // 元の値(0) + Animatorオフセット(5) = 5
+                Assert.AreEqual(5f, posXCurve.Evaluate(0f), 0.01f,
+                    "AnimatorのlocalPosition.x(5)がルートカーブに加算されるべき");
+                Assert.AreEqual(5f, posXCurve.Evaluate(1f), 0.01f,
+                    "AnimatorのlocalPosition.x(5)がルートカーブに加算されるべき");
+
+                // ログにTransformオフセット適用のメッセージが含まれることを確認
+                Assert.IsTrue(
+                    results[0].Logs.Exists(log => log.Contains("AnimatorのTransformオフセットを適用")),
+                    "Transformオフセット適用ログが出力されるべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(parentGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        [Test]
+        public void MergeFromPlayableDirector_Animatorの位置が原点の場合オフセットは適用されない()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+            var animatorGo = new GameObject("TestAnimator");
+            // localPosition = (0,0,0) のまま
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "m_LocalPosition.x",
+                new AnimationCurve(new Keyframe(0, 1), new Keyframe(1, 2)));
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track, animator);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(1, results.Count);
+                Assert.IsTrue(results[0].IsSuccess);
+
+                var generatedClip = results[0].GeneratedClip;
+                var bindings = AnimationUtility.GetCurveBindings(generatedClip);
+                EditorCurveBinding? posXBinding = null;
+                foreach (var b in bindings)
+                {
+                    if (b.path == "" && b.propertyName == "m_LocalPosition.x" && b.type == typeof(Transform))
+                    {
+                        posXBinding = b;
+                        break;
+                    }
+                }
+
+                Assert.IsTrue(posXBinding.HasValue);
+                var posXCurve = AnimationUtility.GetEditorCurve(generatedClip, posXBinding.Value);
+
+                // Animatorが原点にあるので元の値がそのまま
+                Assert.AreEqual(1f, posXCurve.Evaluate(0f), 0.01f,
+                    "Animatorが原点の場合、カーブ値は変更されないべき");
+                Assert.AreEqual(2f, posXCurve.Evaluate(1f), 0.01f,
+                    "Animatorが原点の場合、カーブ値は変更されないべき");
+
+                // Transformオフセット適用ログが出力されないことを確認
+                Assert.IsFalse(
+                    results[0].Logs.Exists(log => log.Contains("AnimatorのTransformオフセットを適用")),
+                    "原点の場合はTransformオフセット適用ログが出力されないべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(animatorGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        [Test]
+        public void MergeFromPlayableDirector_AnimatorのlocalRotationがルートカーブに反映される()
+        {
+            // Arrange
+            var go = new GameObject("TestDirector");
+            var director = go.AddComponent<PlayableDirector>();
+
+            var parentGo = new GameObject("Parent");
+            var animatorGo = new GameObject("TestAnimator");
+            animatorGo.transform.SetParent(parentGo.transform);
+            // Y軸90度回転
+            animatorGo.transform.localRotation = Quaternion.Euler(0, 90, 0);
+            var animator = animatorGo.AddComponent<Animator>();
+
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var track = timeline.CreateTrack<AnimationTrack>(null, "TestTrack");
+
+            // ルートRotationカーブを持つAnimationClip（identity回転）
+            var animClip = new AnimationClip();
+            animClip.SetCurve("", typeof(Transform), "m_LocalRotation.x",
+                new AnimationCurve(new Keyframe(0, 0)));
+            animClip.SetCurve("", typeof(Transform), "m_LocalRotation.y",
+                new AnimationCurve(new Keyframe(0, 0)));
+            animClip.SetCurve("", typeof(Transform), "m_LocalRotation.z",
+                new AnimationCurve(new Keyframe(0, 0)));
+            animClip.SetCurve("", typeof(Transform), "m_LocalRotation.w",
+                new AnimationCurve(new Keyframe(0, 1)));
+
+            var timelineClip = track.CreateClip<AnimationPlayableAsset>();
+            timelineClip.start = 0;
+            timelineClip.duration = 1;
+            (timelineClip.asset as AnimationPlayableAsset).clip = animClip;
+
+            director.playableAsset = timeline;
+            director.SetGenericBinding(track, animator);
+
+            try
+            {
+                // Act
+                var results = _service.MergeFromPlayableDirector(director);
+
+                // Assert
+                Assert.IsNotNull(results);
+                Assert.AreEqual(1, results.Count);
+                Assert.IsTrue(results[0].IsSuccess);
+
+                var generatedClip = results[0].GeneratedClip;
+                Assert.IsNotNull(generatedClip);
+
+                // Rotationカーブを取得
+                var bindings = AnimationUtility.GetCurveBindings(generatedClip);
+                AnimationCurve rotYCurve = null;
+                foreach (var b in bindings)
+                {
+                    if (b.path == "" && b.propertyName == "m_LocalRotation.y" && b.type == typeof(Transform))
+                    {
+                        rotYCurve = AnimationUtility.GetEditorCurve(generatedClip, b);
+                        break;
+                    }
+                }
+
+                Assert.IsNotNull(rotYCurve, "m_LocalRotation.yのルートカーブが存在すべき");
+
+                // Y軸90度回転のクォータニオンy成分 ≈ 0.7071
+                var expectedQ = Quaternion.Euler(0, 90, 0);
+                Assert.AreEqual(expectedQ.y, rotYCurve.Evaluate(0f), 0.01f,
+                    "AnimatorのlocalRotation(Y=90度)がルートカーブに反映されるべき");
+
+                // ログにTransformオフセット適用のメッセージが含まれることを確認
+                Assert.IsTrue(
+                    results[0].Logs.Exists(log => log.Contains("AnimatorのTransformオフセットを適用")),
+                    "Transformオフセット適用ログが出力されるべき");
+
+                // クリーンアップ用にパスを記録
+                foreach (var log in results[0].Logs)
+                {
+                    if (log.Contains(".anim"))
+                    {
+                        var parts = log.Split(' ');
+                        foreach (var part in parts)
+                        {
+                            if (part.EndsWith(".anim"))
+                            {
+                                _createdAssetPaths.Add(part);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(parentGo);
+                Object.DestroyImmediate(timeline);
+                Object.DestroyImmediate(animClip);
+            }
+        }
+
+        #endregion
+
         #region P16-004 PrepareFbxExportData Humanoid判定テスト
 
         [Test]
