@@ -87,6 +87,20 @@ namespace AnimationMergeTool.Editor.Domain
         /// <returns>統合されたAnimationClip</returns>
         public AnimationClip Merge(List<ClipInfo> clipInfos)
         {
+            return Merge(clipInfos, false);
+        }
+
+        /// <summary>
+        /// 複数のClipInfoを統合して単一のAnimationClipを生成する
+        /// sceneOffsetToRootMotion=trueの場合、SceneOffsetApplierによるボーン焼き込みの代わりに
+        /// path=""のTransformカーブ（ルートモーション）としてシーンオフセットを出力する
+        /// （Genericリグ向けFBXエクスポート用）
+        /// </summary>
+        /// <param name="clipInfos">統合対象のClipInfoリスト</param>
+        /// <param name="sceneOffsetToRootMotion">trueの場合、シーンオフセットをpath=""のルートモーションカーブとして出力</param>
+        /// <returns>統合されたAnimationClip</returns>
+        public AnimationClip Merge(List<ClipInfo> clipInfos, bool sceneOffsetToRootMotion)
+        {
             if (clipInfos == null || clipInfos.Count == 0)
             {
                 return null;
@@ -121,14 +135,29 @@ namespace AnimationMergeTool.Editor.Domain
                     }
                 }
 
-                // シーンオフセット（Position/Rotation）を適用
-                if (clipInfo.HasSceneOffset)
+                if (sceneOffsetToRootMotion)
                 {
-                    var sceneOffsetApplier = new SceneOffsetApplier();
-                    timeOffsetPairs = sceneOffsetApplier.Apply(
+                    // Genericリグ向け: シーンオフセットをpath=""のTransformカーブとして生成
+                    var startTime = (float)clipInfo.StartTime;
+                    var endTime = (float)clipInfo.EndTime;
+                    AddRootMotionCurvesForSceneOffset(
                         timeOffsetPairs,
                         clipInfo.SceneOffsetPosition,
-                        clipInfo.SceneOffsetRotation);
+                        clipInfo.SceneOffsetRotation,
+                        startTime,
+                        endTime);
+                }
+                else
+                {
+                    // 従来の動作: SceneOffsetApplierでボーンカーブに焼き込み
+                    if (clipInfo.HasSceneOffset)
+                    {
+                        var sceneOffsetApplier = new SceneOffsetApplier();
+                        timeOffsetPairs = sceneOffsetApplier.Apply(
+                            timeOffsetPairs,
+                            clipInfo.SceneOffsetPosition,
+                            clipInfo.SceneOffsetRotation);
+                    }
                 }
 
                 foreach (var pair in timeOffsetPairs)
@@ -155,6 +184,70 @@ namespace AnimationMergeTool.Editor.Domain
             }
 
             return resultClip;
+        }
+
+        /// <summary>
+        /// シーンオフセットをpath=""のTransformカーブ（ルートモーション）として追加する
+        /// オフセットがない場合もゼロ/Identity値のカーブを出力し、
+        /// ステップ補間で前クリップのオフセット値が漏れるのを防止する
+        /// </summary>
+        /// <param name="pairs">カーブリスト（変更される）</param>
+        /// <param name="position">シーンオフセット位置</param>
+        /// <param name="rotation">シーンオフセット回転</param>
+        /// <param name="startTime">クリップのTimeline上の開始時間</param>
+        /// <param name="endTime">クリップのTimeline上の終了時間</param>
+        internal void AddRootMotionCurvesForSceneOffset(
+            List<CurveBindingPair> pairs,
+            Vector3 position,
+            Quaternion rotation,
+            float startTime,
+            float endTime)
+        {
+            // Position (m_LocalPosition.x/y/z)
+            var posValues = new[] { position.x, position.y, position.z };
+            var posNames = new[] { "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z" };
+            for (var i = 0; i < 3; i++)
+            {
+                var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), posNames[i]);
+                var curve = CreateConstantCurve(posValues[i], startTime, endTime);
+                pairs.Add(new CurveBindingPair(binding, curve));
+            }
+
+            // Rotation (m_LocalRotation.x/y/z/w)
+            var rotValues = new[] { rotation.x, rotation.y, rotation.z, rotation.w };
+            var rotNames = new[] { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" };
+            for (var i = 0; i < 4; i++)
+            {
+                var binding = EditorCurveBinding.FloatCurve("", typeof(Transform), rotNames[i]);
+                var curve = CreateConstantCurve(rotValues[i], startTime, endTime);
+                pairs.Add(new CurveBindingPair(binding, curve));
+            }
+        }
+
+        /// <summary>
+        /// ステップ補間の定数カーブを生成する
+        /// startTimeとendTimeに同じ値のキーフレームを配置し、tangent=∞でステップ補間にする
+        /// </summary>
+        /// <param name="value">定数値</param>
+        /// <param name="startTime">開始時間</param>
+        /// <param name="endTime">終了時間</param>
+        /// <returns>定数値のAnimationCurve</returns>
+        internal AnimationCurve CreateConstantCurve(float value, float startTime, float endTime)
+        {
+            var curve = new AnimationCurve();
+            var startKey = new Keyframe(startTime, value)
+            {
+                inTangent = float.PositiveInfinity,
+                outTangent = float.PositiveInfinity
+            };
+            var endKey = new Keyframe(endTime, value)
+            {
+                inTangent = float.PositiveInfinity,
+                outTangent = float.PositiveInfinity
+            };
+            curve.AddKey(startKey);
+            curve.AddKey(endKey);
+            return curve;
         }
 
         /// <summary>

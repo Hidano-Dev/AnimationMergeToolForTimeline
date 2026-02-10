@@ -1175,6 +1175,33 @@ namespace AnimationMergeTool.Editor.Infrastructure
             // Transformカーブを抽出
             var transformCurves = ExtractTransformCurves(clip, animator);
 
+            // ルートモーションカーブ（RootT/RootQ）の処理
+            // RootT/RootQはtypeof(Animator)のため、ExtractTransformCurvesでは抽出されない
+            var rootMotionCurves = _humanoidConverter.ConvertRootMotionCurves(clip, "");
+            if (rootMotionCurves.Count > 0)
+            {
+                // RootQ（回転）はpath=""のlocalRotationとして追加（中間ノードの回転がidentityなら正しい）
+                var rotationCurves = rootMotionCurves
+                    .Where(c => c.CurveType == TransformCurveType.Rotation)
+                    .ToList();
+                transformCurves.AddRange(rotationCurves);
+
+                // RootT（位置）はpath=""に置くと中間ノードの位置オフセットで結果がずれるため、
+                // SampleAnimationでルートボーンの親空間に変換してベイクする
+                if (animator != null)
+                {
+                    BakeRootMotionPosition(animator, clip, transformCurves);
+                }
+                else
+                {
+                    // Animatorがない場合はpath=""にフォールバック
+                    var positionCurves = rootMotionCurves
+                        .Where(c => c.CurveType == TransformCurveType.Position)
+                        .ToList();
+                    transformCurves.AddRange(positionCurves);
+                }
+            }
+
             // BlendShapeカーブを抽出
             var blendShapeCurves = ExtractBlendShapeCurves(clip, animator);
 
@@ -1186,6 +1213,177 @@ namespace AnimationMergeTool.Editor.Infrastructure
                 transformCurves,
                 blendShapeCurves,
                 isHumanoid);
+        }
+
+        /// <summary>
+        /// RootTカーブをSampleAnimationでルートボーンの親空間にベイクする。
+        /// path=""に直接配置すると中間ノード（Armature等）の位置オフセットで結果がずれるため、
+        /// SampleAnimationでRootTを適用した結果のルートボーン位置をキャプチャし、
+        /// 親空間のlocalPositionとして書き戻す。
+        /// </summary>
+        /// <param name="animator">対象のAnimator</param>
+        /// <param name="clip">マージ済みクリップ</param>
+        /// <param name="transformCurves">変換先のカーブリスト（既存のルートボーン位置カーブは置換される）</param>
+        private void BakeRootMotionPosition(
+            Animator animator,
+            AnimationClip clip,
+            List<TransformCurveData> transformCurves)
+        {
+            // RootTカーブを取得
+            var rootTx = AnimationUtility.GetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x"));
+            var rootTy = AnimationUtility.GetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.y"));
+            var rootTz = AnimationUtility.GetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.z"));
+
+            if (rootTx == null && rootTy == null && rootTz == null)
+            {
+                return;
+            }
+
+            // RootQカーブも取得（サンプリング時に回転も反映する必要がある）
+            var rootQx = AnimationUtility.GetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.x"));
+            var rootQy = AnimationUtility.GetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.y"));
+            var rootQz = AnimationUtility.GetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.z"));
+            var rootQw = AnimationUtility.GetEditorCurve(clip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.w"));
+            bool hasRootQ = rootQx != null || rootQy != null || rootQz != null || rootQw != null;
+
+            // ルートボーンパスを特定（localPositionカーブを持つ最初のボーン）
+            string rootBonePath = FindRootBonePathFromCurves(transformCurves);
+            if (rootBonePath == null)
+            {
+                // ルートボーンが見つからない場合はpath=""にフォールバック
+                if (rootTx != null) transformCurves.Add(new TransformCurveData("", "localPosition.x", rootTx, TransformCurveType.Position));
+                if (rootTy != null) transformCurves.Add(new TransformCurveData("", "localPosition.y", rootTy, TransformCurveType.Position));
+                if (rootTz != null) transformCurves.Add(new TransformCurveData("", "localPosition.z", rootTz, TransformCurveType.Position));
+                return;
+            }
+
+            // ルートボーンのTransformを取得
+            Transform rootBoneTransform = animator.transform.Find(rootBonePath);
+            if (rootBoneTransform == null)
+            {
+                return;
+            }
+
+            Transform rootBoneParent = rootBoneTransform.parent;
+            if (rootBoneParent == null)
+            {
+                return;
+            }
+
+            // Animatorの元の状態を保存
+            var origPos = animator.transform.localPosition;
+            var origRot = animator.transform.localRotation;
+
+            // リファレンスフレーム取得（Animatorを原点にリセットした状態）
+            animator.transform.localPosition = Vector3.zero;
+            animator.transform.localRotation = Quaternion.identity;
+            var refWorldToLocal = rootBoneParent.worldToLocalMatrix;
+
+            // 出力カーブ
+            var posX = new AnimationCurve();
+            var posY = new AnimationCurve();
+            var posZ = new AnimationCurve();
+
+            float frameRate = clip.frameRate > 0 ? clip.frameRate : 60f;
+            float duration = clip.length;
+            float sampleInterval = 1f / frameRate;
+
+            // 各フレームをサンプリング
+            for (float time = 0; time <= duration + sampleInterval * 0.5f; time += sampleInterval)
+            {
+                float sampleTime = Mathf.Min(time, duration);
+
+                // クリップをサンプリング
+                clip.SampleAnimation(animator.gameObject, sampleTime);
+
+                // isHumanMotion=falseのため、SampleAnimationはRootT/RootQを適用しない
+                // 手動でAnimator.transformに適用する
+                animator.transform.localPosition = new Vector3(
+                    rootTx?.Evaluate(sampleTime) ?? 0f,
+                    rootTy?.Evaluate(sampleTime) ?? 0f,
+                    rootTz?.Evaluate(sampleTime) ?? 0f);
+
+                if (hasRootQ)
+                {
+                    animator.transform.localRotation = new Quaternion(
+                        rootQx?.Evaluate(sampleTime) ?? 0f,
+                        rootQy?.Evaluate(sampleTime) ?? 0f,
+                        rootQz?.Evaluate(sampleTime) ?? 0f,
+                        rootQw?.Evaluate(sampleTime) ?? 1f);
+                }
+
+                // ルートボーンのワールド座標を取得し、リファレンス時の親空間に変換
+                Vector3 worldPos = rootBoneTransform.position;
+                Vector3 localPos = refWorldToLocal.MultiplyPoint3x4(worldPos);
+
+                posX.AddKey(sampleTime, localPos.x);
+                posY.AddKey(sampleTime, localPos.y);
+                posZ.AddKey(sampleTime, localPos.z);
+            }
+
+            // Animatorの状態を復元
+            animator.transform.localPosition = origPos;
+            animator.transform.localRotation = origRot;
+
+            // 既存のルートボーンlocalPositionカーブを除去
+            transformCurves.RemoveAll(c =>
+                c.Path == rootBonePath && c.CurveType == TransformCurveType.Position);
+
+            // ベイク済みカーブを追加
+            transformCurves.Add(new TransformCurveData(rootBonePath, "m_LocalPosition.x", posX, TransformCurveType.Position));
+            transformCurves.Add(new TransformCurveData(rootBonePath, "m_LocalPosition.y", posY, TransformCurveType.Position));
+            transformCurves.Add(new TransformCurveData(rootBonePath, "m_LocalPosition.z", posZ, TransformCurveType.Position));
+        }
+
+        /// <summary>
+        /// Transformカーブリストからルートボーンのパスを取得する。
+        /// まずPositionカーブから探し、見つからない場合はRotationカーブから探す（Genericリグ対応）。
+        /// path=""（ルートオブジェクト自体）は除外し、実際のボーンパスのみを対象とする。
+        /// </summary>
+        private string FindRootBonePathFromCurves(List<TransformCurveData> curves)
+        {
+            // まずPositionカーブから探す
+            string result = FindShallowBonePathByCurveType(curves, TransformCurveType.Position);
+            if (result != null) return result;
+
+            // Positionカーブがない場合はRotationカーブから探す（Genericリグ対応）
+            return FindShallowBonePathByCurveType(curves, TransformCurveType.Rotation);
+        }
+
+        /// <summary>
+        /// 指定されたカーブタイプのカーブから、最も階層が浅いボーンパスを取得する。
+        /// </summary>
+        /// <param name="curves">TransformカーブリストI</param>
+        /// <param name="curveType">検索対象のカーブタイプ</param>
+        /// <returns>最浅ボーンパス（見つからない場合はnull）</returns>
+        private string FindShallowBonePathByCurveType(List<TransformCurveData> curves, TransformCurveType curveType)
+        {
+            string shortestPath = null;
+            int shortestDepth = int.MaxValue;
+
+            foreach (var curve in curves)
+            {
+                if (curve.CurveType != curveType || string.IsNullOrEmpty(curve.Path))
+                {
+                    continue;
+                }
+
+                int depth = curve.Path.Split('/').Length;
+                if (depth < shortestDepth)
+                {
+                    shortestDepth = depth;
+                    shortestPath = curve.Path;
+                }
+            }
+
+            return shortestPath;
         }
 
         /// <summary>

@@ -5,6 +5,21 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.0.0/) に基づいており、
 このプロジェクトは [Semantic Versioning](https://semver.org/spec/v2.0.0.html) に準拠しています。
 
+## [1.1.3] - 2026-02-10
+
+### Fixed
+
+- FBXエクスポート時にマージ済みクリップのRootT/RootQがHips位置・回転に反映されない不具合を修正
+  - マージ済みクリップは`isHumanMotion=false`のため、`SampleAnimation`がRootT/RootQを`Animator.transform`に適用しない問題
+  - サンプリングループ内でRootT/RootQカーブを手動評価して`Animator.transform`に設定するよう修正
+  - Humanoidクリップの場合は従来通り`SampleAnimation`に委譲し、二重適用を防止
+- GenericリグモデルのFBXエクスポート時にルートモーションのPosition（移動）が反映されない不具合を修正
+  - `FindRootBonePathFromCurves`がPositionカーブのみを検索していたため、Positionカーブを持たないGenericリグでルートボーンパスが特定できなかった
+  - Positionカーブが見つからない場合にRotationカーブからもルートボーンパスを検索するよう修正
+- GenericリグモデルでAnimationPlayableAssetのシーンオフセット（Position/Rotation）がFBX出力に反映されない不具合を修正
+  - `SceneOffsetApplier.FindRootCurve`がpath=""のカーブのみを検索していたため、ルートボーンが非空パス（例: "fbxJnt_grp/J_C_hip"）にあるGenericリグではオフセットが適用されなかった
+  - path=""が見つからない場合に最も浅いパスのカーブにフォールバックするよう修正
+
 ## [1.1.2] - 2026-02-09
 
 ### Fixed

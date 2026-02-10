@@ -221,12 +221,14 @@ namespace AnimationMergeTool.Editor.Application
         /// <param name="tracks">トラックリスト</param>
         /// <param name="outputDirectory">出力ディレクトリ</param>
         /// <param name="saveToAsset">trueの場合.animファイルとして保存、falseの場合メモリ上にのみ生成</param>
+        /// <param name="sceneOffsetToRootMotion">trueの場合、シーンオフセットをpath=""のルートモーションカーブとして出力（Genericリグ向け）</param>
         private MergeResult MergeTracksForAnimator(
             TimelineAsset timelineAsset,
             Animator animator,
             List<TrackInfo> tracks,
             string outputDirectory,
-            bool saveToAsset = true)
+            bool saveToAsset = true,
+            bool sceneOffsetToRootMotion = false)
         {
             var result = new MergeResult(animator);
 
@@ -277,7 +279,7 @@ namespace AnimationMergeTool.Editor.Application
                 var trackEndTime = (float)clipInfos.Max(c => c.EndTime);
 
                 // 同じトラック内のクリップを先に統合（ClipMergerを使用）
-                var mergedTrackClip = clipMerger.Merge(clipInfos);
+                var mergedTrackClip = clipMerger.Merge(clipInfos, sceneOffsetToRootMotion);
                 if (mergedTrackClip == null)
                 {
                     continue;
@@ -488,7 +490,11 @@ namespace AnimationMergeTool.Editor.Application
                 var animator = kvp.Key;
                 var tracks = kvp.Value;
 
-                var result = MergeTracksForAnimator(timelineAsset, animator, tracks, null, saveToAsset: false);
+                // Genericリグの場合、シーンオフセットをpath=""のルートモーションカーブとして出力
+                bool sceneOffsetToRootMotion = animator != null && !animator.isHuman;
+
+                var result = MergeTracksForAnimator(timelineAsset, animator, tracks, null,
+                    saveToAsset: false, sceneOffsetToRootMotion: sceneOffsetToRootMotion);
                 if (result != null)
                 {
                     results.Add(result);

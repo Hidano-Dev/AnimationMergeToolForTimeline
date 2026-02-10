@@ -205,7 +205,9 @@ namespace AnimationMergeTool.Editor.Domain
             }
 
             // 既にresultに追加済みのカーブと重複しないよう確認
-            if (result.Any(r => r.Binding.path == "" && r.Binding.propertyName == propertyNames[0] && r.Binding.type == bindingType))
+            // 見つかったカーブのパスで比較する（path=""固定ではなくGenericリグにも対応）
+            var foundPath = curves[0].Binding.path;
+            if (result.Any(r => r.Binding.path == foundPath && r.Binding.propertyName == propertyNames[0] && r.Binding.type == bindingType))
             {
                 return;
             }
@@ -253,13 +255,15 @@ namespace AnimationMergeTool.Editor.Domain
         }
 
         /// <summary>
-        /// ルートパス（path==""）のカーブを検索する
+        /// ルートカーブを検索する
+        /// まずpath=""のカーブを探し、見つからない場合は最も浅いパスのカーブを返す（Genericリグ対応）
         /// </summary>
         private CurveBindingPair FindRootCurve(
             List<CurveBindingPair> pairs,
             string propertyName,
             System.Type bindingType)
         {
+            // まずpath=""のカーブを探す（Humanoidリグ、path=""のTransformカーブ）
             foreach (var pair in pairs)
             {
                 if (pair.Binding.path == "" &&
@@ -270,7 +274,28 @@ namespace AnimationMergeTool.Editor.Domain
                 }
             }
 
-            return null;
+            // path=""が見つからない場合、最も浅いパスのカーブを探す（Genericリグ対応）
+            // Genericリグではルートボーンがpath=""ではなく "fbxJnt_grp/J_C_hip" 等のパスにある
+            CurveBindingPair shallowest = null;
+            int shallowestDepth = int.MaxValue;
+            foreach (var pair in pairs)
+            {
+                if (string.IsNullOrEmpty(pair.Binding.path) ||
+                    pair.Binding.propertyName != propertyName ||
+                    pair.Binding.type != bindingType)
+                {
+                    continue;
+                }
+
+                int depth = pair.Binding.path.Split('/').Length;
+                if (depth < shallowestDepth)
+                {
+                    shallowestDepth = depth;
+                    shallowest = pair;
+                }
+            }
+
+            return shallowest;
         }
     }
 }
