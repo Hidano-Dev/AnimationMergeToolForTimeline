@@ -5,6 +5,21 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.0.0/) に基づいており、
 このプロジェクトは [Semantic Versioning](https://semver.org/spec/v2.0.0.html) に準拠しています。
 
+## [1.2.0] - 2026-02-20
+
+### Fixed
+
+- Extrapolation=None設定時に、同一トラック内のクリップ間Gap区間で上位レイヤーの値が反映されない不具合を修正
+  - Gap区間で下位レイヤーのクリップ最終フレーム値がHoldされ、上位レイヤーの値が見えなくなる問題
+  - トラックの有効範囲を「クリップごとのアクティブ区間リスト」として管理するアプローチで修正
+  - CurveOverriderがGap区間では上位レイヤーの値を保持するよう改修
+
+### Added
+
+- `ActiveInterval`構造体を新規追加（トラック内のクリップ有効区間を表現）
+- `CurveOverrider.ApplyPartialOverrideWithActiveIntervals()`メソッドを新規追加
+- `CurveWithTimeRange`にアクティブ区間対応コンストラクタを追加
+
 ## [1.1.3] - 2026-02-10
 
 ### Fixed
