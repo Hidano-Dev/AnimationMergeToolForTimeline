@@ -2202,5 +2202,235 @@ namespace AnimationMergeTool.Editor.Tests
         }
 
         #endregion
+
+        #region sceneOffsetToRootMotionテスト
+
+        [Test]
+        public void Merge_sceneOffsetToRootMotion_Positionオフセットがpath空のTransformカーブに出力される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            var binding = EditorCurveBinding.FloatCurve("Hips", typeof(Transform), "m_LocalRotation.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, AnimationCurve.Linear(0, 0, 1, 0.5f));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip,
+                new Vector3(1f, 2f, 3f), Quaternion.identity);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos, sceneOffsetToRootMotion: true);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultCurves = _clipMerger.GetAnimationCurves(result);
+
+            // path=""のm_LocalPosition.x/y/zカーブが存在する
+            var posXBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            var posYBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.y");
+            var posZBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.z");
+            var posX = _clipMerger.GetAnimationCurve(result, posXBinding);
+            var posY = _clipMerger.GetAnimationCurve(result, posYBinding);
+            var posZ = _clipMerger.GetAnimationCurve(result, posZBinding);
+
+            Assert.IsNotNull(posX, "m_LocalPosition.x カーブが存在すること");
+            Assert.IsNotNull(posY, "m_LocalPosition.y カーブが存在すること");
+            Assert.IsNotNull(posZ, "m_LocalPosition.z カーブが存在すること");
+
+            // 値がシーンオフセットと一致する
+            Assert.AreEqual(1f, posX.keys[0].value, 0.0001f);
+            Assert.AreEqual(2f, posY.keys[0].value, 0.0001f);
+            Assert.AreEqual(3f, posZ.keys[0].value, 0.0001f);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_sceneOffsetToRootMotion_Rotationオフセットがpath空のTransformカーブに出力される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            var binding = EditorCurveBinding.FloatCurve("Hips", typeof(Transform), "m_LocalRotation.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, AnimationCurve.Linear(0, 0, 1, 0.5f));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var offsetRotation = Quaternion.Euler(0, 90, 0);
+            var clipInfo = new ClipInfo(timelineClip, animClip,
+                Vector3.zero, offsetRotation);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos, sceneOffsetToRootMotion: true);
+
+            // Assert
+            Assert.IsNotNull(result);
+
+            var rotXBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalRotation.x");
+            var rotYBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalRotation.y");
+            var rotZBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalRotation.z");
+            var rotWBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalRotation.w");
+            var rotX = _clipMerger.GetAnimationCurve(result, rotXBinding);
+            var rotY = _clipMerger.GetAnimationCurve(result, rotYBinding);
+            var rotZ = _clipMerger.GetAnimationCurve(result, rotZBinding);
+            var rotW = _clipMerger.GetAnimationCurve(result, rotWBinding);
+
+            Assert.IsNotNull(rotX, "m_LocalRotation.x カーブが存在すること");
+            Assert.IsNotNull(rotY, "m_LocalRotation.y カーブが存在すること");
+            Assert.IsNotNull(rotZ, "m_LocalRotation.z カーブが存在すること");
+            Assert.IsNotNull(rotW, "m_LocalRotation.w カーブが存在すること");
+
+            // Quaternion.Euler(0, 90, 0) の値と一致する
+            Assert.AreEqual(offsetRotation.x, rotX.keys[0].value, 0.001f);
+            Assert.AreEqual(offsetRotation.y, rotY.keys[0].value, 0.001f);
+            Assert.AreEqual(offsetRotation.z, rotZ.keys[0].value, 0.001f);
+            Assert.AreEqual(offsetRotation.w, rotW.keys[0].value, 0.001f);
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_sceneOffsetToRootMotion_ボーンカーブが変更されない()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            var hipsBinding = EditorCurveBinding.FloatCurve("Hips", typeof(Transform), "m_LocalPosition.x");
+            AnimationUtility.SetEditorCurve(animClip, hipsBinding, AnimationCurve.Linear(0, 10f, 1, 20f));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            var clipInfo = new ClipInfo(timelineClip, animClip,
+                new Vector3(5f, 0f, 0f), Quaternion.identity);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos, sceneOffsetToRootMotion: true);
+
+            // Assert
+            Assert.IsNotNull(result);
+
+            // Hipsのカーブはシーンオフセットの影響を受けない
+            var hipsCurve = _clipMerger.GetAnimationCurve(result, hipsBinding);
+            Assert.IsNotNull(hipsCurve, "Hipsカーブが存在すること");
+            Assert.AreEqual(10f, hipsCurve.keys[0].value, 0.0001f, "Hipsの開始値が元のまま");
+            Assert.AreEqual(20f, hipsCurve.keys[1].value, 0.0001f, "Hipsの終了値が元のまま");
+
+            // シーンオフセットはpath=""に出力される
+            var rootPosXBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            var rootPosX = _clipMerger.GetAnimationCurve(result, rootPosXBinding);
+            Assert.IsNotNull(rootPosX, "ルートのm_LocalPosition.xカーブが存在すること");
+            Assert.AreEqual(5f, rootPosX.keys[0].value, 0.0001f, "ルートにシーンオフセットが出力される");
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_sceneOffsetToRootMotion_オフセットなしクリップでpath空にゼロとIdentityが出力される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+            var animClip = new AnimationClip();
+            var binding = EditorCurveBinding.FloatCurve("Hips", typeof(Transform), "m_LocalRotation.x");
+            AnimationUtility.SetEditorCurve(animClip, binding, AnimationCurve.Linear(0, 0, 1, 0.5f));
+
+            var timelineClip = _animationTrack.CreateClip(animClip);
+            timelineClip.start = 0.0;
+            timelineClip.duration = 1.0;
+            // オフセットなし（Vector3.zero, Quaternion.identity）
+            var clipInfo = new ClipInfo(timelineClip, animClip,
+                Vector3.zero, Quaternion.identity);
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos, sceneOffsetToRootMotion: true);
+
+            // Assert
+            Assert.IsNotNull(result);
+
+            // path=""にゼロ/Identityの定数カーブが出力される
+            var posXBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            var posX = _clipMerger.GetAnimationCurve(result, posXBinding);
+            Assert.IsNotNull(posX, "オフセットなしでもm_LocalPosition.xカーブが存在すること");
+            Assert.AreEqual(0f, posX.keys[0].value, 0.0001f, "Position.xがゼロ");
+
+            var rotWBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalRotation.w");
+            var rotW = _clipMerger.GetAnimationCurve(result, rotWBinding);
+            Assert.IsNotNull(rotW, "オフセットなしでもm_LocalRotation.wカーブが存在すること");
+            Assert.AreEqual(1f, rotW.keys[0].value, 0.0001f, "Rotation.wがIdentity(1)");
+
+            Object.DestroyImmediate(animClip);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        [Test]
+        public void Merge_sceneOffsetToRootMotion_複数クリップで異なるオフセットが正しく統合される()
+        {
+            // Arrange
+            SetUpTimelineForTimeOffsetTests();
+
+            // クリップ1: Position=(1,0,0)
+            var animClip1 = new AnimationClip();
+            var binding1 = EditorCurveBinding.FloatCurve("Hips", typeof(Transform), "m_LocalRotation.x");
+            AnimationUtility.SetEditorCurve(animClip1, binding1, AnimationCurve.Linear(0, 0, 1, 0.3f));
+            var timelineClip1 = _animationTrack.CreateClip(animClip1);
+            timelineClip1.start = 0.0;
+            timelineClip1.duration = 1.0;
+            var clipInfo1 = new ClipInfo(timelineClip1, animClip1,
+                new Vector3(1f, 0f, 0f), Quaternion.identity);
+
+            // クリップ2: Position=(5,0,0)、2秒から開始
+            var animClip2 = new AnimationClip();
+            var binding2 = EditorCurveBinding.FloatCurve("Hips", typeof(Transform), "m_LocalRotation.x");
+            AnimationUtility.SetEditorCurve(animClip2, binding2, AnimationCurve.Linear(0, 0, 1, 0.6f));
+            var timelineClip2 = _animationTrack.CreateClip(animClip2);
+            timelineClip2.start = 2.0;
+            timelineClip2.duration = 1.0;
+            var clipInfo2 = new ClipInfo(timelineClip2, animClip2,
+                new Vector3(5f, 0f, 0f), Quaternion.identity);
+
+            var clipInfos = new System.Collections.Generic.List<ClipInfo> { clipInfo1, clipInfo2 };
+
+            // Act
+            var result = _clipMerger.Merge(clipInfos, sceneOffsetToRootMotion: true);
+
+            // Assert
+            Assert.IsNotNull(result);
+
+            var posXBinding = EditorCurveBinding.FloatCurve("", typeof(Transform), "m_LocalPosition.x");
+            var posX = _clipMerger.GetAnimationCurve(result, posXBinding);
+            Assert.IsNotNull(posX, "m_LocalPosition.xカーブが存在すること");
+
+            // 4キー: clip1のstart(0s)=1, clip1のend(1s)=1, clip2のstart(2s)=5, clip2のend(3s)=5
+            Assert.AreEqual(4, posX.keys.Length, "4キーフレーム（各クリップの開始・終了）");
+            Assert.AreEqual(0f, posX.keys[0].time, 0.0001f);
+            Assert.AreEqual(1f, posX.keys[0].value, 0.0001f, "クリップ1のオフセット=1");
+            Assert.AreEqual(1f, posX.keys[1].time, 0.0001f);
+            Assert.AreEqual(1f, posX.keys[1].value, 0.0001f);
+            Assert.AreEqual(2f, posX.keys[2].time, 0.0001f);
+            Assert.AreEqual(5f, posX.keys[2].value, 0.0001f, "クリップ2のオフセット=5");
+            Assert.AreEqual(3f, posX.keys[3].time, 0.0001f);
+            Assert.AreEqual(5f, posX.keys[3].value, 0.0001f);
+
+            Object.DestroyImmediate(animClip1);
+            Object.DestroyImmediate(animClip2);
+            Object.DestroyImmediate(result);
+            TearDownTimelineForTimeOffsetTests();
+        }
+
+        #endregion
     }
 }

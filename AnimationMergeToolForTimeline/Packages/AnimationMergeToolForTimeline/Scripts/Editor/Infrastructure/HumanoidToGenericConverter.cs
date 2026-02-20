@@ -142,20 +142,53 @@ namespace AnimationMergeTool.Editor.Infrastructure
             // Hipsの親のワールド座標系を参照として保存
             // SampleAnimationはルートモーション（RootT/RootQ）をAnimator.transformに適用するため、
             // HipsのlocalPositionにはルートモーションが含まれない。
-            // T=0時のHips親のワールド行列を参照として保存し、各フレームでHipsのワールド座標を
-            // この参照空間に変換することで、ルートモーションを含んだ正しいlocalPositionが得られる。
+            // Animator.transformを原点にリセットした状態でリファレンスを取得し、
+            // 各フレームでHipsのワールド座標をこの参照空間に変換することで、
+            // ルートモーション全体（シーンオフセット含む）を含んだ正しいlocalPositionが得られる。
+            //
+            // 注意: 以前はSampleAnimation(T=0)後にリファレンスを取得していたが、
+            // この方法ではRootT(0)に含まれるシーンオフセットがリファレンスに含まれ、
+            // 各フレームの結果から差し引かれてオフセットが消失していた。
             var hipsParentRefWorldToLocal = Matrix4x4.identity;
             var hipsParentRefWorldRotInverse = Quaternion.identity;
             if (hipsTransformRef != null)
             {
-                humanoidClip.SampleAnimation(animator.gameObject, 0);
                 Transform hipsParent = hipsTransformRef.parent;
                 if (hipsParent != null)
                 {
+                    // Animatorの位置/回転を原点にリセットしてリファレンスを取得する。
+                    // これにより、SampleAnimationで適用されるRootT/RootQ（シーンオフセット含む）が
+                    // リファレンスに含まれず、出力にルートモーション全体が保持される。
+                    animator.transform.localPosition = Vector3.zero;
+                    animator.transform.localRotation = Quaternion.identity;
                     hipsParentRefWorldToLocal = hipsParent.worldToLocalMatrix;
                     hipsParentRefWorldRotInverse = Quaternion.Inverse(hipsParent.rotation);
                 }
             }
+
+            // マージ済みクリップの場合、isHumanMotion=falseのため
+            // SampleAnimationがRootT/RootQをAnimator.transformに適用しない。
+            // RootT/RootQカーブを事前に取得し、サンプリング後に手動で適用する。
+            var rootTxCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.x"));
+            var rootTyCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.y"));
+            var rootTzCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootT.z"));
+            var rootQxCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.x"));
+            var rootQyCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.y"));
+            var rootQzCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.z"));
+            var rootQwCurve = AnimationUtility.GetEditorCurve(humanoidClip,
+                EditorCurveBinding.FloatCurve("", typeof(Animator), "RootQ.w"));
+            bool hasRootTCurves = rootTxCurve != null || rootTyCurve != null || rootTzCurve != null;
+            bool hasRootQCurves = rootQxCurve != null || rootQyCurve != null ||
+                                  rootQzCurve != null || rootQwCurve != null;
+            // Humanoidクリップの場合はSampleAnimationが自動でRootT/RootQを適用するため不要
+            bool needsManualRootMotion = !humanoidClip.isHumanMotion &&
+                                         (hasRootTCurves || hasRootQCurves);
 
             // 各フレームをサンプリング
             for (float time = 0; time <= duration + sampleInterval * 0.5f; time += sampleInterval)
@@ -165,6 +198,27 @@ namespace AnimationMergeTool.Editor.Infrastructure
 
                 // クリップをサンプリング
                 humanoidClip.SampleAnimation(animator.gameObject, sampleTime);
+
+                // マージ済みクリップ（isHumanMotion=false）の場合、SampleAnimationが
+                // RootT/RootQをAnimator.transformに適用しないため、手動で適用する
+                if (needsManualRootMotion)
+                {
+                    if (hasRootTCurves)
+                    {
+                        animator.transform.localPosition = new Vector3(
+                            rootTxCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootTyCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootTzCurve?.Evaluate(sampleTime) ?? 0f);
+                    }
+                    if (hasRootQCurves)
+                    {
+                        animator.transform.localRotation = new Quaternion(
+                            rootQxCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootQyCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootQzCurve?.Evaluate(sampleTime) ?? 0f,
+                            rootQwCurve?.Evaluate(sampleTime) ?? 1f);
+                    }
+                }
 
                 // Hipsの位置を記録（ルートモーションを含む）
                 if (hipsPositionCurves != null && hipsTransformRef != null)

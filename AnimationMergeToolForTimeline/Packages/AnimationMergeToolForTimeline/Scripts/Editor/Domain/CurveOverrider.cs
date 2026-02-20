@@ -191,6 +191,125 @@ namespace AnimationMergeTool.Editor.Domain
         }
 
         /// <summary>
+        /// アクティブ区間を考慮した部分的Override処理を行う
+        /// Extrapolation=None時のGap区間で低優先順位カーブが正しく保持されるようにする
+        /// </summary>
+        /// <param name="lowerPriorityCurve">低優先順位（上の段）のカーブ</param>
+        /// <param name="higherPriorityCurve">高優先順位（下の段）のカーブ</param>
+        /// <param name="activeIntervals">高優先順位カーブのアクティブ区間リスト</param>
+        /// <returns>Override処理後のカーブ</returns>
+        public AnimationCurve ApplyPartialOverrideWithActiveIntervals(
+            AnimationCurve lowerPriorityCurve,
+            AnimationCurve higherPriorityCurve,
+            List<ActiveInterval> activeIntervals)
+        {
+            var resultCurve = new AnimationCurve();
+
+            // null チェック
+            if (higherPriorityCurve == null)
+            {
+                return lowerPriorityCurve != null ? CopyCurve(lowerPriorityCurve) : resultCurve;
+            }
+
+            if (lowerPriorityCurve == null)
+            {
+                return CopyCurve(higherPriorityCurve);
+            }
+
+            // ActiveIntervalsが未設定の場合は従来のApplyPartialOverrideにフォールバック
+            if (activeIntervals == null || activeIntervals.Count == 0)
+            {
+                var higherKeys = higherPriorityCurve.keys;
+                if (higherKeys.Length > 0)
+                {
+                    return ApplyPartialOverride(lowerPriorityCurve, higherPriorityCurve,
+                        higherKeys[0].time, higherKeys[higherKeys.Length - 1].time);
+                }
+                return CopyCurve(lowerPriorityCurve);
+            }
+
+            // 1. 高優先順位カーブのキー → アクティブ区間内のもののみ追加
+            foreach (var key in higherPriorityCurve.keys)
+            {
+                if (IsInAnyActiveInterval(key.time, activeIntervals))
+                {
+                    resultCurve.AddKey(key);
+                }
+            }
+
+            // 2. 低優先順位カーブのキー → アクティブ区間外のもののみ追加
+            foreach (var key in lowerPriorityCurve.keys)
+            {
+                if (!IsInAnyActiveInterval(key.time, activeIntervals))
+                {
+                    resultCurve.AddKey(key);
+                }
+            }
+
+            // 3. ギャップ区間の境界に低優先順位カーブからの遷移キーを追加
+            const float boundaryOffset = 0.001f;
+            for (var i = 0; i < activeIntervals.Count - 1; i++)
+            {
+                var gapStart = activeIntervals[i].EndTime;
+                var gapEnd = activeIntervals[i + 1].StartTime;
+
+                // ギャップが十分に大きい場合のみ遷移キーを追加
+                if (gapEnd - gapStart <= boundaryOffset * 2)
+                {
+                    continue;
+                }
+
+                // ギャップ開始点付近に低優先順位カーブの値を追加
+                var nearGapStart = gapStart + boundaryOffset;
+                if (!HasKeyNearTime(resultCurve, nearGapStart, boundaryOffset * 0.5f))
+                {
+                    var value = lowerPriorityCurve.Evaluate(nearGapStart);
+                    resultCurve.AddKey(new Keyframe(nearGapStart, value));
+                }
+
+                // ギャップ終了点付近に低優先順位カーブの値を追加
+                var nearGapEnd = gapEnd - boundaryOffset;
+                if (!HasKeyNearTime(resultCurve, nearGapEnd, boundaryOffset * 0.5f))
+                {
+                    var value = lowerPriorityCurve.Evaluate(nearGapEnd);
+                    resultCurve.AddKey(new Keyframe(nearGapEnd, value));
+                }
+            }
+
+            return resultCurve;
+        }
+
+        /// <summary>
+        /// 指定時間がいずれかのアクティブ区間内にあるかどうかを判定する
+        /// </summary>
+        private bool IsInAnyActiveInterval(float time, List<ActiveInterval> intervals)
+        {
+            foreach (var interval in intervals)
+            {
+                if (time >= interval.StartTime && time <= interval.EndTime)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 指定時間付近にキーフレームが既に存在するかどうかを判定する
+        /// </summary>
+        private bool HasKeyNearTime(AnimationCurve curve, float time, float tolerance)
+        {
+            foreach (var key in curve.keys)
+            {
+                if (Mathf.Abs(key.time - time) < tolerance)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 複数トラックのカーブを優先順位順に統合する
         /// リストは優先順位の低い順（上の段から下の段）にソートされている前提
         /// </summary>
@@ -219,11 +338,22 @@ namespace AnimationMergeTool.Editor.Domain
                     continue;
                 }
 
-                result = ApplyPartialOverride(
-                    result,
-                    higherPriority.Curve,
-                    higherPriority.StartTime,
-                    higherPriority.EndTime);
+                // ActiveIntervalsが設定されている場合はGap区間を考慮したOverrideを使用
+                if (higherPriority.ActiveIntervals != null && higherPriority.ActiveIntervals.Count > 0)
+                {
+                    result = ApplyPartialOverrideWithActiveIntervals(
+                        result,
+                        higherPriority.Curve,
+                        higherPriority.ActiveIntervals);
+                }
+                else
+                {
+                    result = ApplyPartialOverride(
+                        result,
+                        higherPriority.Curve,
+                        higherPriority.StartTime,
+                        higherPriority.EndTime);
+                }
             }
 
             return result;
@@ -454,6 +584,12 @@ namespace AnimationMergeTool.Editor.Domain
         public float EndTime;
 
         /// <summary>
+        /// アクティブ区間のリスト（null = [StartTime, EndTime]全体がアクティブ）
+        /// Extrapolation=None設定時のGap区間を識別するために使用
+        /// </summary>
+        public List<ActiveInterval> ActiveIntervals;
+
+        /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="curve">アニメーションカーブ</param>
@@ -462,6 +598,51 @@ namespace AnimationMergeTool.Editor.Domain
         public CurveWithTimeRange(AnimationCurve curve, float startTime, float endTime)
         {
             Curve = curve;
+            StartTime = startTime;
+            EndTime = endTime;
+            ActiveIntervals = null;
+        }
+
+        /// <summary>
+        /// コンストラクタ（アクティブ区間対応）
+        /// </summary>
+        /// <param name="curve">アニメーションカーブ</param>
+        /// <param name="startTime">開始時間</param>
+        /// <param name="endTime">終了時間</param>
+        /// <param name="activeIntervals">アクティブ区間のリスト</param>
+        public CurveWithTimeRange(AnimationCurve curve, float startTime, float endTime,
+            List<ActiveInterval> activeIntervals)
+        {
+            Curve = curve;
+            StartTime = startTime;
+            EndTime = endTime;
+            ActiveIntervals = activeIntervals;
+        }
+    }
+
+    /// <summary>
+    /// アクティブ区間を表す構造体
+    /// トラック内でクリップが実際に存在する時間範囲を示す
+    /// </summary>
+    public struct ActiveInterval
+    {
+        /// <summary>
+        /// 区間の開始時間
+        /// </summary>
+        public float StartTime;
+
+        /// <summary>
+        /// 区間の終了時間
+        /// </summary>
+        public float EndTime;
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="startTime">開始時間</param>
+        /// <param name="endTime">終了時間</param>
+        public ActiveInterval(float startTime, float endTime)
+        {
             StartTime = startTime;
             EndTime = endTime;
         }
