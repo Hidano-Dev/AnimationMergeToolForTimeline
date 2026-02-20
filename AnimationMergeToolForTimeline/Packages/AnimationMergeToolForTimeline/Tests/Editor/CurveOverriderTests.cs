@@ -1237,6 +1237,261 @@ namespace AnimationMergeTool.Editor.Tests
 
         #endregion
 
+        #region ApplyPartialOverrideWithActiveIntervals テスト
+
+        [Test]
+        public void ApplyPartialOverrideWithActiveIntervals_Gap区間で低優先順位のキーが保持される()
+        {
+            // Arrange
+            // 低優先順位: 全区間で値10（定数）
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(new Keyframe(0f, 10f));
+            lowerCurve.AddKey(new Keyframe(8f, 10f));
+
+            // 高優先順位: [0,3]で100、[5,8]で200
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(new Keyframe(0f, 100f));
+            higherCurve.AddKey(new Keyframe(3f, 100f));
+            higherCurve.AddKey(new Keyframe(5f, 200f));
+            higherCurve.AddKey(new Keyframe(8f, 200f));
+
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(0f, 3f),
+                new ActiveInterval(5f, 8f)
+            };
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithActiveIntervals(
+                lowerCurve, higherCurve, activeIntervals);
+
+            // Assert
+            // アクティブ区間内は高優先順位の値
+            Assert.AreEqual(100f, result.Evaluate(0f), 0.1f);
+            Assert.AreEqual(100f, result.Evaluate(2f), 0.1f);
+            Assert.AreEqual(100f, result.Evaluate(3f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(5f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(7f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(8f), 0.1f);
+
+            // Gap区間（3〜5）は低優先順位の値（10）
+            Assert.AreEqual(10f, result.Evaluate(4f), 1f);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithActiveIntervals_アクティブ区間内で高優先順位のキーが適用される()
+        {
+            // Arrange
+            // 低優先順位: 全区間で値10
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(new Keyframe(0f, 10f));
+            lowerCurve.AddKey(new Keyframe(8f, 10f));
+
+            // 高優先順位: 0→200の線形変化
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(new Keyframe(0f, 0f));
+            higherCurve.AddKey(new Keyframe(8f, 200f));
+
+            // ギャップなし: 全区間がアクティブ
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(0f, 8f)
+            };
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithActiveIntervals(
+                lowerCurve, higherCurve, activeIntervals);
+
+            // Assert
+            // 全区間で高優先順位の値が使用される
+            Assert.AreEqual(0f, result.Evaluate(0f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(8f), 0.1f);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithActiveIntervals_高優先順位がnullの場合_低優先順位カーブを返す()
+        {
+            // Arrange
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 10f);
+            lowerCurve.AddKey(8f, 10f);
+
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(0f, 3f)
+            };
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithActiveIntervals(
+                lowerCurve, null, activeIntervals);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(10f, result.keys[0].value);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithActiveIntervals_低優先順位がnullの場合_高優先順位カーブを返す()
+        {
+            // Arrange
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(0f, 100f);
+            higherCurve.AddKey(3f, 100f);
+
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(0f, 3f)
+            };
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithActiveIntervals(
+                null, higherCurve, activeIntervals);
+
+            // Assert
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(100f, result.keys[0].value);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithActiveIntervals_低優先順位のキーがGap区間内にある場合それが保持される()
+        {
+            // Arrange
+            // 低優先順位: 複数のキーポイント
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(new Keyframe(0f, 10f));
+            lowerCurve.AddKey(new Keyframe(4f, 40f)); // Gap区間内
+            lowerCurve.AddKey(new Keyframe(8f, 80f));
+
+            // 高優先順位
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(new Keyframe(0f, 100f));
+            higherCurve.AddKey(new Keyframe(3f, 100f));
+            higherCurve.AddKey(new Keyframe(5f, 200f));
+            higherCurve.AddKey(new Keyframe(8f, 200f));
+
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(0f, 3f),
+                new ActiveInterval(5f, 8f)
+            };
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithActiveIntervals(
+                lowerCurve, higherCurve, activeIntervals);
+
+            // Assert
+            // Gap区間内のキー（t=4）は低優先順位の値が保持される
+            Assert.AreEqual(40f, result.Evaluate(4f), 1f);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_ActiveIntervals付きでGap区間の低優先順位が保持される()
+        {
+            // Arrange
+            // 低優先順位（上の段）: 全区間で値10（定数）
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(new Keyframe(0f, 10f));
+            lowerCurve.AddKey(new Keyframe(8f, 10f));
+
+            // 高優先順位（下の段）: [0,3]で100、[5,8]で200
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(new Keyframe(0f, 100f));
+            higherCurve.AddKey(new Keyframe(3f, 100f));
+            higherCurve.AddKey(new Keyframe(5f, 200f));
+            higherCurve.AddKey(new Keyframe(8f, 200f));
+
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(0f, 3f),
+                new ActiveInterval(5f, 8f)
+            };
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(lowerCurve, 0f, 8f),
+                new CurveWithTimeRange(higherCurve, 0f, 8f, activeIntervals)
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert
+            // アクティブ区間内は高優先順位
+            Assert.AreEqual(100f, result.Evaluate(0f), 0.1f);
+            Assert.AreEqual(100f, result.Evaluate(2f), 0.1f);
+            Assert.AreEqual(100f, result.Evaluate(3f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(5f), 0.1f);
+            Assert.AreEqual(200f, result.Evaluate(8f), 0.1f);
+
+            // Gap区間（3〜5）は低優先順位の値（10）
+            Assert.AreEqual(10f, result.Evaluate(4f), 1f);
+        }
+
+        [Test]
+        public void MergeMultipleTracks_ActiveIntervalsなしの場合は従来の動作を維持()
+        {
+            // Arrange（既存のテストと同じパターンだが、ActiveIntervals=nullであることを明示）
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(0f, 0f);
+            lowerCurve.AddKey(3f, 30f);
+
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(1f, 100f);
+            higherCurve.AddKey(2f, 200f);
+
+            var curvesWithTimeRanges = new System.Collections.Generic.List<CurveWithTimeRange>
+            {
+                new CurveWithTimeRange(lowerCurve, 0f, 3f),
+                new CurveWithTimeRange(higherCurve, 1f, 2f) // ActiveIntervals = null
+            };
+
+            // Act
+            var result = _curveOverrider.MergeMultipleTracks(curvesWithTimeRanges);
+
+            // Assert（従来通りの動作）
+            Assert.AreEqual(4, result.keys.Length);
+            Assert.AreEqual(0f, result.keys[0].value);
+            Assert.AreEqual(100f, result.keys[1].value);
+            Assert.AreEqual(200f, result.keys[2].value);
+            Assert.AreEqual(30f, result.keys[3].value);
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithActiveIntervals_元のカーブを変更しない()
+        {
+            // Arrange
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(new Keyframe(0f, 10f));
+            lowerCurve.AddKey(new Keyframe(8f, 10f));
+
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(new Keyframe(0f, 100f));
+            higherCurve.AddKey(new Keyframe(3f, 100f));
+            higherCurve.AddKey(new Keyframe(5f, 200f));
+            higherCurve.AddKey(new Keyframe(8f, 200f));
+
+            var originalLowerKeyCount = lowerCurve.keys.Length;
+            var originalHigherKeyCount = higherCurve.keys.Length;
+
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(0f, 3f),
+                new ActiveInterval(5f, 8f)
+            };
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithActiveIntervals(
+                lowerCurve, higherCurve, activeIntervals);
+
+            // Assert
+            Assert.AreEqual(originalLowerKeyCount, lowerCurve.keys.Length);
+            Assert.AreEqual(originalHigherKeyCount, higherCurve.keys.Length);
+            Assert.AreNotSame(lowerCurve, result);
+            Assert.AreNotSame(higherCurve, result);
+        }
+
+        #endregion
+
         #region BlendShape Override処理 テスト（P11-006）
 
         [Test]

@@ -278,6 +278,9 @@ namespace AnimationMergeTool.Editor.Application
                 var trackStartTime = (float)clipInfos.Min(c => c.StartTime);
                 var trackEndTime = (float)clipInfos.Max(c => c.EndTime);
 
+                // アクティブ区間を計算（Extrapolation=None時のGap区間を識別）
+                var activeIntervals = ComputeActiveIntervals(clipInfos);
+
                 // 同じトラック内のクリップを先に統合（ClipMergerを使用）
                 var mergedTrackClip = clipMerger.Merge(clipInfos, sceneOffsetToRootMotion);
                 if (mergedTrackClip == null)
@@ -312,7 +315,8 @@ namespace AnimationMergeTool.Editor.Application
                         Curve = pair.Curve,
                         StartTime = trackStartTime,
                         EndTime = trackEndTime,
-                        Priority = trackInfo.Priority
+                        Priority = trackInfo.Priority,
+                        ActiveIntervals = activeIntervals
                     });
                 }
 
@@ -347,7 +351,7 @@ namespace AnimationMergeTool.Editor.Application
                 {
                     // 複数のカーブがある場合はOverride処理を適用
                     var curveWithTimeRanges = curvesForBinding
-                        .Select(c => new CurveWithTimeRange(c.Curve, c.StartTime, c.EndTime))
+                        .Select(c => new CurveWithTimeRange(c.Curve, c.StartTime, c.EndTime, c.ActiveIntervals))
                         .ToList();
 
                     var mergedCurve = curveOverrider.MergeMultipleTracks(curveWithTimeRanges);
@@ -442,6 +446,79 @@ namespace AnimationMergeTool.Editor.Application
         }
 
         /// <summary>
+        /// トラック内のクリップ群からアクティブ区間を計算する
+        /// Extrapolation設定に基づいてGap区間を識別し、クリップが実際に有効な時間範囲のリストを返す
+        /// </summary>
+        /// <param name="clipInfos">トラック内のクリップ情報リスト</param>
+        /// <returns>アクティブ区間のリスト（ソート・マージ済み）</returns>
+        private List<ActiveInterval> ComputeActiveIntervals(List<ClipInfo> clipInfos)
+        {
+            if (clipInfos == null || clipInfos.Count == 0)
+            {
+                return null;
+            }
+
+            // clipInfosを開始時間でソート
+            var sorted = clipInfos.OrderBy(c => c.StartTime).ToList();
+            var intervals = new List<ActiveInterval>();
+
+            for (var i = 0; i < sorted.Count; i++)
+            {
+                var start = (float)sorted[i].StartTime;
+                var end = (float)sorted[i].EndTime;
+
+                // PreExtrapolation != None → 前のクリップの終了まで延長
+                if (sorted[i].PreExtrapolation != TimelineClip.ClipExtrapolation.None && i > 0)
+                {
+                    start = Mathf.Min(start, (float)sorted[i - 1].EndTime);
+                }
+
+                // PostExtrapolation != None → 次のクリップの開始まで延長
+                if (sorted[i].PostExtrapolation != TimelineClip.ClipExtrapolation.None && i + 1 < sorted.Count)
+                {
+                    end = Mathf.Max(end, (float)sorted[i + 1].StartTime);
+                }
+
+                intervals.Add(new ActiveInterval(start, end));
+            }
+
+            return MergeOverlappingIntervals(intervals);
+        }
+
+        /// <summary>
+        /// 重複する区間をマージする
+        /// </summary>
+        /// <param name="intervals">マージ前の区間リスト</param>
+        /// <returns>マージ後の区間リスト（ソート済み）</returns>
+        private List<ActiveInterval> MergeOverlappingIntervals(List<ActiveInterval> intervals)
+        {
+            if (intervals == null || intervals.Count <= 1)
+            {
+                return intervals;
+            }
+
+            var sorted = intervals.OrderBy(i => i.StartTime).ToList();
+            var merged = new List<ActiveInterval> { sorted[0] };
+
+            for (var i = 1; i < sorted.Count; i++)
+            {
+                var last = merged[merged.Count - 1];
+                if (sorted[i].StartTime <= last.EndTime)
+                {
+                    // 重複または隣接 → マージ
+                    merged[merged.Count - 1] = new ActiveInterval(
+                        last.StartTime, Mathf.Max(last.EndTime, sorted[i].EndTime));
+                }
+                else
+                {
+                    merged.Add(sorted[i]);
+                }
+            }
+
+            return merged;
+        }
+
+        /// <summary>
         /// カーブデータと時間範囲、優先順位を保持する内部構造体
         /// </summary>
         private struct CurveWithTimeRangeAndPriority
@@ -451,6 +528,7 @@ namespace AnimationMergeTool.Editor.Application
             public float StartTime;
             public float EndTime;
             public int Priority;
+            public List<ActiveInterval> ActiveIntervals;
         }
 
         /// <summary>
