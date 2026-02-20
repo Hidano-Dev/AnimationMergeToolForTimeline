@@ -381,6 +381,11 @@ namespace AnimationMergeTool.Editor.Application
                 }
             }
 
+            // フレームレートにリサンプリング
+            var resampler = new CurveResampler();
+            finalCurves = resampler.Resample(finalCurves, frameRate);
+            result.AddLog($"フレームレート {frameRate}fps でリサンプリングしました。");
+
             // AnimationClipを生成
             var timelineAssetName = timelineAsset.name;
             var animatorName = FileNameGenerator.GetHierarchicalAnimatorName(animator);

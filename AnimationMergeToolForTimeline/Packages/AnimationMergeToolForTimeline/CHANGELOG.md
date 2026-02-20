@@ -5,6 +5,17 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.0.0/) に基づいており、
 このプロジェクトは [Semantic Versioning](https://semver.org/spec/v2.0.0.html) に準拠しています。
 
+## [1.3.0] - 2026-02-20
+
+### Added
+
+- **フレームレートリサンプリング機能**
+  - マージ後のキーフレームをTimelineで指定したフレームレート（例: 30fps）の間隔にリサンプリング
+  - `AnimationCurve.Evaluate()`を使用してリサンプリング時の値を正確に補間
+  - 始端・終端のキーフレーム時間をフレーム境界にスナップ（始端は切り捨て、終端は切り上げ）
+  - null/空カーブ/不正なフレームレートは安全にスキップ
+  - `CurveResampler`クラスを新規追加
+
 ## [1.2.0] - 2026-02-20
 
 ### Fixed
