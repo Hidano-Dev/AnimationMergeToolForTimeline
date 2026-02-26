@@ -1490,6 +1490,115 @@ namespace AnimationMergeTool.Editor.Tests
             Assert.AreNotSame(higherCurve, result);
         }
 
+        [Test]
+        public void ApplyPartialOverrideWithActiveIntervals_単一アクティブ区間の後にベースへの遷移キーが追加される()
+        {
+            // Arrange: HANDOVERに記載の典型的シナリオ
+            // ベーストラック: 0s〜10sのクリップ
+            // Overrideトラック: 2s〜5sのクリップ（PostExtrapolation=None）
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(new Keyframe(0f, 10f));
+            lowerCurve.AddKey(new Keyframe(10f, 20f));
+
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(new Keyframe(2f, 100f));
+            higherCurve.AddKey(new Keyframe(5f, 200f));
+
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(2f, 5f)
+            };
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithActiveIntervals(
+                lowerCurve, higherCurve, activeIntervals);
+
+            // Assert
+            // 5.001s付近にベースカーブへの遷移キーが追加されていること
+            var hasTransitionKeyAfterOverride = false;
+            foreach (var key in result.keys)
+            {
+                if (key.time > 5f && key.time < 5.01f)
+                {
+                    hasTransitionKeyAfterOverride = true;
+                    // 遷移キーの値はベースカーブのEvaluate値であること
+                    var expectedValue = lowerCurve.Evaluate(key.time);
+                    Assert.AreEqual(expectedValue, key.value, 0.01f,
+                        "Override終了後の遷移キーはベースカーブの値であるべき");
+                }
+            }
+            Assert.IsTrue(hasTransitionKeyAfterOverride,
+                "Override区間終了直後にベースカーブへの遷移キーが追加されるべき");
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithActiveIntervals_単一アクティブ区間の前にベースからの遷移キーが追加される()
+        {
+            // Arrange
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(new Keyframe(0f, 10f));
+            lowerCurve.AddKey(new Keyframe(10f, 20f));
+
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(new Keyframe(2f, 100f));
+            higherCurve.AddKey(new Keyframe(5f, 200f));
+
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(2f, 5f)
+            };
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithActiveIntervals(
+                lowerCurve, higherCurve, activeIntervals);
+
+            // Assert
+            // 1.999s付近にベースカーブからの遷移キーが追加されていること
+            var hasTransitionKeyBeforeOverride = false;
+            foreach (var key in result.keys)
+            {
+                if (key.time > 1.99f && key.time < 2f)
+                {
+                    hasTransitionKeyBeforeOverride = true;
+                    var expectedValue = lowerCurve.Evaluate(key.time);
+                    Assert.AreEqual(expectedValue, key.value, 0.01f,
+                        "Override開始前の遷移キーはベースカーブの値であるべき");
+                }
+            }
+            Assert.IsTrue(hasTransitionKeyBeforeOverride,
+                "Override区間開始直前にベースカーブからの遷移キーが追加されるべき");
+        }
+
+        [Test]
+        public void ApplyPartialOverrideWithActiveIntervals_ベースカーブがアクティブ区間外にキーを持たない場合は遷移キーが追加されない()
+        {
+            // Arrange: ベースカーブもOverrideもアクティブ区間内に収まるケース
+            var lowerCurve = new AnimationCurve();
+            lowerCurve.AddKey(new Keyframe(2f, 10f));
+            lowerCurve.AddKey(new Keyframe(5f, 20f));
+
+            var higherCurve = new AnimationCurve();
+            higherCurve.AddKey(new Keyframe(2f, 100f));
+            higherCurve.AddKey(new Keyframe(5f, 200f));
+
+            var activeIntervals = new System.Collections.Generic.List<ActiveInterval>
+            {
+                new ActiveInterval(2f, 5f)
+            };
+
+            // Act
+            var result = _curveOverrider.ApplyPartialOverrideWithActiveIntervals(
+                lowerCurve, higherCurve, activeIntervals);
+
+            // Assert: アクティブ区間外にキーがないので遷移キーは不要
+            // 結果はアクティブ区間内の高優先順位キーのみ
+            Assert.AreEqual(2, result.keys.Length);
+            Assert.AreEqual(2f, result.keys[0].time);
+            Assert.AreEqual(100f, result.keys[0].value);
+            Assert.AreEqual(5f, result.keys[1].time);
+            Assert.AreEqual(200f, result.keys[1].value);
+        }
+
         #endregion
 
         #region BlendShape Override処理 テスト（P11-006）

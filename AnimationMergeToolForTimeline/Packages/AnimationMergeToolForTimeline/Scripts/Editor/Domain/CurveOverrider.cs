@@ -248,6 +248,32 @@ namespace AnimationMergeTool.Editor.Domain
 
             // 3. ギャップ区間の境界に低優先順位カーブからの遷移キーを追加
             const float boundaryOffset = 0.001f;
+
+            // 3a. 最初のアクティブ区間の直前に遷移キーを追加（ベース→Override遷移）
+            var firstInterval = activeIntervals[0];
+            if (HasLowerPriorityKeyBefore(lowerPriorityCurve, firstInterval.StartTime))
+            {
+                var nearFirstStart = firstInterval.StartTime - boundaryOffset;
+                if (!HasKeyNearTime(resultCurve, nearFirstStart, boundaryOffset * 0.5f))
+                {
+                    var value = lowerPriorityCurve.Evaluate(nearFirstStart);
+                    resultCurve.AddKey(new Keyframe(nearFirstStart, value));
+                }
+            }
+
+            // 3b. 最後のアクティブ区間の直後に遷移キーを追加（Override→ベースフォールバック）
+            var lastInterval = activeIntervals[activeIntervals.Count - 1];
+            if (HasLowerPriorityKeyAfter(lowerPriorityCurve, lastInterval.EndTime))
+            {
+                var nearLastEnd = lastInterval.EndTime + boundaryOffset;
+                if (!HasKeyNearTime(resultCurve, nearLastEnd, boundaryOffset * 0.5f))
+                {
+                    var value = lowerPriorityCurve.Evaluate(nearLastEnd);
+                    resultCurve.AddKey(new Keyframe(nearLastEnd, value));
+                }
+            }
+
+            // 3c. アクティブ区間間のギャップ境界に遷移キーを追加
             for (var i = 0; i < activeIntervals.Count - 1; i++)
             {
                 var gapStart = activeIntervals[i].EndTime;
@@ -287,6 +313,36 @@ namespace AnimationMergeTool.Editor.Domain
             foreach (var interval in intervals)
             {
                 if (time >= interval.StartTime && time <= interval.EndTime)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 低優先順位カーブに指定時間より前のキーフレームが存在するかどうかを判定する
+        /// </summary>
+        private bool HasLowerPriorityKeyBefore(AnimationCurve lowerPriorityCurve, float time)
+        {
+            foreach (var key in lowerPriorityCurve.keys)
+            {
+                if (key.time < time)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 低優先順位カーブに指定時間より後のキーフレームが存在するかどうかを判定する
+        /// </summary>
+        private bool HasLowerPriorityKeyAfter(AnimationCurve lowerPriorityCurve, float time)
+        {
+            foreach (var key in lowerPriorityCurve.keys)
+            {
+                if (key.time > time)
                 {
                     return true;
                 }
